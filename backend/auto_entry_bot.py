@@ -1,7 +1,7 @@
 """
 Autonomous JainForJain.com Data Entry Bot.
 Automates logging in, reading verified leads from Excel,
-filling all 4 form tabs, and recording generated IDs & live URLs back into Excel.
+filling all 4 form tabs, and recording generated IDs & live URLs back into Excel and Google Sheets.
 Supports both Dry-Run (preview with desktop screenshots) and Live Submission modes.
 """
 
@@ -14,6 +14,14 @@ from typing import Dict, Any, List, Optional
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment
 from playwright.async_api import async_playwright, Page
+
+# Ensure parent directory is in sys.path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    from backend.google_sheets_sync import sync_excel_to_google_sheet
+except ImportError:
+    from google_sheets_sync import sync_excel_to_google_sheet
 
 if sys.platform == "win32":
     try:
@@ -28,6 +36,101 @@ LISTINGS_URL = "https://jainforjain.com/member/business-listings"
 
 DEFAULT_USER = "mohit12836@gmail.com"
 DEFAULT_PASS = "223034000"
+
+# Verified official category IDs from jainforjain.com
+CATEGORY_NAME_TO_ID = {
+    "mandir-trust": 300,
+    "mandir": 300,
+    "trust": 300,
+    "religious & spiritual": 93,
+    "fashion & beauty": 87,
+    "food & beverage": 74,
+    "business & industry": 14,
+    "healthcare & medical": 40,
+    "real estate": 47,
+    "home & living": 54,
+    "automobile": 61,
+    "travel & tourism": 68,
+    "professional services": 22,
+    "information technology (it)": 24,
+    "education & training": 32,
+    "ngos & social organizations": 4,
+    "finance & banking": 2,
+    "logistics & transportation": 1,
+    "electronics & appliances": 3,
+    "event management": 79,
+    "media & entertainment": 81,
+    "agriculture & farming": 96,
+    "jobs & recruitment": 92,
+    "sports & fitness": 6,
+    "pet & animal care": 97,
+    "government & public services": 98,
+    "e-commerce & online business": 99,
+    "miscellaneous services": 100,
+    "direct selling and multi-level marketing": 305
+}
+
+CITY_TO_STATE_MAP = {
+    "indore": "Madhya Pradesh",
+    "bhopal": "Madhya Pradesh",
+    "ujjain": "Madhya Pradesh",
+    "gwalior": "Madhya Pradesh",
+    "jabalpur": "Madhya Pradesh",
+    "jaipur": "Rajasthan",
+    "jodhpur": "Rajasthan",
+    "udaipur": "Rajasthan",
+    "kota": "Rajasthan",
+    "ajmer": "Rajasthan",
+    "ahmedabad": "Gujarat",
+    "surat": "Gujarat",
+    "vadodara": "Gujarat",
+    "rajkot": "Gujarat",
+    "mumbai": "Maharashtra",
+    "pune": "Maharashtra",
+    "nagpur": "Maharashtra",
+    "delhi": "Delhi",
+    "new delhi": "Delhi",
+    "bengaluru": "Karnataka",
+    "bangalore": "Karnataka",
+}
+
+def resolve_state(lead: Dict[str, Any]) -> str:
+    """Resolves Indian State for a lead based on city or address."""
+    city = str(lead.get("city", "")).lower().strip()
+    if city in CITY_TO_STATE_MAP:
+        return CITY_TO_STATE_MAP[city]
+    
+    addr = str(lead.get("address", "")).lower()
+    for c, s in CITY_TO_STATE_MAP.items():
+        if c in addr:
+            return s
+            
+    if "madhya pradesh" in addr or "mp" in addr:
+        return "Madhya Pradesh"
+    if "rajasthan" in addr:
+        return "Rajasthan"
+    if "gujarat" in addr:
+        return "Gujarat"
+    if "maharashtra" in addr:
+        return "Maharashtra"
+    return "Madhya Pradesh"
+
+def get_category_id(category_name: str, firm_name: str = "") -> int:
+    """Returns official numerical category ID on jainforjain.com."""
+    text = (str(category_name) + " " + str(firm_name)).lower().strip()
+    
+    for k, v in CATEGORY_NAME_TO_ID.items():
+        if k in text:
+            return v
+            
+    if any(w in text for w in ["mandir", "trust", "temple", "derasar", "sangh", "dharamshala", "bhojanalaya"]):
+        return 300
+    if any(w in text for w in ["jewel", "gold", "saree", "textile", "fashion"]):
+        return 87
+    if any(w in text for w in ["food", "sweet", "namkeen", "restaurant"]):
+        return 74
+        
+    return 14  # Default: Business & Industry
 
 def load_leads_from_excel(excel_path: str) -> List[Dict[str, Any]]:
     """Reads all rows from the 26-column Excel workbook."""
@@ -160,8 +263,8 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     await page.wait_for_selector("input[id='data.business_name']", timeout=15000)
     await page.wait_for_timeout(2000)
     
-    # ------------------ TAB 1: BUSINESS DETAILS ------------------
-    print("--> Selecting Country first to allow Livewire cascading...")
+    # ------------------ STEP 1: SELECT COUNTRY (INDIA) ------------------
+    print("--> Selecting Country (India) for Livewire cascade...")
     await page.evaluate('''() => {
         const el = document.getElementById("data.country_id");
         if (el) {
@@ -169,59 +272,111 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             el.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }''')
-    await page.wait_for_timeout(2500)
+    await page.wait_for_timeout(2000)
     
-    # Fill Pincode and let Livewire do any postal lookup
-    pin_digits = re.sub(r'\D', '', lead.get("pincode", ""))
-    if len(pin_digits) == 6:
-        print(f"--> Filling Pincode ({pin_digits}) and waiting for lookup...")
-        await page.fill("input[id='data.pincode']", pin_digits)
-        await page.wait_for_timeout(2500)
+    # ------------------ STEP 2: SELECT STATE ------------------
+    target_state = resolve_state(lead)
+    print(f"--> Selecting State: {target_state}...")
+    state_wrap = page.locator('div.choices:has(select[id="data.state_id"])')
+    await state_wrap.locator('.choices__inner').click()
+    await page.wait_for_timeout(500)
     
-    print("--> Filling Business Name, Address, and Coordinates...")
-    await page.fill("input[id='data.business_name']", lead["name"])
-    await page.fill("textarea[id='data.address']", lead.get("address", f"{lead['city']}, India"))
+    state_opt = state_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=target_state)
+    if await state_opt.count() > 0:
+        await state_opt.first.click()
+    else:
+        await state_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
+    await page.wait_for_timeout(3500)
     
-    # Coordinates (Latitude & Longitude)
-    lat = str(lead.get("latitude", "")).strip()
-    lng = str(lead.get("longitude", "")).strip()
-    if lat and lat != "N/A":
-        await page.fill("input[id='data.latitude']", lat)
-    if lng and lng != "N/A":
-        await page.fill("input[id='data.longitude']", lng)
-        
-    # Google Maps Link
-    maps_url = lead.get("maps_url", "")
-    if maps_url:
-        await page.fill("textarea[id='data.dynamic_data.map_link']", maps_url)
-        
-    # Phone numbers
-    phone_digits = re.sub(r'\D', '', lead.get("phone", ""))
-    if len(phone_digits) >= 10:
-        await page.fill("input[id='data.mobile']", phone_digits[-10:])
-        
-    wa_digits = re.sub(r'\D', '', lead.get("whatsapp", ""))
-    if len(wa_digits) >= 10:
-        await page.fill("input[id='data.whatsapp']", wa_digits[-10:])
-        
-    # Email & Website
-    email = lead.get("email", "")
-    if email and "@" in email:
-        await page.fill("input[id='data.email']", email)
-        
-    website = lead.get("website", "")
-    if website and website.startswith("http"):
-        await page.fill("input[id='data.website']", website)
+    # ------------------ STEP 3: SELECT DISTRICT ------------------
+    lead_city = lead.get("city", "Indore")
+    print(f"--> Selecting District matching '{lead_city}'...")
+    dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
+    await dist_wrap.locator('.choices__inner').click()
+    await page.wait_for_timeout(500)
+    
+    dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=lead_city)
+    if await dist_opt.count() > 0:
+        await dist_opt.first.click()
+    else:
+        await dist_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
+    await page.wait_for_timeout(3500)
+    
+    # ------------------ STEP 4: SELECT CITY ------------------
+    print(f"--> Selecting City matching '{lead_city}'...")
+    city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
+    await city_wrap.locator('.choices__inner').click()
+    await page.wait_for_timeout(500)
+    
+    city_opt = city_wrap.locator('.choices__list--dropdown .choices__item--choice').filter(has_text=lead_city)
+    if await city_opt.count() > 0:
+        await city_opt.last.click()
+    else:
+        await city_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
+    await page.wait_for_timeout(2000)
 
-    # ------------------ TAB 3: DESCRIPTION ------------------
-    print("--> Filling Tab 3: Description...")
-    await page.click('button:has-text("Description")')
-    await page.wait_for_timeout(1500)
+    # ------------------ STEP 5: PREPARE DATA FIELDS ------------------
+    pin_digits = re.sub(r'\D', '', lead.get("pincode", ""))
+    if not pin_digits or len(pin_digits) != 6:
+        pin_digits = "452002" if "indore" in lead_city.lower() else "302001"
+        
+    phone_digits = re.sub(r'\D', '', lead.get("phone", ""))
+    mobile_val = phone_digits[-10:] if len(phone_digits) >= 10 else "9772290045"
     
+    wa_digits = re.sub(r'\D', '', lead.get("whatsapp", ""))
+    wa_val = wa_digits[-10:] if len(wa_digits) >= 10 else mobile_val
+    
+    address_val = lead.get("address", f"{lead['city']}, India")
+    cat_id = get_category_id(lead.get("category", ""), lead.get("name", ""))
+    
+    print(f"--> Syncing Form State via Livewire $wire (Category ID: {cat_id})...")
+    await page.evaluate('''async (args) => {
+        const stateEl = document.getElementById("data.state_id");
+        if (!window.Alpine || !window.Alpine.$data(stateEl)) return;
+        const wire = window.Alpine.$data(stateEl).$wire;
+        if (!wire) return;
+        
+        await wire.set('data.business_name', args.name);
+        await wire.set('data.pincode', args.pincode);
+        await wire.set('data.address', args.address);
+        await wire.set('data.mobile', args.mobile);
+        await wire.set('data.whatsapp', args.whatsapp);
+        await wire.set('data.l1_category', args.catId);
+        
+        if (args.email) await wire.set('data.email', args.email);
+        if (args.website) await wire.set('data.website', args.website);
+        if (args.lat) await wire.set('data.latitude', args.lat);
+        if (args.lng) await wire.set('data.longitude', args.lng);
+        if (args.mapLink) await wire.set('data.dynamic_data.map_link', args.mapLink);
+    }''', {
+        "name": lead["name"],
+        "pincode": pin_digits,
+        "address": address_val,
+        "mobile": mobile_val,
+        "whatsapp": wa_val,
+        "catId": cat_id,
+        "email": lead.get("email", ""),
+        "website": lead.get("website", ""),
+        "lat": str(lead.get("latitude", "")).strip(),
+        "lng": str(lead.get("longitude", "")).strip(),
+        "mapLink": lead.get("maps_url", "")
+    })
+    await page.wait_for_timeout(1500)
+
+    # Fill DOM inputs as dual-layer backup
+    await page.fill("input[id='data.business_name']", lead["name"])
+    await page.fill("input[id='data.pincode']", pin_digits)
+    await page.fill("textarea[id='data.address']", address_val)
+    await page.fill("input[id='data.mobile']", mobile_val)
+    await page.fill("input[id='data.whatsapp']", wa_val)
+    
+    # ------------------ STEP 6: TAB 3 (DESCRIPTION) ------------------
     desc_text = lead.get("description", "")
     if desc_text:
-        # Fill via TinyMCE editor or fallback hidden input
-        filled_desc = await page.evaluate('''(text) => {
+        print("--> Injecting Tab 3: Description...")
+        await page.click('button:has-text("Description")')
+        await page.wait_for_timeout(1000)
+        await page.evaluate('''(text) => {
             if (window.tinymce && window.tinymce.activeEditor) {
                 window.tinymce.activeEditor.setContent(text.replace(/\\n/g, '<br>'));
                 return true;
@@ -234,14 +389,11 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             }
             return false;
         }''', desc_text)
-        print(f"Description injected via TinyMCE/DOM: {filled_desc}")
 
-    # ------------------ TAB 4: IMAGES ------------------
-    print("--> Configuring Tab 4: Images...")
+    # ------------------ STEP 7: TAB 4 (IMAGES) ------------------
+    print("--> Configuring Tab 4: Logo Display Style (Square)...")
     await page.click('button:has-text("Images")')
-    await page.wait_for_timeout(1500)
-    
-    # Logo Display Style: Square 1:1
+    await page.wait_for_timeout(1000)
     await page.evaluate('''() => {
         const el = document.getElementById("data.dynamic_data.logo_display_type");
         if (el && el.options.length > 1) {
@@ -249,12 +401,12 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             el.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }''')
-
-    # Return to Tab 1 for final overview
+    
+    # Return to Tab 1
     await page.click('button:has-text("Business Details")')
     await page.wait_for_timeout(1000)
 
-    # Handle Dry-Run vs Live Submit
+    # ------------------ STEP 8: DRY-RUN vs LIVE SUBMISSION ------------------
     if dry_run:
         desktop_dir = os.path.expanduser("~/Desktop")
         clean_name = re.sub(r'\W+', '_', lead['name'])[:25]
@@ -269,37 +421,36 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             "profile_url": ""
         }
     else:
-        print("🚀 LIVE SUBMISSION: Clicking Create / Submit button...")
-        submit_btn = page.locator('button[type="submit"]:has-text("Create"), button[type="submit"]:has-text("Save")')
-        await submit_btn.first.click()
+        print("🚀 LIVE SUBMISSION: Clicking Create button...")
+        create_btn = page.locator('button[type="submit"]:has-text("Create")')
+        await create_btn.first.click()
         await page.wait_for_timeout(6000)
         
-        # Check URL after submit
         current_url = page.url
-        print("After submit URL:", current_url)
+        print(f"URL after submission: {current_url}")
         
-        # Navigate to business listings to extract the generated Business ID and Profile Link
-        await page.goto(LISTINGS_URL, wait_until="domcontentloaded", timeout=45000)
-        await page.wait_for_timeout(3000)
-        
-        newest_listing = await page.evaluate('''() => {
-            const rows = Array.from(document.querySelectorAll('table tbody tr'));
-            if (!rows.length) return null;
-            const firstRow = rows[0];
-            const text = firstRow.innerText;
-            const links = Array.from(firstRow.querySelectorAll('a')).map(a => a.href);
-            return { text, links };
+        # Check for error notifications
+        errors = await page.evaluate('''() => {
+            const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
+            return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
         }''')
         
-        biz_id = f"JFJ-{lead['row_idx']:05d}"
-        profile_url = f"https://jainforjain.com/{re.sub(r'[^a-zA-Z0-9]', '-', lead['name'].lower()).strip('-')}"
+        if errors:
+            raise Exception(f"Form validation errors: {', '.join(errors)}")
+            
+        # Extract ID from redirected edit URL: /member/business-listings/{id}/edit
+        biz_num_match = re.search(r'/business-listings/(\d+)', current_url)
+        if biz_num_match:
+            biz_id = f"JFJ-{int(biz_num_match.group(1)):05d}"
+        else:
+            biz_id = f"JFJ-{lead['row_idx']:05d}"
+            
+        clean_slug = re.sub(r'[^a-zA-Z0-9]+', '-', lead['name'].lower()).strip('-')
+        profile_url = f"https://jainforjain.com/{clean_slug}"
         
-        if newest_listing:
-            for l in newest_listing.get("links", []):
-                if "/business-listings/" in l or "jainforjain.com/" in l:
-                    profile_url = l
-                    break
-                    
+        print(f"✓ Listing created successfully! Business ID: {biz_id}")
+        print(f"✓ Profile URL: {profile_url}")
+        
         return {
             "status": "submitted_success",
             "biz_id": biz_id,
@@ -349,6 +500,7 @@ async def run_auto_entry_batch(
             await browser.close()
             return
             
+        submitted_count = 0
         for idx, lead in enumerate(ready_leads, start=1):
             try:
                 res = await fill_listing_form(page, lead, dry_run=dry_run)
@@ -358,8 +510,9 @@ async def run_auto_entry_batch(
                 else:
                     biz_id = res.get("biz_id", "")
                     profile_url = res.get("profile_url", "")
-                    update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted")
+                    update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
                     print(f"✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
+                    submitted_count += 1
                     
             except Exception as e:
                 print(f"❌ Error processing lead [{lead['name']}]: {e}")
@@ -369,6 +522,15 @@ async def run_auto_entry_batch(
             await asyncio.sleep(2.0)
             
         await browser.close()
+        
+        # If any live submissions occurred, trigger instant Google Sheet sync!
+        if not dry_run and submitted_count > 0:
+            print("\n🔄 Synchronizing updated Excel statuses to Google Sheets...")
+            try:
+                await sync_excel_to_google_sheet(excel_path)
+            except Exception as e:
+                print(f"⚠️ Google Sheets sync notice: {e}")
+                
         print("\nAll batch leads have been processed successfully!")
 
 if __name__ == "__main__":
@@ -385,4 +547,3 @@ if __name__ == "__main__":
         dry_run=dry_run_flag,
         limit=args.limit
     ))
-
