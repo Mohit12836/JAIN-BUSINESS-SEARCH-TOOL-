@@ -2,6 +2,7 @@
 Zero-API Autonomous Google Maps Stealth Scraper Engine.
 Uses Playwright to extract live firm details, verified phone numbers,
 owner/proprietor names, ratings, exact addresses, and HD storefront photos.
+Fully integrated with JainForJain.com category mapping and description synthesis.
 """
 
 import asyncio
@@ -11,6 +12,7 @@ import os
 from typing import Callable, Dict, Any, List
 from playwright.async_api import async_playwright
 from backend.matrix import build_query_batch, classify_firm, extract_owner_name, INDIA_HUBS, get_all_cities
+from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, format_clean_whatsapp, generate_j4j_description
 from backend.excel_builder import generate_leads_excel
 
 async def scrape_google_maps_task(
@@ -128,7 +130,7 @@ async def scrape_google_maps_task(
                         return results;
                     }""")
 
-                    # Deep inspect each card to get verified phone, owner, and details
+                    # Deep inspect each card
                     for item in cards_data:
                         title = item.get("title", "").strip()
                         href = item.get("href", "")
@@ -151,7 +153,6 @@ async def scrape_google_maps_task(
                                 const photoImg = document.querySelector('button.aoRNLd img, div.Z36tef img, button[aria-label*="Photo of" i] img');
                                 const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
                                 
-                                // Grab text from about/snippet/review sections
                                 const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
                                 const extraText = textContainers.map(c => c.innerText).join(' ');
 
@@ -189,20 +190,31 @@ async def scrape_google_maps_task(
                         classification = classify_firm(title, address, extra_text)
                         owner_name = extract_owner_name(title, extra_text)
 
+                        # JainForJain.com Smart Field Mapping
+                        j4j_cat = map_to_j4j_category(category, title)
+                        pincode = extract_pincode(address)
+                        whatsapp = format_clean_whatsapp(phone)
+                        description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
+
                         record = {
                             "name": title,
+                            "j4j_category": j4j_cat,
                             "owner": owner_name,
-                            "tier": classification["tier"],
-                            "score": classification["score"],
-                            "reason": classification["reason"],
                             "phone": phone if phone else "Not Listed",
+                            "whatsapp": whatsapp,
+                            "email": "",
                             "address": address,
                             "city": city,
                             "state": location_scope if location_scope in INDIA_HUBS else "India",
+                            "pincode": pincode,
                             "rating": f"★ {rating}" if rating else "★ 4.8",
                             "photo_url": photo_url,
                             "website": website,
-                            "maps_url": href
+                            "maps_url": href,
+                            "description": description,
+                            "tier": classification["tier"],
+                            "score": classification["score"],
+                            "reason": classification["reason"]
                         }
 
                         collected_records.append(record)
