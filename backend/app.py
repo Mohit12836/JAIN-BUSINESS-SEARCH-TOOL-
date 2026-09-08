@@ -5,10 +5,14 @@ task dispatching, and 1-click Excel file downloads.
 """
 
 import os
+import sys
 import uuid
 import json
 import asyncio
 from typing import Dict, Any, List
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -150,25 +154,58 @@ async def stream_progress(task_id: str, request: Request):
         }
     )
 
-@app.get("/api/download-excel/{task_id}")
-async def download_excel(task_id: str):
-    """Provides the generated .xlsx file for 1-click download."""
-    task = TASKS.get(task_id)
-    if not task or not task.get("excel_path"):
-        return {"error": "Excel file not ready or task not found."}
-
-    excel_path = task["excel_path"]
-    filename = task.get("filename") or "Jain_Leads.xlsx"
+@app.get("/api/current-status")
+async def get_current_status():
+    """Returns current saturation and submission statistics."""
+    from backend.saturation_engine import load_progress
+    from backend.auto_entry_bot import load_leads_from_excel
+    excel_path = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
     
-    if not os.path.exists(excel_path):
-        return {"error": "Excel file does not exist on disk."}
+    progress = load_progress()
+    leads = []
+    if os.path.exists(excel_path):
+        try:
+            leads = load_leads_from_excel(excel_path)
+        except Exception:
+            pass
+            
+    submitted = [l for l in leads if "Submitted" in l.get("submission_status", "")]
+    ready = [l for l in leads if l.get("submission_status") in ["Ready to Submit", "", None]]
+    
+    return {
+        "city": progress.get("current_city", "Indore"),
+        "area_idx": progress.get("area_idx", 0),
+        "total_leads": len(leads),
+        "submitted_leads": len(submitted),
+        "ready_leads": len(ready),
+        "completed_areas": progress.get("completed_areas", [])
+    }
 
-    return FileResponse(
-        path=excel_path,
-        filename=filename,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+class EntryRequest(BaseModel):
+    limit: int = 5
+    live: bool = True
+
+@app.post("/api/start-portal-entry")
+async def start_portal_entry(req: EntryRequest, background_tasks: BackgroundTasks):
+    """Triggers autonomous entry into jainforjain.com."""
+    from backend.auto_entry_bot import run_auto_entry_batch
+    excel_path = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    
+    async def entry_runner():
+        await run_auto_entry_batch(
+            excel_path=excel_path,
+            dry_run=not req.live,
+            limit=req.limit
+        )
+        
+    background_tasks.add_task(entry_runner)
+    return {
+        "status": "started",
+        "mode": "LIVE" if req.live else "DRY-RUN",
+        "limit": req.limit
+    }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+

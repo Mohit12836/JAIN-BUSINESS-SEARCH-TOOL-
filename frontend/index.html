@@ -285,6 +285,57 @@
       </div>
     </div>
 
+    <!-- 1-Click Mobile Actions Panel -->
+    <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/60 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>📱 मोबाइल 1-क्लिक रिमोट कंट्रोल (Mobile Hub)</span>
+            <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold">Real-Time</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">बिना PC छुए अपने फोन से सीधे जैनफॉरजैन पोर्टल और गूगल शीट को कंट्रोल करें</p>
+        </div>
+        <button onclick="loadStatus()" class="text-xs text-slate-600 hover:text-indigo-600 flex items-center gap-1 font-medium bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm cursor-pointer">
+          🔄 रिफ्रेश स्टेटस
+        </button>
+      </div>
+
+      <!-- Quick Status Badges -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-center">
+          <div class="text-[11px] text-indigo-600 font-medium">सक्रिय शहर</div>
+          <div id="statCity" class="text-sm font-bold text-indigo-950 mt-0.5">Indore (इंदौर)</div>
+        </div>
+        <div class="bg-purple-50/70 p-3 rounded-xl border border-purple-100 text-center">
+          <div class="text-[11px] text-purple-600 font-medium">करंट एरिया</div>
+          <div id="statArea" class="text-sm font-bold text-purple-950 mt-0.5">Rajwada (राजवाड़ा)</div>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+          <div class="text-[11px] text-slate-500 font-medium">कुल लीड्स</div>
+          <div id="statTotal" class="text-sm font-bold text-slate-800 mt-0.5">19</div>
+        </div>
+        <div class="bg-emerald-50/80 p-3 rounded-xl border border-emerald-200 text-center">
+          <div class="text-[11px] text-emerald-700 font-medium">पोर्टल पर लाइव ✅</div>
+          <div id="statSubmitted" class="text-sm font-bold text-emerald-800 mt-0.5">1</div>
+        </div>
+        <div class="bg-amber-50/80 p-3 rounded-xl border border-amber-200 text-center col-span-2 sm:col-span-1">
+          <div class="text-[11px] text-amber-700 font-medium">तैयार लीड्स ⏳</div>
+          <div id="statReady" class="text-sm font-bold text-amber-800 mt-0.5">18</div>
+        </div>
+      </div>
+
+      <!-- Mobile Action Buttons Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <button id="btnAutoSubmit" onclick="triggerPortalSubmit(5)" class="py-3 px-4 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md flex items-center justify-center gap-2 cursor-pointer transition">
+          <span>🚀 पोर्टल पर 5 लीड्स ऑटो-सबमिट करो</span>
+        </button>
+        <button id="btnSyncSheets" onclick="triggerGoogleSheetSync()" class="py-3 px-4 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md flex items-center justify-center gap-2 cursor-pointer transition">
+          <span>📊 लाइव Google Sheet में सिंक करो</span>
+        </button>
+      </div>
+      <div id="mobileActionNotice" class="hidden text-xs p-3 rounded-xl bg-slate-100 text-slate-700 font-medium"></div>
+    </section>
+
     <!-- Results Table & Export Card -->
     <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -549,6 +600,78 @@
       if (!currentTaskId) return;
       window.location.href = `/api/download-excel/${currentTaskId}`;
     }
+
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/current-status');
+        const data = await res.json();
+        document.getElementById('statCity').innerText = data.city || 'Indore';
+        document.getElementById('statTotal').innerText = data.total_leads || 0;
+        document.getElementById('statSubmitted').innerText = data.submitted_leads || 0;
+        document.getElementById('statReady').innerText = data.ready_leads || 0;
+        
+        const areas = ["Rajwada", "Sarafa Bazar", "Marothia Bazar", "Sitlamata Bazar", "MT Cloth Market", "Siya Ganj"];
+        const curArea = areas[data.area_idx] || "Rajwada";
+        document.getElementById('statArea').innerText = curArea;
+      } catch (e) {
+        console.error("Failed to load status:", e);
+      }
+    }
+
+    async function triggerPortalSubmit(limit = 5) {
+      const btn = document.getElementById('btnAutoSubmit');
+      const notice = document.getElementById('mobileActionNotice');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      notice.classList.remove('hidden');
+      notice.className = 'text-xs p-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 font-medium';
+      notice.innerText = `⏳ पोर्टल पर ${limit} लीड्स की ऑटो-सबमिशन शुरू हो गई है... कृपया 1-2 मिनट प्रतीक्षा करें।`;
+
+      try {
+        const res = await fetch('/api/start-portal-entry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ limit: limit, live: true })
+        });
+        const data = await res.json();
+        notice.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
+        notice.innerText = `✅ बैकएंड में सबमिशन चालू है! पूरा होते ही गूगल शीट में ऑटो-सिंक हो जाएगा।`;
+        setTimeout(loadStatus, 5000);
+      } catch (e) {
+        notice.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-medium';
+        notice.innerText = `❌ एरर: ` + e.message;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+      }
+    }
+
+    async function triggerGoogleSheetSync() {
+      const btn = document.getElementById('btnSyncSheets');
+      const notice = document.getElementById('mobileActionNotice');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      notice.classList.remove('hidden');
+      notice.className = 'text-xs p-3 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 font-medium';
+      notice.innerText = `⏳ लाइव Google Sheet में सिंक हो रहा है...`;
+
+      try {
+        const res = await fetch('/api/sync-google-sheets', { method: 'POST' });
+        const data = await res.json();
+        notice.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
+        notice.innerHTML = `✅ Google Sheet सफलतापूर्वक सिंक हो गई! <a href="${data.sheet_url}" target="_blank" class="underline font-bold">यहाँ खोलें ↗</a>`;
+        setTimeout(loadStatus, 2000);
+      } catch (e) {
+        notice.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-medium';
+        notice.innerText = `❌ सिंक एरर: ` + e.message;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+      }
+    }
+
+    // Auto-load status on page open
+    window.addEventListener('DOMContentLoaded', loadStatus);
   </script>
 </body>
 </html>
