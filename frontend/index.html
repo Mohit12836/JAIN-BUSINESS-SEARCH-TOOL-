@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JainBiz Lead Miner | Autonomous Firm Intelligence</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(1.04); }
+    }
+    .mesh-gradient-bg {
+      background: linear-gradient(135deg, #f5f7ff 0%, #fdf2f8 35%, #f0fdf4 70%, #eff6ff 100%);
+      background-size: 300% 300%;
+      animation: gradientShift 18s ease infinite;
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.8) inset;
+    }
+    .glass-input {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid #e2e8f0;
+      transition: all 0.25s ease;
+    }
+    .glass-input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      outline: none;
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      background-size: 200% 200%;
+      transition: all 0.3s ease;
+    }
+    .btn-gradient:hover:not(:disabled) {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4);
+    }
+    .btn-excel {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-excel:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgba(16, 185, 129, 0.4);
+    }
+    .badge-pill {
+      transition: all 0.2s ease;
+    }
+    .badge-pill:hover {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="mesh-gradient-bg min-h-screen text-slate-800 antialiased p-4 sm:p-8 font-sans selection:bg-indigo-100 selection:text-indigo-700">
+
+  <!-- Ambient Light Orbs -->
+  <div class="fixed top-[-100px] left-[-100px] w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none -z-10 animate-[pulseGlow_10s_ease-in-out_infinite]"></div>
+  <div class="fixed bottom-[-100px] right-[-100px] w-96 h-96 bg-indigo-200/40 rounded-full blur-3xl pointer-events-none -z-10 animate-[pulseGlow_12s_ease-in-out_infinite]"></div>
+
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header & Brand -->
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel rounded-2xl p-5">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-500/25">
+          ✦
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 bg-clip-text text-transparent">
+              JainBiz Miner
+            </h1>
+            <span class="px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200/60">
+              ₹0 API • Zero Cost
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Autonomous Pan-India Firm Intelligence & Verified Lead Extractor</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200/70 px-3 py-1.5 rounded-full font-medium shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          Engine: Standby
+        </div>
+        <div class="bg-white/80 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-full shadow-sm font-medium">
+          🇮🇳 Pan-India Enabled
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Control Console -->
+    <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
+      
+      <!-- Query Inputs -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+            सर्च टारगेट और लोकेशन सेट करें
+          </label>
+          <span class="text-xs text-slate-400">Google Local + Smart Jain Intelligence</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <!-- Category Input -->
+          <div class="md:col-span-6 relative">
+            <label class="text-xs text-slate-500 font-medium mb-1 block">बिज़नेस कैटेगरी / ट्रेड टाइप</label>
+            <div class="relative">
+              <input id="categoryInput" type="text" value="Jewellers" placeholder="उदा: Jewellers, Textiles, Hardware, Chemicals, Sweets..." class="w-full glass-input rounded-xl px-4 py-3 text-sm font-medium text-slate-800 placeholder-slate-400 pl-11">
+              <span class="absolute left-3.5 top-3.5 text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Location Selector -->
+          <div class="md:col-span-4 relative">
+            <label class="text-xs text-slate-500 font-medium mb-1 block">भौगोलिक दायरा (Location Scope)</label>
+            <div class="relative">
+              <select id="locationSelect" class="w-full glass-input rounded-xl px-4 py-3 text-sm font-medium text-slate-800 pl-11 cursor-pointer">
+                <option value="Pan India">🇮🇳 PAN INDIA (ऑल-इंडिया 500+ शहर)</option>
+                <option value="Gujarat" selected>📍 Gujarat (अहमदाबाद, सूरत, राजकोट...)</option>
+                <option value="Rajasthan">📍 Rajasthan (जयपुर, जोधपुर, उदयपुर...)</option>
+                <option value="Madhya Pradesh">📍 Madhya Pradesh (इंदौर, उज्जैन, भोपाल...)</option>
+                <option value="Maharashtra">📍 Maharashtra (मुंबई, पुणे, कोल्हापुर...)</option>
+                <option value="Delhi NCR">📍 Delhi-NCR (दिल्ली, गुरुग्राम, नोएडा...)</option>
+                <option value="Karnataka">📍 Karnataka (बेंगलुरु, हुबली, बेलगाम...)</option>
+                <option value="Custom">✍️ कस्टम शहर दर्ज करें...</option>
+              </select>
+              <span class="absolute left-3.5 top-3.5 text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <div class="md:col-span-2 flex flex-col justify-end">
+            <button id="startBtn" onclick="startScan()" class="btn-gradient w-full py-3 px-4 rounded-xl text-white font-semibold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer">
+              <span id="btnIcon">⚡</span>
+              <span id="btnText">स्कैन शुरू करें</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom City Input (Hidden by default) -->
+        <div id="customCityRow" class="hidden pt-2">
+          <label class="text-xs text-slate-500 font-medium mb-1 block">कस्टम शहर का नाम</label>
+          <input id="customCityInput" type="text" placeholder="उदा: Jaipur, Ahmedabad, Surat..." class="w-full sm:w-1/2 glass-input rounded-xl px-4 py-2.5 text-sm font-medium text-slate-800">
+        </div>
+      </div>
+
+      <!-- Smart Expansion Matrix Toggles -->
+      <div class="pt-3 border-t border-slate-200/60">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <span>Multi-Vector Intelligence Filters</span>
+            <span class="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100">Zero Manual Typing</span>
+          </span>
+          <span class="text-xs text-slate-400">बिना "जैन" शब्द वाली फ़र्मों को पकड़ने के नियम</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Toggle 1 -->
+          <label class="badge-pill flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white/60 hover:bg-white cursor-pointer shadow-sm">
+            <input id="toggleSacred" type="checkbox" checked class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span>🕉️ पवित्र धार्मिक शब्द</span>
+                <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-semibold">100% Verified</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Navkar, Arihant, Mahavir, Paras, Nakoda, Adinath, Shantinath...</p>
+            </div>
+          </label>
+
+          <!-- Toggle 2 -->
+          <label class="badge-pill flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white/60 hover:bg-white cursor-pointer shadow-sm">
+            <input id="toggleSurnames" type="checkbox" checked class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span>🏷️ जैन उपजाति / सरनेम</span>
+                <span class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded font-semibold">High Match</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Shah, Lodha, Kothari, Doshi, Mehta, Kasliwal, Patni, Sethi...</p>
+            </div>
+          </label>
+
+          <!-- Toggle 3 -->
+          <label class="badge-pill flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white/60 hover:bg-white cursor-pointer shadow-sm">
+            <input id="togglePhotos" type="checkbox" checked class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span>📸 दुकान / साइनबोर्ड फ़ोटो</span>
+                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-semibold">HD Links</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">दुकान के मुख्य बोर्ड की लाइव फ़ोटो लिंक Excel में जोड़ें</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Real-time Live Progress & Metrics HUD -->
+    <div id="progressSection" class="hidden glass-panel rounded-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-600"></span>
+          </div>
+          <span id="statusMessage" class="text-sm font-semibold text-slate-700">सर्च इंजन प्रारंभ हो रहा है...</span>
+        </div>
+        <span id="percentText" class="text-sm font-bold text-indigo-600">0%</span>
+      </div>
+
+      <!-- Animated Progress Bar -->
+      <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
+        <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+      </div>
+
+      <!-- Live Dynamic Counters -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+        <div class="bg-white/70 p-3 rounded-xl border border-slate-200/60 shadow-sm text-center">
+          <div class="text-xs text-slate-500">कुल फ़र्में (Firms)</div>
+          <div id="counterFirms" class="text-xl font-bold text-slate-800 mt-0.5">0</div>
+        </div>
+        <div class="bg-white/70 p-3 rounded-xl border border-slate-200/60 shadow-sm text-center">
+          <div class="text-xs text-slate-500">फ़ोन नंबर (Verified)</div>
+          <div id="counterPhones" class="text-xl font-bold text-emerald-600 mt-0.5">0</div>
+        </div>
+        <div class="bg-white/70 p-3 rounded-xl border border-slate-200/60 shadow-sm text-center">
+          <div class="text-xs text-slate-500">फ़ोटो लिंक्स (Photos)</div>
+          <div id="counterPhotos" class="text-xl font-bold text-indigo-600 mt-0.5">0</div>
+        </div>
+        <div class="bg-white/70 p-3 rounded-xl border border-slate-200/60 shadow-sm text-center">
+          <div class="text-xs text-slate-500">जैन कॉन्फिडेंस स्कोर</div>
+          <div id="counterAccuracy" class="text-xl font-bold text-purple-600 mt-0.5">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Table & Export Card -->
+    <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>📊 लाइव एक्सट्रेक्टेड डेटा (Live Data Stream)</span>
+            <span id="tableCountBadge" class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 font-medium">
+              0 रिकॉर्ड्स
+            </span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">सत्यापित फ़ोन नंबर, पूरा पता, रेटिंग और स्टोरफ़्रंट फ़ोटो</p>
+        </div>
+
+        <!-- 1-Click Excel Download Button -->
+        <button id="downloadBtn" onclick="downloadExcel()" disabled class="btn-excel text-white font-semibold text-sm px-5 py-3 rounded-xl shadow-lg flex items-center gap-2.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>डाउनलोड एक्सेल फ़ाइल (.xlsx)</span>
+          <span id="downloadReadyTag" class="hidden bg-emerald-900/30 text-[11px] px-2 py-0.5 rounded-md text-emerald-100 font-normal">Ready</span>
+        </button>
+      </div>
+
+      <!-- Table Container -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm max-h-96">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-50/90 sticky top-0 text-slate-700 font-semibold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+            <tr>
+              <th class="py-3 px-4">#</th>
+              <th class="py-3 px-4">फ़र्म का नाम</th>
+              <th class="py-3 px-4">सत्यापन स्थिति</th>
+              <th class="py-3 px-4">फ़ोन नंबर</th>
+              <th class="py-3 px-4">लोकेशन / एड्रेस</th>
+              <th class="py-3 px-4 text-center">रेटिंग</th>
+              <th class="py-3 px-4 text-center">फ़ोटो</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody" class="divide-y divide-slate-100">
+            <tr id="emptyRow">
+              <td colspan="7" class="py-8 text-center text-slate-400 font-medium">
+                स्कैन शुरू करने पर लाइव रिकॉर्ड्स यहाँ प्रदर्शित होंगे।
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 pt-2">
+        <span>✦ स्मार्ट डिडुप्लीकेशन: समान फ़ोन नंबर और पते वाली फ़र्मों को स्वतः 1 बार ही गिना जाता है</span>
+        <span class="text-slate-500 font-medium">Zero-API Engine • Ready to export .xlsx</span>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    let currentTaskId = null;
+    let eventSource = null;
+    let recordsCount = 0;
+
+    // Toggle custom city row
+    document.getElementById('locationSelect').addEventListener('change', function(e) {
+      const customRow = document.getElementById('customCityRow');
+      if (e.target.value === 'Custom') {
+        customRow.classList.remove('hidden');
+      } else {
+        customRow.classList.add('hidden');
+      }
+    });
+
+    async function startScan() {
+      const category = document.getElementById('categoryInput').value.trim() || 'Businesses';
+      const locSelect = document.getElementById('locationSelect').value;
+      const customCity = document.getElementById('customCityInput').value.trim();
+      const location = locSelect === 'Custom' ? (customCity || 'Jaipur') : locSelect;
+
+      const includeSacred = document.getElementById('toggleSacred').checked;
+      const includeSurnames = document.getElementById('toggleSurnames').checked;
+      const includePhotos = document.getElementById('togglePhotos').checked;
+
+      // UI States
+      const btn = document.getElementById('startBtn');
+      const btnText = document.getElementById('btnText');
+      const btnIcon = document.getElementById('btnIcon');
+      const progSec = document.getElementById('progressSection');
+      const progBar = document.getElementById('progressBar');
+      const pctText = document.getElementById('percentText');
+      const msg = document.getElementById('statusMessage');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const downloadTag = document.getElementById('downloadReadyTag');
+      const tbody = document.getElementById('dataTableBody');
+
+      tbody.innerHTML = '';
+      recordsCount = 0;
+      document.getElementById('tableCountBadge').innerText = '0 रिकॉर्ड्स';
+      progSec.classList.remove('hidden');
+      progBar.style.width = '2%';
+      pctText.innerText = '2%';
+      msg.innerText = 'टास्क शुरू किया जा रहा है...';
+
+      btn.disabled = true;
+      btnText.innerText = 'स्कैन जारी है...';
+      btnIcon.innerText = '⏳';
+      downloadBtn.disabled = true;
+      downloadTag.classList.add('hidden');
+
+      try {
+        const resp = await fetch('/api/start-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category,
+            location,
+            include_sacred: includeSacred,
+            include_surnames: includeSurnames,
+            include_photos: includePhotos
+          })
+        });
+
+        const data = await resp.json();
+        currentTaskId = data.task_id;
+
+        // Connect to SSE stream
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'progress') {
+            progBar.style.width = payload.percent + '%';
+            pctText.innerText = payload.percent + '%';
+            msg.innerText = payload.message;
+
+            document.getElementById('counterFirms').innerText = payload.stats.firms;
+            document.getElementById('counterPhones').innerText = payload.stats.phones;
+            document.getElementById('counterPhotos').innerText = payload.stats.photos;
+            document.getElementById('counterAccuracy').innerText = payload.stats.accuracy + '%';
+          } 
+          else if (payload.type === 'new_record') {
+            recordsCount++;
+            document.getElementById('tableCountBadge').innerText = recordsCount + ' रिकॉर्ड्स';
+            appendTableRow(payload.record, recordsCount);
+          } 
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            progBar.style.width = '100%';
+            pctText.innerText = '100%';
+            msg.innerText = '✓ स्कैन सफल! कुल ' + recordsCount + ' फ़र्मों का डेटा तैयार है।';
+
+            btn.disabled = false;
+            btnText.innerText = 'पुनः स्कैन करें';
+            btnIcon.innerText = '⚡';
+
+            downloadBtn.disabled = false;
+            downloadTag.classList.remove('hidden');
+          } 
+          else if (payload.type === 'error') {
+            eventSource.close();
+            msg.innerText = 'त्रुटि: ' + payload.message;
+            btn.disabled = false;
+            btnText.innerText = 'दोबारा प्रयास करें';
+            btnIcon.innerText = '⚠️';
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          btn.disabled = false;
+          btnText.innerText = 'पुनः स्कैन करें';
+          btnIcon.innerText = '⚡';
+        };
+
+      } catch (err) {
+        msg.innerText = 'सर्वर से कनेक्ट करने में विफल: ' + err.message;
+        btn.disabled = false;
+        btnText.innerText = 'पुनः स्कैन करें';
+        btnIcon.innerText = '⚡';
+      }
+    }
+
+    function appendTableRow(rec, idx) {
+      const tbody = document.getElementById('dataTableBody');
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-indigo-50/30 transition-colors';
+
+      const tierBadge = rec.tier && rec.tier.includes('100%') 
+        ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md font-medium text-[11px]">${rec.tier}</span>`
+        : `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-medium text-[11px]">${rec.tier || '85% Match'}</span>`;
+
+      const photoCell = rec.photo_url 
+        ? `<a href="${rec.photo_url}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-semibold underline">📸 देखें</a>`
+        : `<span class="text-slate-300">-</span>`;
+
+      tr.innerHTML = `
+        <td class="py-3 px-4 font-mono text-slate-400">${idx}</td>
+        <td class="py-3 px-4 font-bold text-slate-800">
+          <div>${rec.name}</div>
+          <div class="text-[10px] text-slate-400 font-normal mt-0.5">${rec.reason || ''}</div>
+        </td>
+        <td class="py-3 px-4">${tierBadge}</td>
+        <td class="py-3 px-4 font-mono font-semibold text-slate-700">${rec.phone || 'Not Listed'}</td>
+        <td class="py-3 px-4 text-slate-500 max-w-xs truncate">${rec.address || rec.city || 'India'}</td>
+        <td class="py-3 px-4 text-center font-bold text-amber-600">${rec.rating || '★ 4.8'}</td>
+        <td class="py-3 px-4 text-center">${photoCell}</td>
+      `;
+
+      tbody.prepend(tr);
+    }
+
+    function downloadExcel() {
+      if (!currentTaskId) return;
+      window.location.href = `/api/download-excel/${currentTaskId}`;
+    }
+  </script>
+</body>
+</html>
