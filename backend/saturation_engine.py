@@ -50,8 +50,10 @@ CITY_MICRO_ZONES: Dict[str, List[str]] = {
         "SG Highway", "Prahlad Nagar", "Bapunagar", "Naroda", "Satellite"
     ],
     "Indore": [
-        "Sarafa Bazar", "Marothia Bazar", "Sitlamata Bazar", "MT Cloth Market",
-        "Jail Road", "Rajwada", "Vijay Nagar", "Palasia", "Sanwer Road"
+        "Rajwada", "Sarafa Bazar", "Marothia Bazar", "Sitlamata Bazar",
+        "MT Cloth Market", "Siya Ganj", "Jail Road", "Malharganj",
+        "Chhavani", "Palasia", "Vijay Nagar", "Sapna Sangeeta",
+        "Gommatgiri", "Sanwer Road Industrial Area"
     ],
     "Mumbai": [
         "Zaveri Bazar", "Kalbadevi", "Bhuleshwar", "Opera House", "Bandra West",

@@ -1,9 +1,7 @@
 {
-  "current_city": "Jaipur",
-  "area_idx": 1,
+  "current_city": "Indore",
+  "area_idx": 0,
   "category_idx": 0,
-  "total_mined": 2,
-  "completed_areas": [
-    "Jaipur - Johari Bazar"
-  ]
+  "total_mined": 0,
+  "completed_areas": []
 }
