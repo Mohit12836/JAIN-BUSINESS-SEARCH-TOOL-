@@ -17,6 +17,57 @@ from backend.excel_builder import generate_leads_excel
 from backend.database import is_already_scraped, save_scraped_lead
 from backend.photo_engine import process_firm_media
 
+def extract_lat_long(url: str, text: str = "") -> tuple:
+    """Extracts exact decimal latitude and longitude from Google Maps URL or page text."""
+    if not url and not text:
+        return "", ""
+    combined = f"{url} {text}"
+    m_3d = re.search(r'!3d([0-9.-]+)!4d([0-9.-]+)', combined)
+    if m_3d:
+        return m_3d.group(1), m_3d.group(2)
+    m_at = re.search(r'@([0-9.-]+),([0-9.-]+)', combined)
+    if m_at:
+        return m_at.group(1), m_at.group(2)
+    m_dec = re.search(r'\b([1-3][0-9]\.[0-9]{4,8})\b[,\s]+\b([6-9][0-9]\.[0-9]{4,8})\b', combined)
+    if m_dec:
+        return m_dec.group(1), m_dec.group(2)
+    return "", ""
+
+CITY_TO_STATE = {
+    "jaipur": "Rajasthan", "jodhpur": "Rajasthan", "udaipur": "Rajasthan", "kota": "Rajasthan", "bhilwara": "Rajasthan", "bikaner": "Rajasthan", "pali": "Rajasthan", "ajmer": "Rajasthan", "alwar": "Rajasthan",
+    "ahmedabad": "Gujarat", "surat": "Gujarat", "rajkot": "Gujarat", "vadodara": "Gujarat", "bhavnagar": "Gujarat", "jamnagar": "Gujarat", "gandhinagar": "Gujarat",
+    "indore": "Madhya Pradesh", "bhopal": "Madhya Pradesh", "ujjain": "Madhya Pradesh", "gwalior": "Madhya Pradesh", "jabalpur": "Madhya Pradesh", "ratlam": "Madhya Pradesh",
+    "mumbai": "Maharashtra", "pune": "Maharashtra", "nagpur": "Maharashtra", "nashik": "Maharashtra", "thane": "Maharashtra", "navi mumbai": "Maharashtra", "kolhapur": "Maharashtra",
+    "delhi": "Delhi", "noida": "Uttar Pradesh", "gurugram": "Haryana", "gurgaon": "Haryana", "faridabad": "Haryana", "ghaziabad": "Uttar Pradesh",
+    "bengaluru": "Karnataka", "bangalore": "Karnataka", "mysore": "Karnataka", "hubli": "Karnataka",
+    "chennai": "Tamil Nadu", "coimbatore": "Tamil Nadu", "madurai": "Tamil Nadu",
+    "hyderabad": "Telangana", "secunderabad": "Telangana", "vijayawada": "Andhra Pradesh",
+    "kolkata": "West Bengal", "siliguri": "West Bengal", "howrah": "West Bengal",
+    "lucknow": "Uttar Pradesh", "kanpur": "Uttar Pradesh", "agra": "Uttar Pradesh", "varanasi": "Uttar Pradesh"
+}
+
+def get_state_and_district(city: str, address: str = "", scope: str = "") -> tuple:
+    """Determines exact district and state for standard Indian commercial hubs."""
+    c_clean = (city or "").strip().lower()
+    a_clean = (address or "").strip().lower()
+    
+    found_state = CITY_TO_STATE.get(c_clean)
+    if not found_state:
+        for c_key, s_val in CITY_TO_STATE.items():
+            if c_key in a_clean or c_key in c_clean:
+                found_state = s_val
+                break
+    if not found_state:
+        for st, cities in INDIA_HUBS.items():
+            if any(c.lower() in c_clean or c.lower() in a_clean for c in cities):
+                found_state = st
+                break
+    if not found_state:
+        found_state = scope if scope in INDIA_HUBS else "Rajasthan"
+        
+    district = city if city and city != "N/A" else "Jaipur"
+    return district, found_state
+
 async def scrape_google_maps_task(
     task_id: str,
     category: str,
@@ -241,6 +292,15 @@ async def scrape_google_maps_task(
                         whatsapp = format_clean_whatsapp(phone)
                         description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
 
+                        current_nav_url = ""
+                        try:
+                            current_nav_url = detail_page.url
+                        except Exception:
+                            current_nav_url = href
+
+                        lat, lng = extract_lat_long(current_nav_url or href, extra_text)
+                        district, state_val = get_state_and_district(city, address, location_scope)
+
                         record = {
                             "name": title,
                             "j4j_category": j4j_cat,
@@ -250,8 +310,11 @@ async def scrape_google_maps_task(
                             "email": "",
                             "address": address,
                             "city": city,
-                            "state": location_scope if location_scope in INDIA_HUBS else "India",
+                            "district": district,
+                            "state": state_val,
                             "pincode": pincode,
+                            "latitude": lat,
+                            "longitude": lng,
                             "rating": f"★ {rating}" if rating else "★ 4.8",
                             "storefront_photo": storefront_photo,
                             "showcase_photo": showcase_photo,
@@ -263,7 +326,10 @@ async def scrape_google_maps_task(
                             "description": description,
                             "tier": classification["tier"],
                             "score": classification["score"],
-                            "reason": classification["reason"]
+                            "reason": classification["reason"],
+                            "j4j_business_id": "",
+                            "j4j_profile_url": "",
+                            "submission_status": "Ready to Submit"
                         }
 
                         # Save permanently to SQLite history database

@@ -40,9 +40,24 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     tier_70_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
     tier_70_font = Font(name="Segoe UI", size=9, color="475569")
     
+    # Live Sync Portal Styles (Cols 24-26)
+    portal_header_fill = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid") # Deep Emerald
+    portal_header_font = Font(name="Segoe UI", size=10, bold=True, color="FFFFFF")
+    
+    status_ready_fill = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid") # Amber
+    status_ready_font = Font(name="Segoe UI", size=9, bold=True, color="92400E")
+    status_done_fill = PatternFill(start_color="DCFCE7", end_color="DCFCE7", fill_type="solid") # Emerald
+    status_done_font = Font(name="Segoe UI", size=9, bold=True, color="166534")
+    status_fail_fill = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid") # Red
+    status_fail_font = Font(name="Segoe UI", size=9, bold=True, color="991B1B")
+    
+    biz_id_font = Font(name="Segoe UI", size=9, bold=True, color="065F46")
+    coord_font = Font(name="Segoe UI", size=9, color="047857")
+    
     thin_border_side = Side(border_style="thin", color="E2E8F0")
     cell_border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
     
+    # 26 Optimized Columns matching JainForJain's 4-Tab Form & Bot Auto-Sync
     headers = [
         "Sl.",
         "Business / Firm Name",
@@ -53,8 +68,11 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "Email ID",
         "Address (Street & Locality)",
         "City",
+        "District",
         "State",
         "Pincode",
+        "Latitude",
+        "Longitude",
         "Google Maps URL",
         "Website URL",
         "Storefront Signboard (1600px HD)",
@@ -63,7 +81,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "Official Website Logo",
         "Auto-Generated Description (Ready to Paste)",
         "Verification Status",
-        "Proof / Match Reason"
+        "Proof / Match Reason",
+        "JainForJain Business ID",
+        "JainForJain Live Profile URL",
+        "Submission Status"
     ]
     
     ws.append(headers)
@@ -71,12 +92,16 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     # Style Headers
     for col_num in range(1, len(headers) + 1):
         cell = ws.cell(row=1, column=col_num)
-        cell.font = header_font
-        cell.fill = header_fill
+        if col_num >= 24: # JainForJain Sync Columns
+            cell.font = portal_header_font
+            cell.fill = portal_header_fill
+        else:
+            cell.font = header_font
+            cell.fill = header_fill
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.border = cell_border
         
-    ws.row_dimensions[1].height = 32
+    ws.row_dimensions[1].height = 36
     
     # Populate Rows
     for idx, rec in enumerate(records, start=1):
@@ -89,8 +114,13 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         email = rec.get("email", "")
         address = rec.get("address", "N/A")
         city = rec.get("city", "N/A")
+        district = rec.get("district") or city
         state = rec.get("state", "N/A")
         pincode = rec.get("pincode", "N/A")
+        
+        latitude = rec.get("latitude", "")
+        longitude = rec.get("longitude", "")
+        
         maps_url = rec.get("maps_url", "")
         website = rec.get("website", "")
         
@@ -103,6 +133,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         tier = rec.get("tier", "⚪ 70% Lead Match")
         reason = rec.get("reason", "Category Correlation")
         
+        biz_id = rec.get("j4j_business_id", "")
+        profile_url = rec.get("j4j_profile_url", "")
+        submission_status = rec.get("submission_status", "Ready to Submit")
+        
         row_values = [
             idx,
             firm_name,
@@ -113,8 +147,11 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             email,
             address,
             city,
+            district,
             state,
             pincode,
+            latitude,
+            longitude,
             "Open Google Map" if maps_url else "",
             "Visit Website" if website else "",
             "📸 View Storefront (1600px)" if storefront_photo else "No Photo Listed",
@@ -123,11 +160,14 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             "🏷️ View Web Logo" if web_logo else "Use Storefront Photo",
             desc,
             tier,
-            reason
+            reason,
+            biz_id,
+            "🔗 View Live Profile" if profile_url else "",
+            submission_status
         ]
         
         ws.append(row_values)
-        ws.row_dimensions[row_num].height = 45 # Breathing room for 3-line description preview
+        ws.row_dimensions[row_num].height = 45 # Comfortable view for multi-line description preview
         
         # Apply Cells Styling
         for col_idx in range(1, len(row_values) + 1):
@@ -136,9 +176,13 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             cell.border = cell_border
             cell.alignment = Alignment(vertical="center")
             
-            # Align center for index, phone, city, state, pincode
-            if col_idx in [1, 5, 6, 9, 10, 11]:
+            # Align center for index, phone, whatsapp, city, district, state, pincode, lat, lng
+            if col_idx in [1, 5, 6, 9, 10, 11, 12, 13, 14]:
                 cell.alignment = Alignment(horizontal="center", vertical="center")
+                
+            # Style Latitude & Longitude (Cols 13, 14)
+            if col_idx in [13, 14]:
+                cell.font = coord_font
                 
             # Style Category column (Col 3)
             if col_idx == 3:
@@ -150,38 +194,38 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
                 cell.font = owner_font
 
             # Style Hyperlinks
-            if col_idx == 12 and maps_url:
+            if col_idx == 15 and maps_url:
                 cell.hyperlink = maps_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 13 and website:
+            elif col_idx == 16 and website:
                 cell.hyperlink = website
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 14 and storefront_photo:
+            elif col_idx == 17 and storefront_photo:
                 cell.hyperlink = storefront_photo
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 15 and showcase_photo:
+            elif col_idx == 18 and showcase_photo:
                 cell.hyperlink = showcase_photo
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 16 and gallery_url:
+            elif col_idx == 19 and gallery_url:
                 cell.hyperlink = gallery_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 17 and web_logo:
+            elif col_idx == 20 and web_logo:
                 cell.hyperlink = web_logo
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
-            # Style Description column (Col 18)
-            if col_idx == 18:
+            # Style Description column (Col 21)
+            if col_idx == 21:
                 cell.font = desc_font
                 cell.alignment = Alignment(vertical="top", wrap_text=True)
 
-            # Style Verification Status Badge (Col 19)
-            if col_idx == 19:
+            # Style Verification Status Badge (Col 22)
+            if col_idx == 22:
                 if "100%" in tier:
                     cell.fill = tier_100_fill
                     cell.font = tier_100_font
@@ -191,6 +235,30 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
                 else:
                     cell.fill = tier_70_fill
                     cell.font = tier_70_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+
+            # Style JainForJain Business ID (Col 24)
+            if col_idx == 24:
+                cell.font = biz_id_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                
+            # Style JainForJain Profile Link (Col 25)
+            if col_idx == 25 and profile_url:
+                cell.hyperlink = profile_url
+                cell.font = link_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                
+            # Style Submission Status Badge (Col 26)
+            if col_idx == 26:
+                if "Submitted" in submission_status or "Live" in submission_status or "Approved" in submission_status:
+                    cell.fill = status_done_fill
+                    cell.font = status_done_font
+                elif "Error" in submission_status or "Failed" in submission_status:
+                    cell.fill = status_fail_fill
+                    cell.font = status_fail_font
+                else:
+                    cell.fill = status_ready_fill
+                    cell.font = status_ready_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
     # Column Widths optimized for data entry workflow
@@ -204,17 +272,23 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "G": 22,  # Email
         "H": 36,  # Address
         "I": 14,  # City
-        "J": 14,  # State
-        "K": 12,  # Pincode
-        "L": 18,  # Maps Link
-        "M": 18,  # Website
-        "N": 26,  # Storefront Photo Link
-        "O": 26,  # Showroom Photo Link
-        "P": 24,  # Google Photos Gallery Link
-        "Q": 24,  # Official Web Logo Link
-        "R": 55,  # Description
-        "S": 18,  # Verification Status
-        "T": 26   # Proof Reason
+        "J": 16,  # District
+        "K": 16,  # State
+        "L": 12,  # Pincode
+        "M": 14,  # Latitude
+        "N": 14,  # Longitude
+        "O": 18,  # Maps Link
+        "P": 18,  # Website
+        "Q": 26,  # Storefront Photo Link
+        "R": 26,  # Showroom Photo Link
+        "S": 24,  # Google Photos Gallery Link
+        "T": 24,  # Official Web Logo Link
+        "U": 55,  # Description
+        "V": 20,  # Verification Status
+        "W": 26,  # Proof Reason
+        "X": 22,  # JainForJain Business ID
+        "Y": 24,  # JainForJain Live Profile URL
+        "Z": 18   # Submission Status
     }
     
     for col_letter, width in widths.items():
