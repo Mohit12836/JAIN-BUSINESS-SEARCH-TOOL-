@@ -24,6 +24,7 @@ from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, for
 from backend.photo_engine import process_firm_media
 from backend.database import is_already_scraped, save_scraped_lead
 from backend.scraper import extract_lat_long, get_state_and_district
+from backend.config import get_master_excel_path
 
 if sys.platform == "win32":
     try:
@@ -239,10 +240,13 @@ async def crawl_area_deep(
     category: str,
     target_count: int = 50,
     entity_type: str = "commercial",
-    excel_path: str = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx",
+    excel_path: Optional[str] = None,
     auto_sync_sheets: bool = True
 ) -> List[Dict[str, Any]]:
     """Crawls a specific micro-area exhaustively without leaving a single business or entity behind."""
+    if not excel_path:
+        excel_path = get_master_excel_path()
+        
     print(f"\n=======================================================")
     print(f"🎯 EXHAUSTIVE CRAWL: [{city}] -> [{area}]")
     print(f"Entity Type: [{entity_type.upper()}] | Sector: {category} | Target to Collect: {target_count}")
@@ -425,13 +429,16 @@ async def advance_saturation_cycle(
     city_override: Optional[str] = None,
     area_override: Optional[str] = None,
     category_override: Optional[str] = None,
-    excel_path: str = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx",
+    excel_path: Optional[str] = None,
     auto_sync_sheets: bool = True
 ) -> int:
     """
     Main entry point for step-by-step exhaustive area extraction.
     Supports commercial firms, Mandirs, Trusts, Dharamshalas, and Sanghs.
     """
+    if not excel_path:
+        excel_path = get_master_excel_path()
+        
     state = load_progress()
     city = city_override or state.get("current_city", "Jaipur")
     

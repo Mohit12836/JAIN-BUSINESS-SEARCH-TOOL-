@@ -1,0 +1,11 @@
+﻿services:
+  - type: web
+    name: jain-business-search-tool
+    runtime: docker
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: PYTHONUNBUFFERED
+        value: "1"

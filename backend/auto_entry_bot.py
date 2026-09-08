@@ -20,8 +20,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from backend.google_sheets_sync import sync_excel_to_google_sheet
+    from backend.config import get_master_excel_path
 except ImportError:
     from google_sheets_sync import sync_excel_to_google_sheet
+    from config import get_master_excel_path
 
 if sys.platform == "win32":
     try:
@@ -458,13 +460,16 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         }
 
 async def run_auto_entry_batch(
-    excel_path: str,
+    excel_path: Optional[str] = None,
     dry_run: bool = True,
     limit: Optional[int] = None,
     email: str = DEFAULT_USER,
     password: str = DEFAULT_PASS
 ):
     """Orchestrates batch auto-entry workflow."""
+    if not excel_path:
+        excel_path = get_master_excel_path()
+        
     print("==========================================================")
     print("     JAINFORJAIN.COM AUTONOMOUS DATA ENTRY BOT           ")
     print(f" Mode: {'🔍 DRY-RUN PREVIEW (No Live Data Created)' if dry_run else '🚀 LIVE SUBMISSION'}")
@@ -535,15 +540,16 @@ async def run_auto_entry_batch(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="JainForJain Autonomous Entry Bot")
-    parser.add_argument("--excel", default=r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx", help="Path to Excel sheet")
+    parser.add_argument("--excel", default=None, help="Path to Excel sheet (defaults to auto-resolved path)")
     parser.add_argument("--live", action="store_true", help="Perform LIVE submission (default is Dry-Run)")
     parser.add_argument("--limit", type=int, default=1, help="Number of leads to process")
     
     args = parser.parse_args()
     dry_run_flag = not args.live
+    target_excel = args.excel or get_master_excel_path()
     
     asyncio.run(run_auto_entry_batch(
-        excel_path=args.excel,
+        excel_path=target_excel,
         dry_run=dry_run_flag,
         limit=args.limit
     ))

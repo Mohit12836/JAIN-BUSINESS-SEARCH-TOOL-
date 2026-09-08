@@ -23,9 +23,14 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-DEFAULT_EXCEL = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+try:
+    from backend.config import get_master_excel_path
+except ImportError:
+    from config import get_master_excel_path
+
+DEFAULT_EXCEL = get_master_excel_path()
 DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
-DEFAULT_SCREENSHOT = r"C:\Users\hp\Desktop\Google_Sheet_Synced_Preview.png"
+DEFAULT_SCREENSHOT = os.path.join(os.path.expanduser("~"), "Desktop", "Google_Sheet_Synced_Preview.png") if os.path.exists(os.path.join(os.path.expanduser("~"), "Desktop")) else "Google_Sheet_Synced_Preview.png"
 
 def prepare_tsv_content(excel_path: str) -> str:
     """

@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from backend.scraper import scrape_google_maps_task
 from backend.matrix import INDIA_HUBS
+from backend.config import get_master_excel_path
 
 app = FastAPI(title="JainBiz Lead Miner API", version="1.0.0")
 
@@ -48,7 +49,7 @@ class ScanRequest(BaseModel):
 async def api_sync_google_sheets():
     """Manually triggers instant synchronization to the user's live Google Sheet."""
     from backend.google_sheets_sync import sync_excel_to_google_sheet
-    excel_path = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    excel_path = get_master_excel_path()
     success = await sync_excel_to_google_sheet(excel_path)
     return {
         "success": success,
@@ -159,7 +160,7 @@ async def get_current_status():
     """Returns current saturation and submission statistics."""
     from backend.saturation_engine import load_progress
     from backend.auto_entry_bot import load_leads_from_excel
-    excel_path = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    excel_path = get_master_excel_path()
     
     progress = load_progress()
     leads = []
@@ -189,7 +190,7 @@ class EntryRequest(BaseModel):
 async def start_portal_entry(req: EntryRequest, background_tasks: BackgroundTasks):
     """Triggers autonomous entry into jainforjain.com."""
     from backend.auto_entry_bot import run_auto_entry_batch
-    excel_path = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    excel_path = get_master_excel_path()
     
     async def entry_runner():
         await run_auto_entry_batch(
