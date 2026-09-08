@@ -190,13 +190,17 @@ class EntryRequest(BaseModel):
 async def start_portal_entry(req: EntryRequest, background_tasks: BackgroundTasks):
     """Triggers autonomous entry into jainforjain.com."""
     from backend.auto_entry_bot import run_auto_entry_batch
+    from backend.saturation_engine import load_progress
     excel_path = get_master_excel_path()
+    prog = load_progress()
+    active_city = prog.get("current_city", "Indore")
     
     async def entry_runner():
         await run_auto_entry_batch(
             excel_path=excel_path,
             dry_run=not req.live,
-            limit=req.limit
+            limit=req.limit,
+            city_filter=active_city
         )
         
     background_tasks.add_task(entry_runner)

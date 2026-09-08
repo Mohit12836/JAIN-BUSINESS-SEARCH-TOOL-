@@ -438,6 +438,50 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         }''')
         
         if errors:
+            slug_conflict = any("slug" in e.lower() or "url key" in e.lower() for e in errors)
+            if slug_conflict:
+                print(f"⚠️ Duplicate slug detected on portal! Resolving collision for [{lead['name']}]...")
+                # Retry 1: Append City
+                retry_name = f"{lead['name']} - {lead_city}"
+                print(f"--> Auto-retrying submission with: '{retry_name}'")
+                await page.evaluate('''async (n) => {
+                    const stateEl = document.getElementById("data.state_id");
+                    if (window.Alpine && window.Alpine.$data(stateEl)) {
+                        await window.Alpine.$data(stateEl).$wire.set('data.business_name', n);
+                    }
+                }''', retry_name)
+                await page.fill("input[id='data.business_name']", retry_name)
+                await page.wait_for_timeout(1000)
+                await create_btn.first.click()
+                await page.wait_for_timeout(6000)
+                
+                current_url = page.url
+                errors = await page.evaluate('''() => {
+                    const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
+                    return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
+                }''')
+                
+                if errors and any("slug" in e.lower() or "url key" in e.lower() for e in errors):
+                    # Retry 2: Append City + Pincode
+                    retry_name_pin = f"{lead['name']} - {lead_city} ({pin_digits})"
+                    print(f"--> Auto-retrying with location identifier: '{retry_name_pin}'")
+                    await page.evaluate('''async (n) => {
+                        const stateEl = document.getElementById("data.state_id");
+                        if (window.Alpine && window.Alpine.$data(stateEl)) {
+                            await window.Alpine.$data(stateEl).$wire.set('data.business_name', n);
+                        }
+                    }''', retry_name_pin)
+                    await page.fill("input[id='data.business_name']", retry_name_pin)
+                    await page.wait_for_timeout(1000)
+                    await create_btn.first.click()
+                    await page.wait_for_timeout(6000)
+                    current_url = page.url
+                    errors = await page.evaluate('''() => {
+                        const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
+                        return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
+                    }''')
+                    
+        if errors:
             raise Exception(f"Form validation errors: {', '.join(errors)}")
             
         # Extract ID from redirected edit URL: /member/business-listings/{id}/edit
@@ -463,6 +507,7 @@ async def run_auto_entry_batch(
     excel_path: Optional[str] = None,
     dry_run: bool = True,
     limit: Optional[int] = None,
+    city_filter: Optional[str] = None,
     email: str = DEFAULT_USER,
     password: str = DEFAULT_PASS
 ):
@@ -474,10 +519,17 @@ async def run_auto_entry_batch(
     print("     JAINFORJAIN.COM AUTONOMOUS DATA ENTRY BOT           ")
     print(f" Mode: {'🔍 DRY-RUN PREVIEW (No Live Data Created)' if dry_run else '🚀 LIVE SUBMISSION'}")
     print(f" Target Excel: {excel_path}")
+    if city_filter:
+        print(f" Priority City: {city_filter}")
     print("==========================================================")
     
     leads = load_leads_from_excel(excel_path)
     ready_leads = [l for l in leads if l["submission_status"] in ["Ready to Submit", "", None]]
+    
+    if city_filter:
+        city_leads = [l for l in ready_leads if city_filter.lower() in str(l.get("city", "")).lower()]
+        other_leads = [l for l in ready_leads if city_filter.lower() not in str(l.get("city", "")).lower()]
+        ready_leads = city_leads + other_leads
     
     print(f"Total leads in Excel: {len(leads)}")
     print(f"Leads ready for submission: {len(ready_leads)}")
@@ -544,6 +596,8 @@ if __name__ == "__main__":
     parser.add_argument("--live", action="store_true", help="Perform LIVE submission (default is Dry-Run)")
     parser.add_argument("--limit", type=int, default=1, help="Number of leads to process")
     
+    parser.add_argument("--city", default=None, help="Prioritize leads for specific city (e.g. 'Indore')")
+    
     args = parser.parse_args()
     dry_run_flag = not args.live
     target_excel = args.excel or get_master_excel_path()
@@ -551,5 +605,6 @@ if __name__ == "__main__":
     asyncio.run(run_auto_entry_batch(
         excel_path=target_excel,
         dry_run=dry_run_flag,
-        limit=args.limit
+        limit=args.limit,
+        city_filter=args.city
     ))
