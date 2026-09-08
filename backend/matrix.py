@@ -26,6 +26,23 @@ JAIN_SURNAMES = [
     "Sogani", "Ranka", "Porwal", "Oswal", "Kabra", "Lunawat", "Sancheti"
 ]
 
+# Religious & Institutional Jain Keywords
+MANDIR_KEYWORDS = [
+    "mandir", "derasar", "jinalaya", "chaityalaya", "dadabari",
+    "tirth", "teerth", "temple", "sthanak", "shrine", "upashray"
+]
+
+TRUST_DHARAMSHALA_KEYWORDS = [
+    "dharamshala", "dharmashala", "bhojanalaya", "bhojanshala",
+    "yatri niwas", "ashram", "trust", "bhavan", "bhawan", "visram gruh",
+    "atithi gruh", "sansthan"
+]
+
+SANGH_NGO_KEYWORDS = [
+    "sangh", "mandal", "mahila mandal", "yuva sangathan", "samaj",
+    "sanstha", "pathshala", "foundation", "parishad", "sewa sangh", "vidyapeeth"
+]
+
 # Words to reject from owner extraction
 EXCLUDED_WORDS = [
     "street view", "see photos", "photos", "see inside", "google", "reviews",
@@ -78,53 +95,84 @@ def get_all_cities() -> List[str]:
         cities.extend(city_list)
     return list(dict.fromkeys(cities))  # Deduplicated
 
-def build_query_batch(category: str, location: str, include_sacred: bool = True, include_surnames: bool = True) -> List[Dict[str, str]]:
+def build_query_batch(category: str, location: str, include_sacred: bool = True, include_surnames: bool = True) -> List[Dict[str, Any]]:
+    """Legacy wrapper for commercial query batches."""
+    return build_entity_queries(entity_type="commercial", location=location, category=category)
+
+def build_entity_queries(entity_type: str, location: str, area: str = "", category: str = "") -> List[Dict[str, Any]]:
     """
-    Expands a root category and location into a multi-vector query batch.
+    Generates targeted search queries based on the requested Jain Entity Type:
+    - 'mandir': Temples, Derasars, Chaityalayas, Dadabari, Tirth Kshetras
+    - 'trust': Dharamshalas, Bhojanalayas, Yatri Niwas, Charitable Trusts
+    - 'sangh': Jain Sanghs, Mahila Mandals, Yuva Sangathans, Samaj, Pathshalas
+    - 'commercial': Businesses, Jewellers, Textiles, Professionals, etc.
+    - 'all': Complete multi-domain saturation across all religious and commercial vectors.
     """
+    loc_str = f"{area} {location}".strip() if area else location
     queries = []
     
-    # 1. Direct Anchor Query
-    queries.append({
-        "query": f"Jain {category} in {location}",
-        "vector_type": "Direct Jain Anchor",
-        "location": location,
-        "priority": 1
-    })
-    
-    # 2. Sacred Keywords Vectors
-    if include_sacred:
-        priority_sacred = ["Navkar", "Arihant", "Nakoda", "Paras", "Mahavir", "Adinath", "Shantinath", "Vardhman", "Chintamani"]
-        for word in priority_sacred:
-            queries.append({
-                "query": f"{word} {category} in {location}",
-                "vector_type": f"Sacred Name ({word})",
-                "location": location,
-                "priority": 2
-            })
-            
-    # 3. Surname Vectors
-    if include_surnames:
-        priority_surnames = ["Shah", "Lodha", "Kothari", "Doshi", "Mehta", "Kasliwal", "Patni", "Sethi", "Bafna", "Surana"]
-        for surname in priority_surnames:
-            queries.append({
-                "query": f"{surname} {category} in {location}",
-                "vector_type": f"Surname Match ({surname})",
-                "location": location,
-                "priority": 3
-            })
-            
+    if entity_type == "mandir":
+        queries.extend([
+            {"query": f"Digambar Jain Mandir in {loc_str}", "vector_type": "Digambar Temple", "priority": 1},
+            {"query": f"Shwetambar Jain Derasar in {loc_str}", "vector_type": "Shwetambar Derasar", "priority": 1},
+            {"query": f"Jain Mandir in {loc_str}", "vector_type": "Jain Temple", "priority": 1},
+            {"query": f"Jain Jinalaya in {loc_str}", "vector_type": "Jinalaya", "priority": 2},
+            {"query": f"Jain Dadabari in {location}", "vector_type": "Dadabari", "priority": 2},
+            {"query": f"Jain Tirth in {location}", "vector_type": "Tirth Kshetra", "priority": 2},
+            {"query": f"Jain Chaityalaya in {loc_str}", "vector_type": "Chaityalaya", "priority": 3}
+        ])
+    elif entity_type == "trust":
+        queries.extend([
+            {"query": f"Jain Dharamshala in {loc_str}", "vector_type": "Dharamshala", "priority": 1},
+            {"query": f"Jain Bhojanalaya in {loc_str}", "vector_type": "Bhojanalaya", "priority": 1},
+            {"query": f"Jain Trust in {loc_str}", "vector_type": "Charitable Trust", "priority": 1},
+            {"query": f"Jain Yatri Niwas in {location}", "vector_type": "Yatri Niwas", "priority": 2},
+            {"query": f"Jain Bhavan in {loc_str}", "vector_type": "Jain Bhavan", "priority": 2},
+            {"query": f"Jain Ashram in {location}", "vector_type": "Ashram", "priority": 3}
+        ])
+    elif entity_type == "sangh":
+        queries.extend([
+            {"query": f"Jain Sangh in {loc_str}", "vector_type": "Jain Sangh", "priority": 1},
+            {"query": f"Jain Mahila Mandal in {location}", "vector_type": "Mahila Mandal", "priority": 1},
+            {"query": f"Jain Yuva Sangathan in {location}", "vector_type": "Yuva Mandal", "priority": 2},
+            {"query": f"Jain Samaj in {loc_str}", "vector_type": "Jain Samaj", "priority": 2},
+            {"query": f"Jain Pathshala in {location}", "vector_type": "Pathshala", "priority": 2},
+            {"query": f"Jain Sanstha in {loc_str}", "vector_type": "Sanstha NGO", "priority": 3}
+        ])
+    elif entity_type == "all":
+        # Comprehensive All-Inclusive: Combines religious, institutional, and prime commercial
+        queries.extend([
+            {"query": f"Jain Mandir in {loc_str}", "vector_type": "Mandir", "priority": 1},
+            {"query": f"Jain Derasar in {loc_str}", "vector_type": "Derasar", "priority": 1},
+            {"query": f"Jain Dharamshala in {loc_str}", "vector_type": "Dharamshala", "priority": 1},
+            {"query": f"Jain Bhojanalaya in {loc_str}", "vector_type": "Bhojanalaya", "priority": 1},
+            {"query": f"Jain Sangh in {loc_str}", "vector_type": "Jain Sangh", "priority": 2},
+            {"query": f"Jain Jewellers in {loc_str}", "vector_type": "Commercial Jewellers", "priority": 2},
+            {"query": f"Jain Sarees in {loc_str}", "vector_type": "Commercial Textiles", "priority": 2},
+            {"query": f"Jain Business in {loc_str}", "vector_type": "Commercial Anchor", "priority": 3}
+        ])
+    else:  # Commercial
+        cat = category or "Jewellers & Gems"
+        queries.extend([
+            {"query": f"Jain {cat} in {loc_str}", "vector_type": "Direct Jain Anchor", "priority": 1},
+            {"query": f"Navkar {cat} in {loc_str}", "vector_type": "Sacred Trademark", "priority": 2},
+            {"query": f"Nakoda {cat} in {loc_str}", "vector_type": "Sacred Trademark", "priority": 2},
+            {"query": f"Shah {cat} in {loc_str}", "vector_type": "Surname Match", "priority": 3},
+            {"query": f"Kothari {cat} in {loc_str}", "vector_type": "Surname Match", "priority": 3}
+        ])
+        
     return queries
 
 def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
     """
-    Extracts proprietor/owner name from firm name or page details.
+    Extracts proprietor, trustee, committee president, or manager name.
     """
     combined = firm_name + " " + raw_text
+    clean_name = firm_name.lower()
     
-    # Check 1: Explicit markers like "Prop. Ashok Jain" or "Owner: Rakesh Shah"
+    # Check 1: Explicit markers including Trust and Committee positions
     marker_match = re.search(
-        r"(?:prop\.?|proprietor|founder|director|promoter|श्री|प्रो\.?)\s*[:\-]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})",
+        r"(?:prop\.?|proprietor|founder|director|promoter|trustee|president|adhyaksha?|pramukh|mantri|sachiv|secretary|koshadhyaksha?|treasurer|pujari|manager|श्री|प्रो\.?)\s*[:\-]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})",
         combined,
         re.I
     )
@@ -140,17 +188,25 @@ def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
         if match:
             first_part = match.group(1).strip()
             first_lower = first_part.lower()
-            if not any(w in first_lower for w in ["silver", "gold", "diamond", "best", "new", "royal", "star", "city", "jewellers"]):
+            if not any(w in first_lower for w in ["silver", "gold", "diamond", "best", "new", "royal", "star", "city", "jewellers", "mandir", "trust"]):
                 candidate = f"{first_part} {surname}".title()
                 if not any(exc in candidate.lower() for exc in EXCLUDED_WORDS):
                     return candidate
                 
-    # Check 3: Simple Jain Surname detected in firm
+    # Check 3: Institutional Roles for Temples, Trusts, and Sanghs
+    if any(k in clean_name for k in MANDIR_KEYWORDS):
+        return "Prabandhak Committee / Pujari"
+    if any(k in clean_name for k in TRUST_DHARAMSHALA_KEYWORDS):
+        return "Managing Trustee / Manager"
+    if any(k in clean_name for k in SANGH_NGO_KEYWORDS):
+        return "Adhyaksha / Mahasachiv"
+
+    # Check 4: Simple Jain Surname detected in firm
     for surname in JAIN_SURNAMES:
         if re.search(rf"\b{surname}\b", firm_name, re.I):
             return f"Family of {surname.title()}"
             
-    # Check 4: Sacred Trademark firm (e.g. Navkar Jewellers)
+    # Check 5: Sacred Trademark firm (e.g. Navkar Jewellers)
     for word in SACRED_KEYWORDS:
         if re.search(rf"\b{word}\b", firm_name, re.I):
             return f"Jain Family ({word} Group)"
@@ -160,10 +216,25 @@ def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
 def classify_firm(firm_name: str, address: str = "", raw_text: str = "") -> Dict[str, Any]:
     """
     Analyzes firm name and details to evaluate Jain confidence and proof.
+    Supports commercial firms, Jain Mandirs, Trusts, Dharamshalas, and Sanghs.
     """
     name_clean = firm_name.lower()
     text_clean = (name_clean + " " + address.lower() + " " + raw_text.lower())
     
+    # Check 0: Jain Religious & Community Institutions (Mandir, Trust, Dharamshala, Sangh)
+    is_mandir = any(k in name_clean for k in MANDIR_KEYWORDS)
+    is_trust = any(k in name_clean for k in TRUST_DHARAMSHALA_KEYWORDS)
+    is_sangh = any(k in name_clean for k in SANGH_NGO_KEYWORDS)
+    has_jain_anchor = ("jain" in text_clean or any(k.lower() in text_clean for k in SACRED_KEYWORDS))
+    
+    if (is_mandir or is_trust or is_sangh) and has_jain_anchor:
+        sub_type = "Jain Mandir / Derasar" if is_mandir else ("Jain Trust / Dharamshala" if is_trust else "Jain Sangh / Sanstha")
+        return {
+            "tier": "🟢 100% Verified",
+            "score": 100,
+            "reason": f"Verified {sub_type}"
+        }
+
     # Check 1: Explicit "Jain" in name
     if re.search(r"\bjain\b", name_clean):
         return {

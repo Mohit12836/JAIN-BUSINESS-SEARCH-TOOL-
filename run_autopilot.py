@@ -50,71 +50,126 @@ def print_banner():
     print(f"🏷️ Current Sector/Cat    : {current_cat}")
     print(f"📋 Master Excel Ready    : {ready_count} leads waiting to submit")
     print(f"💾 Total Scraped in DB   : {total_db} unique verified firms")
+    print(f"📊 Live Google Sheet     : Synced (1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw)")
     print("==========================================================================")
 
 async def main():
     print_banner()
     
     parser = argparse.ArgumentParser(description="JainBiz Auto-Pilot Pipeline")
-    parser.add_argument("--mode", choices=["auto", "scrape", "submit", "manual"], default=None)
+    parser.add_argument("--mode", choices=["auto", "scrape", "sync", "submit", "manual"], default=None)
+    parser.add_argument("--entity-type", choices=["commercial", "mandir", "trust", "sangh", "all"], default=None)
     parser.add_argument("--count", type=int, default=None, help="Number of listings to process")
     parser.add_argument("--live", action="store_true", help="Submit live to JainForJain")
     parser.add_argument("--city", default=None, help="City override for manual mode")
     parser.add_argument("--area", default=None, help="Area override for manual mode")
     parser.add_argument("--category", default=None, help="Category override for manual mode")
+    parser.add_argument("--no-sync", action="store_true", help="Skip Google Sheets auto-sync")
     
     args = parser.parse_args()
     
-    mode = args.mode
-    if not mode:
-        print("\nChoose an option:")
-        print("  [1] 🚀 Full Auto-Pilot (Scrape next market leads + Auto-fill to JainForJain)")
-        print("  [2] ⛏️ Scrape Next Market Only (Exhaust current area, add to Master Excel)")
-        print("  [3] 🤖 Form Auto-Entry Only (Fill ready leads from Master Excel into portal)")
-        print("  [4] 🎯 Manual Target Mode (Choose specific City, Area, or Category)")
+    # Step 1: Entity Type Selection
+    entity_type = args.entity_type
+    if not entity_type and not args.mode:
+        print("\n" + "="*74)
+        print("🏢 CHOOSE JAIN ENTITY TYPE TO MINE / PROCESS:")
+        print("="*74)
+        print("  [1] 🏬 Commercial Businesses (दुकानें, ज्वेलर्स, कपड़े, सीए, उद्योग आदि)")
+        print("  [2] 🛕 Jain Mandir & Derasar (मंदिर, जिनालय, चैत्यालय, दादावाड़ी, तीर्थ क्षेत्र)")
+        print("  [3] 🏨 Jain Trust, Dharamshala & Bhojanalaya (ट्रस्ट, धर्मशाला, भोजनालय, यात्री निवास)")
+        print("  [4] 🤝 Jain Sangh, Sanstha & NGOs (संघ, मंडल, संस्थाएं, समाज, पाठशाला)")
+        print("  [5] 🌟 Complete All-Inclusive (सभी मंदिर, ट्रस्ट, संस्थाएं एवं व्यापार)")
+        print("="*74)
         
         try:
-            choice = input("\nEnter choice [1-4] (default 1): ").strip() or "1"
+            ent_choice = input("\nEnter Entity choice [1-5] (default 1): ").strip() or "1"
+        except Exception:
+            ent_choice = "1"
+            
+        ent_map = {
+            "1": "commercial",
+            "2": "mandir",
+            "3": "trust",
+            "4": "sangh",
+            "5": "all"
+        }
+        entity_type = ent_map.get(ent_choice, "commercial")
+    elif not entity_type:
+        entity_type = "commercial"
+
+    # Step 2: Pipeline Action Selection
+    mode = args.mode
+    if not mode:
+        print("\n" + "="*74)
+        print("⚙️ CHOOSE PIPELINE ACTION:")
+        print("="*74)
+        print("  [1] 🚀 Full Auto-Pilot (Scrape + Auto-sync Google Sheet + Fill JainForJain)")
+        print("  [2] ⛏️ Scrape & Sync Only (Exhaust area, add to Master Excel & Google Sheet)")
+        print("  [3] 🔄 Instant Google Sheet Sync (Push Desktop Excel to live Google Sheet now)")
+        print("  [4] 🤖 Form Auto-Entry Only (Fill ready leads from Master Excel into portal)")
+        print("  [5] 🎯 Manual Target Mode (Choose specific City, Area, or Custom Category)")
+        print("="*74)
+        
+        try:
+            choice = input("\nEnter action choice [1-5] (default 1): ").strip() or "1"
         except Exception:
             choice = "1"
             
-        choice_map = {"1": "auto", "2": "scrape", "3": "submit", "4": "manual"}
+        choice_map = {
+            "1": "auto",
+            "2": "scrape",
+            "3": "sync",
+            "4": "submit",
+            "5": "manual"
+        }
         mode = choice_map.get(choice, "auto")
+
+    # Handle Instant Sync Mode
+    if mode == "sync":
+        from backend.google_sheets_sync import sync_excel_to_google_sheet
+        print(f"\n🔄 Syncing Master Excel to Google Sheet now...")
+        await sync_excel_to_google_sheet(DEFAULT_EXCEL)
+        print("✓ Instant Google Sheet Sync Complete!")
+        return
 
     count = args.count
     if count is None:
         try:
-            val = input("\nHow many listings do you want to process today? (default 15): ").strip()
+            val = input(f"\nHow many [{entity_type.upper()}] listings to process? (default 15): ").strip()
             count = int(val) if val.isdigit() else 15
         except Exception:
             count = 15
 
-    print(f"\n✓ Starting Pipeline in [{mode.upper()}] mode for {count} listings...\n")
+    print(f"\n✓ Starting Pipeline for [{entity_type.upper()}] in [{mode.upper()}] mode ({count} items)...\n")
     
     # Mode 1 & 2: Scrape next market in sequence
     if mode in ["auto", "scrape"]:
-        print(f"--> Step 1: Deep scraping current micro-market for up to {count} leads...")
+        print(f"--> Step 1: Deep scraping {entity_type} for up to {count} leads...")
         new_mined = await advance_saturation_cycle(
             target_leads_needed=count,
-            excel_path=DEFAULT_EXCEL
+            entity_type=entity_type,
+            excel_path=DEFAULT_EXCEL,
+            auto_sync_sheets=not args.no_sync
         )
-        print(f"✓ Step 1 Complete: {new_mined} fresh leads appended to Master Excel.")
+        print(f"✓ Step 1 Complete: {new_mined} fresh leads appended and synced.")
 
-    # Mode 4: Manual target mode
+    # Mode 5: Manual target mode
     elif mode == "manual":
         city = args.city or input("Enter City (e.g. Jaipur, Surat, Ahmedabad): ").strip() or "Jaipur"
-        area = args.area or input(f"Enter Market/Area in {city} (e.g. Johari Bazar, MI Road): ").strip() or "Johari Bazar"
-        cat = args.category or input("Enter Category (e.g. Jewellers & Gems): ").strip() or "Jewellers & Gems"
+        area = args.area or input(f"Enter Market/Area in {city} (e.g. Johari Bazar, Sanganer): ").strip() or "Johari Bazar"
+        cat = args.category or input(f"Enter Search Category (e.g. {entity_type}): ").strip() or entity_type
         
-        print(f"--> Deep scraping [{city}] -> [{area}] ({cat})...")
+        print(f"--> Deep scraping [{city}] -> [{area}] ({cat} | {entity_type})...")
         new_mined = await advance_saturation_cycle(
             target_leads_needed=count,
+            entity_type=entity_type,
             city_override=city,
             area_override=area,
             category_override=cat,
-            excel_path=DEFAULT_EXCEL
+            excel_path=DEFAULT_EXCEL,
+            auto_sync_sheets=not args.no_sync
         )
-        print(f"✓ Manual Crawl Complete: {new_mined} leads added to Master Excel.")
+        print(f"✓ Manual Crawl Complete: {new_mined} leads added and synced.")
 
     # Auto Entry to JainForJain
     if mode in ["auto", "submit"]:
@@ -132,10 +187,19 @@ async def main():
             dry_run=not live_flag,
             limit=count
         )
+        # Update Google Sheet with latest submission statuses
+        if not args.no_sync:
+            try:
+                from backend.google_sheets_sync import sync_excel_to_google_sheet
+                print("🔄 Updating Google Sheet with latest submission statuses...")
+                await sync_excel_to_google_sheet(DEFAULT_EXCEL)
+            except Exception:
+                pass
         
     print("\n==========================================================================")
     print("🎉 Pipeline run finished successfully!")
     print(f"📁 Updated Master Excel: {DEFAULT_EXCEL}")
+    print(f"📊 Live Google Sheet   : https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing")
     print("==========================================================================")
 
 if __name__ == "__main__":

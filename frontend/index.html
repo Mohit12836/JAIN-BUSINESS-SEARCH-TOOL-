@@ -90,13 +90,16 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-3 text-xs">
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <a href="https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing" target="_blank" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm transition">
+          📊 लाइव Google Sheet
+        </a>
         <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200/70 px-3 py-1.5 rounded-full font-medium shadow-sm">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
           Ready to Mine
         </div>
         <div class="bg-white/80 text-teal-700 border border-teal-200 px-3 py-1.5 rounded-full shadow-sm font-semibold">
-          ⚡ Auto-Description & Pincode
+          ⚡ 26-कॉलम ऑटो-फॉर्मेट
         </div>
       </div>
     </header>
@@ -104,6 +107,36 @@
     <!-- Main Control Console -->
     <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
       
+      <!-- Quick Entity Selector Buttons -->
+      <div class="p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <span>🏢 जैन एंटिटी बटन चुनें:</span>
+            <span class="text-[10px] text-slate-400 font-normal">(क्लिक करके डायरेक्ट मोड सेट करें)</span>
+          </span>
+          <span id="selectedEntityLabel" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200/60">
+            🏬 दुकान व व्यापार मोड
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="setEntityPreset('commercial', 'Jewellers & Gems', this)" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 transition flex items-center gap-1.5">
+            🏬 दुकान व व्यापार
+          </button>
+          <button type="button" onclick="setEntityPreset('mandir', 'Jain Mandir & Derasar', this)" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-1.5">
+            🛕 जैन मंदिर व देरासर
+          </button>
+          <button type="button" onclick="setEntityPreset('trust', 'Jain Dharamshala & Bhojanalaya', this)" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-1.5">
+            🏨 ट्रस्ट, धर्मशाला व भोजनालय
+          </button>
+          <button type="button" onclick="setEntityPreset('sangh', 'Jain Sangh & Sanstha', this)" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-1.5">
+            🤝 जैन संघ, संस्थाएं व मंडल
+          </button>
+          <button type="button" onclick="setEntityPreset('all', 'All Jain Entities', this)" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-1.5">
+            🌟 ऑल जैन (सब कुछ)
+          </button>
+        </div>
+      </div>
+
       <!-- Query Inputs -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
@@ -312,6 +345,33 @@
     let currentTaskId = null;
     let eventSource = null;
     let recordsCount = 0;
+
+    let activeEntityType = 'commercial';
+
+    function setEntityPreset(type, defaultQuery, btnElement) {
+      activeEntityType = type;
+      document.getElementById('categoryInput').value = defaultQuery;
+      
+      const labels = {
+        'commercial': '🏬 दुकान व व्यापार मोड',
+        'mandir': '🛕 जैन मंदिर व देरासर मोड',
+        'trust': '🏨 ट्रस्ट, धर्मशाला व भोजनालय मोड',
+        'sangh': '🤝 जैन संघ, संस्थाएं व मंडल मोड',
+        'all': '🌟 ऑल जैन (सब कुछ) मोड'
+      };
+      
+      const labelEl = document.getElementById('selectedEntityLabel');
+      if (labelEl) labelEl.innerText = labels[type] || 'कस्टम मोड';
+      
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-white', 'text-slate-700');
+      });
+      if (btnElement) {
+        btnElement.classList.remove('bg-white', 'text-slate-700');
+        btnElement.classList.add('bg-indigo-600', 'text-white');
+      }
+    }
 
     document.getElementById('locationSelect').addEventListener('change', function(e) {
       const customRow = document.getElementById('customCityRow');

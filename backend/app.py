@@ -34,10 +34,22 @@ TASK_LISTENERS: Dict[str, List[asyncio.Queue]] = {}
 class ScanRequest(BaseModel):
     category: str = "Jewellers"
     location: str = "Gujarat"
+    entity_type: str = "commercial"
     include_sacred: bool = True
     include_surnames: bool = True
     include_photos: bool = True
     max_firms: int = 100
+
+@app.post("/api/sync-google-sheets")
+async def api_sync_google_sheets():
+    """Manually triggers instant synchronization to the user's live Google Sheet."""
+    from backend.google_sheets_sync import sync_excel_to_google_sheet
+    excel_path = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    success = await sync_excel_to_google_sheet(excel_path)
+    return {
+        "success": success,
+        "sheet_url": "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
+    }
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard():

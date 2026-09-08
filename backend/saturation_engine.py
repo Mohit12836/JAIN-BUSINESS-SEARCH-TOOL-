@@ -12,11 +12,14 @@ import re
 import asyncio
 import urllib.parse
 from typing import Dict, Any, List, Optional, Tuple
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from playwright.async_api import async_playwright
 
-from backend.matrix import build_query_batch, classify_firm, extract_owner_name, SACRED_KEYWORDS, JAIN_SURNAMES
+from backend.matrix import build_entity_queries, classify_firm, extract_owner_name, SACRED_KEYWORDS, JAIN_SURNAMES
 from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, format_clean_whatsapp, generate_j4j_description
 from backend.photo_engine import process_firm_media
 from backend.database import is_already_scraped, save_scraped_lead
@@ -233,25 +236,21 @@ async def crawl_area_deep(
     area: str,
     category: str,
     target_count: int = 50,
-    excel_path: str = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    entity_type: str = "commercial",
+    excel_path: str = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx",
+    auto_sync_sheets: bool = True
 ) -> List[Dict[str, Any]]:
-    """Crawls a specific micro-area exhaustively without leaving a single business behind."""
+    """Crawls a specific micro-area exhaustively without leaving a single business or entity behind."""
     print(f"\n=======================================================")
     print(f"🎯 EXHAUSTIVE CRAWL: [{city}] -> [{area}]")
-    print(f"Sector: {category} | Target to Collect: {target_count}")
+    print(f"Entity Type: [{entity_type.upper()}] | Sector: {category} | Target to Collect: {target_count}")
     print(f"=======================================================")
     
     collected_records = []
     seen_keys = set()
     
-    search_queries = [
-        f"Jain {category} in {area} {city}",
-        f"Jewellers in {area} {city}" if "Jewel" in category else f"{category} in {area} {city}",
-        f"Navkar in {area} {city}",
-        f"Nakoda in {area} {city}",
-        f"Shah in {area} {city}",
-        f"Kothari in {area} {city}"
-    ]
+    query_items = build_entity_queries(entity_type=entity_type, location=city, area=area, category=category)
+    search_queries = [item["query"] for item in query_items]
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(
@@ -408,19 +407,28 @@ async def crawl_area_deep(
         
     if collected_records:
         append_to_master_excel(collected_records, excel_path)
+        if auto_sync_sheets:
+            try:
+                from backend.google_sheets_sync import sync_excel_to_google_sheet
+                print("🔄 Triggering automatic live Google Sheet sync...")
+                await sync_excel_to_google_sheet(excel_path)
+            except Exception as g_err:
+                print(f"⚠️ Note: Google Sheet sync encountered: {g_err}")
         
     return collected_records
 
 async def advance_saturation_cycle(
     target_leads_needed: int = 50,
+    entity_type: str = "commercial",
     city_override: Optional[str] = None,
     area_override: Optional[str] = None,
     category_override: Optional[str] = None,
-    excel_path: str = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"
+    excel_path: str = r"C:\Users\hp\Desktop\Jain_Leads_Verified_Photos_HD.xlsx",
+    auto_sync_sheets: bool = True
 ) -> int:
     """
     Main entry point for step-by-step exhaustive area extraction.
-    Ensures that an area is thoroughly mined before moving to the next.
+    Supports commercial firms, Mandirs, Trusts, Dharamshalas, and Sanghs.
     """
     state = load_progress()
     city = city_override or state.get("current_city", "Jaipur")
@@ -433,7 +441,7 @@ async def advance_saturation_cycle(
         current_area = area_override
     else:
         if area_idx >= len(areas):
-            print(f"🎉 Congratulations! All {len(areas)} major commercial areas in {city} have been 100% saturated!")
+            print(f"🎉 Congratulations! All {len(areas)} major areas in {city} have been 100% saturated!")
             return 0
         current_area = areas[area_idx]
         
@@ -443,7 +451,8 @@ async def advance_saturation_cycle(
         current_category = CORE_CATEGORIES[cat_idx % len(CORE_CATEGORIES)]
         
     print(f"\n=======================================================")
-    print(f"📍 CITY DEEP SATURATION ACTIVE: {city}")
+    print(f"📍 DEEP SATURATION ACTIVE: {city}")
+    print(f"   Entity Type: [{entity_type.upper()}]")
     print(f"   Current Area: [{current_area}] ({area_idx + 1}/{len(areas)})")
     print(f"   Current Category: [{current_category}]")
     print(f"=======================================================")
@@ -453,13 +462,15 @@ async def advance_saturation_cycle(
         area=current_area,
         category=current_category,
         target_count=target_leads_needed,
-        excel_path=excel_path
+        entity_type=entity_type,
+        excel_path=excel_path,
+        auto_sync_sheets=auto_sync_sheets
     )
     
     total_mined_count = len(mined)
     
     # Check if we should advance category or area
-    if not category_override and not area_override:
+    if not category_override and not area_override and entity_type == "commercial":
         next_cat_idx = cat_idx + 1
         if next_cat_idx >= len(CORE_CATEGORIES) or total_mined_count < 5:
             # Move to next area!
@@ -479,15 +490,19 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Deep Area Saturation Engine")
     parser.add_argument("--count", type=int, default=15, help="Number of leads to extract in this run")
+    parser.add_argument("--entity-type", choices=["commercial", "mandir", "trust", "sangh", "all"], default="commercial")
     parser.add_argument("--city", default="Jaipur", help="City name")
     parser.add_argument("--area", default=None, help="Specific area (e.g. 'Johari Bazar')")
     parser.add_argument("--category", default=None, help="Specific category")
+    parser.add_argument("--no-sync", action="store_true", help="Disable auto Google Sheet sync")
     
     args = parser.parse_args()
     asyncio.run(advance_saturation_cycle(
         target_leads_needed=args.count,
+        entity_type=args.entity_type,
         city_override=args.city,
         area_override=args.area,
-        category_override=args.category
+        category_override=args.category,
+        auto_sync_sheets=not args.no_sync
     ))
 
