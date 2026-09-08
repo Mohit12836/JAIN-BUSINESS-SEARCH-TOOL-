@@ -146,13 +146,22 @@ async def scrape_google_maps_task(
 
                         try:
                             await detail_page.goto(href, wait_until="domcontentloaded", timeout=12000)
-                            await detail_page.wait_for_timeout(2000)
+                            await detail_page.wait_for_timeout(1500)
                             
-                            details = await detail_page.evaluate("""() => {
+                            # Scroll down slightly inside main pane to trigger lazy image loading
+                            try:
+                                await detail_page.evaluate("""() => {
+                                    const pane = document.querySelector('div[role="main"]');
+                                    if (pane) pane.scrollTop += 700;
+                                }""")
+                                await detail_page.wait_for_timeout(1000)
+                            except Exception:
+                                pass
+
+                            details = await detail_page.evaluate(r"""() => {
                                 const phoneBtn = document.querySelector('button[data-item-id^="phone:tel:"]');
                                 const addrBtn = document.querySelector('button[data-item-id="address"]');
                                 const webBtn = document.querySelector('a[data-item-id="authority"]');
-                                const photoImg = document.querySelector('button.aoRNLd img, div.Z36tef img, button[aria-label*="Photo of" i] img');
                                 const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
                                 
                                 const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
@@ -161,10 +170,32 @@ async def scrape_google_maps_task(
                                 let phone = phoneBtn ? phoneBtn.getAttribute('data-item-id').replace('phone:tel:', '').trim() : '';
                                 let address = addrBtn ? addrBtn.getAttribute('aria-label').replace('Address:', '').trim() : '';
                                 let website = webBtn ? webBtn.href : '';
-                                let photo = photoImg ? photoImg.src : '';
                                 let rating = ratingEl ? ratingEl.innerText.trim() : '';
 
-                                return { phone, address, website, photo, rating, extraText };
+                                // Extract ALL genuine original Google Maps photos (/p/AF1Qip...)
+                                const rawPhotoList = [];
+
+                                // 1. Hero cover button (highest priority for storefront / signboard)
+                                const heroImgs = document.querySelectorAll('button[jsaction*="heroHeaderImage"] img, button[aria-label*="Photo of" i] img, div.RZ66Rb img, button.aoRNLd img, div.Z36tef img, div.lMbq3e img');
+                                heroImgs.forEach(img => {
+                                    const s = img.src || img.getAttribute('src') || '';
+                                    if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
+                                });
+
+                                // 2. All <img> tags with /p/AF1Qip
+                                document.querySelectorAll('img').forEach(img => {
+                                    const s = img.src || img.getAttribute('src') || img.getAttribute('data-src') || '';
+                                    if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
+                                });
+
+                                // 3. Elements with background-image style
+                                document.querySelectorAll('button, div[data-photo-index], div.RZ66Rb').forEach(el => {
+                                    const bg = window.getComputedStyle(el).backgroundImage || '';
+                                    const m = bg.match(/https:\/\/[^"'\)]+\/p\/AF1Qip[^"'\)]+/);
+                                    if (m) rawPhotoList.push(m[0]);
+                                });
+
+                                return { phone, address, website, rawPhotoList, rating, extraText };
                             }""")
                             
                             phone = details.get("phone", "")
@@ -176,21 +207,27 @@ async def scrape_google_maps_task(
                             
                             address = details.get("address") or f"{city}, India"
                             rating = details.get("rating")
-                            raw_photo = details.get("photo") if include_photos else ""
                             website = details.get("website", "")
                             extra_text = details.get("extraText", "")
+                            raw_photos = details.get("rawPhotoList", []) if include_photos else []
 
-                            # Zero-API Photo & Logo Engine
-                            media = process_firm_media(title, raw_photo, website)
-                            photo_url = media["hd_photo_url"]
-                            logo_url = media["logo_url"]
+                            # Process authentic original media
+                            media = process_firm_media(title, raw_photos, website, href)
+                            storefront_photo = media["storefront_photo"]
+                            showcase_photo = media["showcase_photo"]
+                            web_logo = media["website_logo"]
+                            gallery_url = media["gallery_url"]
+                            photos_count = media["all_photos_count"]
                             
                         except Exception as det_err:
                             phone = "Not Listed"
                             address = f"{city}, India"
                             rating = "4.8"
-                            photo_url = ""
-                            logo_url = process_firm_media(title, "")["logo_url"]
+                            storefront_photo = ""
+                            showcase_photo = ""
+                            web_logo = ""
+                            gallery_url = href
+                            photos_count = 0
                             website = ""
                             extra_text = ""
 
@@ -216,8 +253,11 @@ async def scrape_google_maps_task(
                             "state": location_scope if location_scope in INDIA_HUBS else "India",
                             "pincode": pincode,
                             "rating": f"★ {rating}" if rating else "★ 4.8",
-                            "photo_url": photo_url,
-                            "logo_url": logo_url,
+                            "storefront_photo": storefront_photo,
+                            "showcase_photo": showcase_photo,
+                            "gallery_url": gallery_url,
+                            "website_logo": web_logo,
+                            "photos_count": photos_count,
                             "website": website,
                             "maps_url": href,
                             "description": description,

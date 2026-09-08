@@ -23,7 +23,7 @@ async def generate_real_file():
     result = await scrape_google_maps_task(
         task_id="master_leads_live",
         category="Jewellers & Bullion",
-        location_scope="Ahmedabad",
+        location_scope="Jaipur",
         include_sacred=True,
         include_surnames=True,
         include_photos=True,
@@ -34,15 +34,21 @@ async def generate_real_file():
     excel_path = result["excel_path"]
     print(f"\nExcel generated at: {excel_path}")
 
-    # Copy to Desktop for immediate 1-click access
-    desktop_dest = os.path.expanduser(r"~\Desktop\Jain_Firms_Verified_Leads.xlsx")
-    try:
-        shutil.copy(excel_path, desktop_dest)
-        print(f"Copied directly to Desktop: {desktop_dest}")
-    except PermissionError:
-        alt_dest = os.path.expanduser(r"~\Desktop\Jain_Firms_Verified_Leads_Latest.xlsx")
-        shutil.copy(excel_path, alt_dest)
-        print(f"Original file was open in Excel. Saved new copy to: {alt_dest}")
+    # Copy to Desktop with robust fallback if existing files are locked in Excel
+    import time
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    targets = [
+        os.path.expanduser(r"~\Desktop\Jain_Leads_Verified_Photos_HD.xlsx"),
+        os.path.expanduser(r"~\Desktop\Jain_Firms_Verified_Leads.xlsx"),
+        os.path.expanduser(f"~\\Desktop\\Jain_Leads_Verified_{timestamp}.xlsx")
+    ]
+    for target in targets:
+        try:
+            shutil.copy(excel_path, target)
+            print(f"Copied directly to Desktop: {target}")
+            break
+        except PermissionError:
+            continue
 
 if __name__ == "__main__":
     asyncio.run(generate_real_file())

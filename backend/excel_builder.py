@@ -57,8 +57,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "Pincode",
         "Google Maps URL",
         "Website URL",
-        "Official Brand Logo / Avatar",
-        "Storefront Photo (1600px Full HD)",
+        "Storefront Signboard (1600px HD)",
+        "Showroom / Products (1600px HD)",
+        "All Photos Gallery (Google Maps)",
+        "Official Website Logo",
         "Auto-Generated Description (Ready to Paste)",
         "Verification Status",
         "Proof / Match Reason"
@@ -91,8 +93,12 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         pincode = rec.get("pincode", "N/A")
         maps_url = rec.get("maps_url", "")
         website = rec.get("website", "")
-        logo_url = rec.get("logo_url", "")
-        photo_url = rec.get("photo_url", "")
+        
+        storefront_photo = rec.get("storefront_photo") or rec.get("photo_url", "")
+        showcase_photo = rec.get("showcase_photo", "")
+        gallery_url = rec.get("gallery_url") or maps_url
+        web_logo = rec.get("website_logo", "")
+        
         desc = rec.get("description", "")
         tier = rec.get("tier", "⚪ 70% Lead Match")
         reason = rec.get("reason", "Category Correlation")
@@ -111,8 +117,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             pincode,
             "Open Google Map" if maps_url else "",
             "Visit Website" if website else "",
-            "🏷️ View Brand Logo" if logo_url else "No Logo",
-            "📸 View 1600px Photo" if photo_url else "No Storefront Photo",
+            "📸 View Storefront (1600px)" if storefront_photo else "No Photo Listed",
+            "🏬 View Showroom (1600px)" if showcase_photo else "Check Gallery",
+            "🌐 Browse All Photos" if gallery_url else "",
+            "🏷️ View Web Logo" if web_logo else "Use Storefront Photo",
             desc,
             tier,
             reason
@@ -150,22 +158,30 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
                 cell.hyperlink = website
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 14 and logo_url:
-                cell.hyperlink = logo_url
+            elif col_idx == 14 and storefront_photo:
+                cell.hyperlink = storefront_photo
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 15 and photo_url:
-                cell.hyperlink = photo_url
+            elif col_idx == 15 and showcase_photo:
+                cell.hyperlink = showcase_photo
+                cell.font = link_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif col_idx == 16 and gallery_url:
+                cell.hyperlink = gallery_url
+                cell.font = link_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif col_idx == 17 and web_logo:
+                cell.hyperlink = web_logo
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
-            # Style Description column (Col 16)
-            if col_idx == 16:
+            # Style Description column (Col 18)
+            if col_idx == 18:
                 cell.font = desc_font
                 cell.alignment = Alignment(vertical="top", wrap_text=True)
 
-            # Style Verification Status Badge (Col 17)
-            if col_idx == 17:
+            # Style Verification Status Badge (Col 19)
+            if col_idx == 19:
                 if "100%" in tier:
                     cell.fill = tier_100_fill
                     cell.font = tier_100_font
@@ -192,11 +208,13 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "K": 12,  # Pincode
         "L": 18,  # Maps Link
         "M": 18,  # Website
-        "N": 24,  # Logo Link
-        "O": 26,  # Storefront Photo Link
-        "P": 55,  # Description
-        "Q": 18,  # Verification Status
-        "R": 26   # Proof Reason
+        "N": 26,  # Storefront Photo Link
+        "O": 26,  # Showroom Photo Link
+        "P": 24,  # Google Photos Gallery Link
+        "Q": 24,  # Official Web Logo Link
+        "R": 55,  # Description
+        "S": 18,  # Verification Status
+        "T": 26   # Proof Reason
     }
     
     for col_letter, width in widths.items():
@@ -215,7 +233,9 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     high_85 = sum(1 for r in records if "85%" in r.get("tier", ""))
     with_phones = sum(1 for r in records if r.get("phone") and r.get("phone") != "Not Listed")
     with_pincodes = sum(1 for r in records if r.get("pincode") and r.get("pincode") != "N/A")
-    with_photos = sum(1 for r in records if r.get("photo_url"))
+    with_storefront = sum(1 for r in records if r.get("storefront_photo"))
+    with_showcase = sum(1 for r in records if r.get("showcase_photo"))
+    with_web_logo = sum(1 for r in records if r.get("website_logo"))
     
     metrics = [
         ["Target Category", category or "All Commercial"],
@@ -225,8 +245,9 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         ["🟡 85% High Match (Surname/Cluster)", high_85],
         ["Active Calling & WhatsApp Numbers", with_phones],
         ["Extracted 6-Digit Postal Pincodes", with_pincodes],
-        ["Ready-to-Upload 1600px HD Photos", with_photos],
-        ["High-Res Brand Logos / Monogram Badges", total_firms],
+        ["Authentic 1600px Storefront Photos", with_storefront],
+        ["Authentic 1600px Showroom / Products Photos", with_showcase],
+        ["Verified Custom Website Logos", with_web_logo],
         ["Synthesized Ready-to-Paste Descriptions", total_firms]
     ]
     
