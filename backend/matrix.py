@@ -26,6 +26,13 @@ JAIN_SURNAMES = [
     "Sogani", "Ranka", "Porwal", "Oswal", "Kabra", "Lunawat", "Sancheti"
 ]
 
+# Words to reject from owner extraction
+EXCLUDED_WORDS = [
+    "street view", "see photos", "photos", "see inside", "google", "reviews",
+    "hours", "suggest an edit", "add missing info", "claim this business",
+    "overview", "services", "about", "directions", "save", "nearby", "send to phone", "share"
+]
+
 # Pan-India Geographic Hierarchy by Priority Hubs
 INDIA_HUBS: Dict[str, List[str]] = {
     "Gujarat": [
@@ -117,12 +124,14 @@ def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
     
     # Check 1: Explicit markers like "Prop. Ashok Jain" or "Owner: Rakesh Shah"
     marker_match = re.search(
-        r"(?:prop\.?|proprietor|owner|founder|director|promoter|श्री|प्रो\.?)\s*[:\-]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})",
+        r"(?:prop\.?|proprietor|founder|director|promoter|श्री|प्रो\.?)\s*[:\-]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})",
         combined,
         re.I
     )
     if marker_match:
-        return marker_match.group(1).strip().title()
+        candidate = marker_match.group(1).strip().title()
+        if not any(exc in candidate.lower() for exc in EXCLUDED_WORDS):
+            return candidate
         
     # Check 2: Personal Name + Jain Surname inside firm name
     for surname in JAIN_SURNAMES:
@@ -131,8 +140,10 @@ def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
         if match:
             first_part = match.group(1).strip()
             first_lower = first_part.lower()
-            if not any(w in first_lower for w in ["silver", "gold", "diamond", "best", "new", "royal", "star", "city"]):
-                return f"{first_part} {surname}".title()
+            if not any(w in first_lower for w in ["silver", "gold", "diamond", "best", "new", "royal", "star", "city", "jewellers"]):
+                candidate = f"{first_part} {surname}".title()
+                if not any(exc in candidate.lower() for exc in EXCLUDED_WORDS):
+                    return candidate
                 
     # Check 3: Simple Jain Surname detected in firm
     for surname in JAIN_SURNAMES:
