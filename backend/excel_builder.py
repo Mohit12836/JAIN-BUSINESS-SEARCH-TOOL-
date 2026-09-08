@@ -1,7 +1,7 @@
 """
 Excel Workbook Generator for JainBiz Lead Miner.
 Creates professional, styled Excel workbooks with auto-filters, clickable photo links,
-and color-coded verification badges using openpyxl.
+color-coded verification badges, and Owner/Proprietor column using openpyxl.
 """
 
 import os
@@ -12,7 +12,7 @@ from openpyxl.utils import get_column_letter
 
 def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, category: str = "", scope: str = "") -> str:
     """
-    Generates a beautifully styled Excel workbook from lead records.
+    Generates a beautifully styled Excel workbook from lead records with Owner details.
     """
     wb = Workbook()
     
@@ -26,6 +26,7 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     
     # Body Styles
     data_font = Font(name="Segoe UI", size=10, color="1E293B")
+    owner_font = Font(name="Segoe UI", size=10, bold=True, color="4338CA") # Indigo bold for Owner
     link_font = Font(name="Segoe UI", size=10, color="2563EB", underline="single")
     
     tier_100_fill = PatternFill(start_color="DCFCE7", end_color="DCFCE7", fill_type="solid") # Soft Emerald
@@ -41,7 +42,8 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     cell_border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
     
     headers = [
-        "Sl.", "Firm / Business Name", "Verification Status", "Proof / Match Reason",
+        "Sl.", "Firm / Business Name", "Owner / Proprietor (मालिक का नाम)",
+        "Verification Status", "Proof / Match Reason",
         "Phone Number", "Address", "City", "State", "Rating & Reviews",
         "Storefront Photo (Click HD)", "Website", "Google Maps URL"
     ]
@@ -62,6 +64,7 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     for idx, rec in enumerate(records, start=1):
         row_num = idx + 1
         firm_name = rec.get("name", "N/A")
+        owner_name = rec.get("owner", "Proprietor")
         tier = rec.get("tier", "⚪ 70% Lead Match")
         reason = rec.get("reason", "Category Correlation")
         phone = rec.get("phone", "Not Listed")
@@ -76,6 +79,7 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         row_values = [
             idx,
             firm_name,
+            owner_name,
             tier,
             reason,
             phone,
@@ -99,11 +103,15 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             cell.alignment = Alignment(vertical="center")
             
             # Align center for index, phone, rating
-            if col_idx in [1, 5, 7, 8, 9]:
+            if col_idx in [1, 6, 8, 9, 10]:
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 
-            # Style Verification Status Badge
+            # Style Owner Name column (Col 3)
             if col_idx == 3:
+                cell.font = owner_font
+                
+            # Style Verification Status Badge (Col 4)
+            if col_idx == 4:
                 if "100%" in tier:
                     cell.fill = tier_100_fill
                     cell.font = tier_100_font
@@ -116,15 +124,15 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 
             # Style Hyperlinks
-            if col_idx == 10 and photo_url:
+            if col_idx == 11 and photo_url:
                 cell.hyperlink = photo_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 11 and website:
+            elif col_idx == 12 and website:
                 cell.hyperlink = website
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 12 and maps_url:
+            elif col_idx == 13 and maps_url:
                 cell.hyperlink = maps_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -141,8 +149,9 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         
     ws.column_dimensions["A"].width = 7   # Sl.
     ws.column_dimensions["B"].width = 30  # Firm Name
-    ws.column_dimensions["D"].width = 28  # Reason
-    ws.column_dimensions["F"].width = 38  # Address
+    ws.column_dimensions["C"].width = 25  # Owner Name
+    ws.column_dimensions["E"].width = 28  # Reason
+    ws.column_dimensions["G"].width = 38  # Address
     
     # Enable AutoFilter
     ws.auto_filter.ref = f"A1:{get_column_letter(len(headers))}{len(records) + 1}"
@@ -183,7 +192,6 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     ws_summary.column_dimensions["A"].width = 35
     ws_summary.column_dimensions["B"].width = 25
     
-    # Ensure directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     wb.save(output_path)
     return output_path

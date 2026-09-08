@@ -109,6 +109,43 @@ def build_query_batch(category: str, location: str, include_sacred: bool = True,
             
     return queries
 
+def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
+    """
+    Extracts proprietor/owner name from firm name or page details.
+    """
+    combined = firm_name + " " + raw_text
+    
+    # Check 1: Explicit markers like "Prop. Ashok Jain" or "Owner: Rakesh Shah"
+    marker_match = re.search(
+        r"(?:prop\.?|proprietor|owner|founder|director|promoter|श्री|प्रो\.?)\s*[:\-]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})",
+        combined,
+        re.I
+    )
+    if marker_match:
+        return marker_match.group(1).strip().title()
+        
+    # Check 2: Personal Name + Jain Surname inside firm name
+    for surname in JAIN_SURNAMES:
+        pattern = rf"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+({surname})\b"
+        match = re.search(pattern, firm_name, re.I)
+        if match:
+            first_part = match.group(1).strip()
+            first_lower = first_part.lower()
+            if not any(w in first_lower for w in ["silver", "gold", "diamond", "best", "new", "royal", "star", "city"]):
+                return f"{first_part} {surname}".title()
+                
+    # Check 3: Simple Jain Surname detected in firm
+    for surname in JAIN_SURNAMES:
+        if re.search(rf"\b{surname}\b", firm_name, re.I):
+            return f"Family of {surname.title()}"
+            
+    # Check 4: Sacred Trademark firm (e.g. Navkar Jewellers)
+    for word in SACRED_KEYWORDS:
+        if re.search(rf"\b{word}\b", firm_name, re.I):
+            return f"Jain Family ({word} Group)"
+            
+    return "Proprietor (Check Signboard Photo)"
+
 def classify_firm(firm_name: str, address: str = "", raw_text: str = "") -> Dict[str, Any]:
     """
     Analyzes firm name and details to evaluate Jain confidence and proof.

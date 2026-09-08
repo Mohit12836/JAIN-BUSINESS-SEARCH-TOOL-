@@ -1,7 +1,7 @@
 """
 Zero-API Autonomous Google Maps Stealth Scraper Engine.
 Uses Playwright to extract live firm details, verified phone numbers,
-ratings, exact addresses, and HD storefront photos without any paid API keys.
+owner/proprietor names, ratings, exact addresses, and HD storefront photos.
 """
 
 import asyncio
@@ -10,7 +10,7 @@ import re
 import os
 from typing import Callable, Dict, Any, List
 from playwright.async_api import async_playwright
-from backend.matrix import build_query_batch, classify_firm, INDIA_HUBS, get_all_cities
+from backend.matrix import build_query_batch, classify_firm, extract_owner_name, INDIA_HUBS, get_all_cities
 from backend.excel_builder import generate_leads_excel
 
 async def scrape_google_maps_task(
@@ -26,7 +26,6 @@ async def scrape_google_maps_task(
     """
     Executes an autonomous batch scrape on Google Maps with multi-vector expansion.
     """
-    # 1. Determine target cities
     if location_scope == "Pan India":
         target_cities = [
             "Ahmedabad", "Jaipur", "Surat", "Indore", "Mumbai",
@@ -108,7 +107,7 @@ async def scrape_google_maps_task(
                     except Exception:
                         pass
 
-                    # Scroll feed slightly to load listings
+                    # Scroll feed slightly
                     await search_page.evaluate("""() => {
                         const feed = document.querySelector('div[role="feed"]');
                         if (feed) feed.scrollTop += 1200;
@@ -129,20 +128,18 @@ async def scrape_google_maps_task(
                         return results;
                     }""")
 
-                    # Deep inspect each card to get verified phone and exact details
+                    # Deep inspect each card to get verified phone, owner, and details
                     for item in cards_data:
                         title = item.get("title", "").strip()
                         href = item.get("href", "")
                         if not title or not href:
                             continue
 
-                        # Deduplication check by title
                         norm_title = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
                         if norm_title in seen_keys:
                             continue
                         seen_keys.add(norm_title)
 
-                        # Deep fetch details
                         try:
                             await detail_page.goto(href, wait_until="domcontentloaded", timeout=12000)
                             await detail_page.wait_for_timeout(2000)
@@ -153,6 +150,10 @@ async def scrape_google_maps_task(
                                 const webBtn = document.querySelector('a[data-item-id="authority"]');
                                 const photoImg = document.querySelector('button.aoRNLd img, div.Z36tef img, button[aria-label*="Photo of" i] img');
                                 const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
+                                
+                                // Grab text from about/snippet/review sections
+                                const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
+                                const extraText = textContainers.map(c => c.innerText).join(' ');
 
                                 let phone = phoneBtn ? phoneBtn.getAttribute('data-item-id').replace('phone:tel:', '').trim() : '';
                                 let address = addrBtn ? addrBtn.getAttribute('aria-label').replace('Address:', '').trim() : '';
@@ -160,11 +161,10 @@ async def scrape_google_maps_task(
                                 let photo = photoImg ? photoImg.src : '';
                                 let rating = ratingEl ? ratingEl.innerText.trim() : '';
 
-                                return { phone, address, website, photo, rating };
+                                return { phone, address, website, photo, rating, extraText };
                             }""")
                             
                             phone = details.get("phone", "")
-                            # Phone deduplication
                             if phone:
                                 norm_phone = re.sub(r'\D', '', phone)
                                 if norm_phone in seen_phones:
@@ -175,6 +175,7 @@ async def scrape_google_maps_task(
                             rating = details.get("rating")
                             photo_url = details.get("photo") if include_photos else ""
                             website = details.get("website", "")
+                            extra_text = details.get("extraText", "")
                             
                         except Exception as det_err:
                             phone = "Not Listed"
@@ -182,12 +183,15 @@ async def scrape_google_maps_task(
                             rating = "4.8"
                             photo_url = ""
                             website = ""
+                            extra_text = ""
 
                         # Classify with Jain Intelligence Matrix
-                        classification = classify_firm(title, address)
+                        classification = classify_firm(title, address, extra_text)
+                        owner_name = extract_owner_name(title, extra_text)
 
                         record = {
                             "name": title,
+                            "owner": owner_name,
                             "tier": classification["tier"],
                             "score": classification["score"],
                             "reason": classification["reason"],
@@ -203,14 +207,13 @@ async def scrape_google_maps_task(
 
                         collected_records.append(record)
 
-                        # Stream new record to live UI
                         if progress_callback:
                             progress_callback({
                                 "type": "new_record",
                                 "record": record
                             })
 
-                        emit_progress(sub_pct, f"✓ [{city}] {title} प्राप्त किया गया")
+                        emit_progress(sub_pct, f"✓ [{city}] {title} ({owner_name})")
 
                         if len(collected_records) >= max_firms_target:
                             break
@@ -228,7 +231,6 @@ async def scrape_google_maps_task(
 
     emit_progress(95, "एक्सेल वर्कबुक (.xlsx) तैयार की जा रही है...")
 
-    # Save to formatted Excel
     export_dir = os.path.join(os.path.dirname(__file__), "..", "exports")
     os.makedirs(export_dir, exist_ok=True)
     clean_cat = re.sub(r'\W+', '_', category).strip('_')
