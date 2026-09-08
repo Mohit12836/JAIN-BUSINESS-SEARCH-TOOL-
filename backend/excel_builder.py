@@ -57,7 +57,8 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "Pincode",
         "Google Maps URL",
         "Website URL",
-        "Storefront Photo (Click HD)",
+        "Official Brand Logo / Avatar",
+        "Storefront Photo (1600px Full HD)",
         "Auto-Generated Description (Ready to Paste)",
         "Verification Status",
         "Proof / Match Reason"
@@ -90,6 +91,7 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         pincode = rec.get("pincode", "N/A")
         maps_url = rec.get("maps_url", "")
         website = rec.get("website", "")
+        logo_url = rec.get("logo_url", "")
         photo_url = rec.get("photo_url", "")
         desc = rec.get("description", "")
         tier = rec.get("tier", "⚪ 70% Lead Match")
@@ -109,7 +111,8 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             pincode,
             "Open Google Map" if maps_url else "",
             "Visit Website" if website else "",
-            "📸 View Storefront Photo" if photo_url else "No Photo",
+            "🏷️ View Brand Logo" if logo_url else "No Logo",
+            "📸 View 1600px Photo" if photo_url else "No Storefront Photo",
             desc,
             tier,
             reason
@@ -147,18 +150,22 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
                 cell.hyperlink = website
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 14 and photo_url:
+            elif col_idx == 14 and logo_url:
+                cell.hyperlink = logo_url
+                cell.font = link_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif col_idx == 15 and photo_url:
                 cell.hyperlink = photo_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
-            # Style Description column (Col 15)
-            if col_idx == 15:
+            # Style Description column (Col 16)
+            if col_idx == 16:
                 cell.font = desc_font
                 cell.alignment = Alignment(vertical="top", wrap_text=True)
 
-            # Style Verification Status Badge (Col 16)
-            if col_idx == 16:
+            # Style Verification Status Badge (Col 17)
+            if col_idx == 17:
                 if "100%" in tier:
                     cell.fill = tier_100_fill
                     cell.font = tier_100_font
@@ -185,10 +192,11 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         "K": 12,  # Pincode
         "L": 18,  # Maps Link
         "M": 18,  # Website
-        "N": 22,  # Photo Link
-        "O": 55,  # Description
-        "P": 18,  # Verification Status
-        "Q": 26   # Proof Reason
+        "N": 24,  # Logo Link
+        "O": 26,  # Storefront Photo Link
+        "P": 55,  # Description
+        "Q": 18,  # Verification Status
+        "R": 26   # Proof Reason
     }
     
     for col_letter, width in widths.items():
@@ -217,7 +225,8 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         ["🟡 85% High Match (Surname/Cluster)", high_85],
         ["Active Calling & WhatsApp Numbers", with_phones],
         ["Extracted 6-Digit Postal Pincodes", with_pincodes],
-        ["Ready-to-Upload Storefront Photos", with_photos],
+        ["Ready-to-Upload 1600px HD Photos", with_photos],
+        ["High-Res Brand Logos / Monogram Badges", total_firms],
         ["Synthesized Ready-to-Paste Descriptions", total_firms]
     ]
     
@@ -225,7 +234,7 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     for metric in metrics:
         ws_summary.append(metric)
         
-    for row in ws_summary.iter_rows(min_row=3, max_row=11, min_col=1, max_col=2):
+    for row in ws_summary.iter_rows(min_row=3, max_row=12, min_col=1, max_col=2):
         for cell in row:
             cell.font = Font(name="Segoe UI", size=11)
             cell.border = cell_border

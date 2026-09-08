@@ -36,8 +36,13 @@ async def generate_real_file():
 
     # Copy to Desktop for immediate 1-click access
     desktop_dest = os.path.expanduser(r"~\Desktop\Jain_Firms_Verified_Leads.xlsx")
-    shutil.copy(excel_path, desktop_dest)
-    print(f"Copied directly to Desktop: {desktop_dest}")
+    try:
+        shutil.copy(excel_path, desktop_dest)
+        print(f"Copied directly to Desktop: {desktop_dest}")
+    except PermissionError:
+        alt_dest = os.path.expanduser(r"~\Desktop\Jain_Firms_Verified_Leads_Latest.xlsx")
+        shutil.copy(excel_path, alt_dest)
+        print(f"Original file was open in Excel. Saved new copy to: {alt_dest}")
 
 if __name__ == "__main__":
     asyncio.run(generate_real_file())

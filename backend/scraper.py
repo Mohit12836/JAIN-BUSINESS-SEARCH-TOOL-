@@ -14,6 +14,8 @@ from playwright.async_api import async_playwright
 from backend.matrix import build_query_batch, classify_firm, extract_owner_name, INDIA_HUBS, get_all_cities
 from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, format_clean_whatsapp, generate_j4j_description
 from backend.excel_builder import generate_leads_excel
+from backend.database import is_already_scraped, save_scraped_lead
+from backend.photo_engine import process_firm_media
 
 async def scrape_google_maps_task(
     task_id: str,
@@ -138,7 +140,7 @@ async def scrape_google_maps_task(
                             continue
 
                         norm_title = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
-                        if norm_title in seen_keys:
+                        if norm_title in seen_keys or is_already_scraped("", title):
                             continue
                         seen_keys.add(norm_title)
 
@@ -168,21 +170,27 @@ async def scrape_google_maps_task(
                             phone = details.get("phone", "")
                             if phone:
                                 norm_phone = re.sub(r'\D', '', phone)
-                                if norm_phone in seen_phones:
+                                if norm_phone in seen_phones or is_already_scraped(phone, title):
                                     continue
                                 seen_phones.add(norm_phone)
                             
                             address = details.get("address") or f"{city}, India"
                             rating = details.get("rating")
-                            photo_url = details.get("photo") if include_photos else ""
+                            raw_photo = details.get("photo") if include_photos else ""
                             website = details.get("website", "")
                             extra_text = details.get("extraText", "")
+
+                            # Zero-API Photo & Logo Engine
+                            media = process_firm_media(title, raw_photo, website)
+                            photo_url = media["hd_photo_url"]
+                            logo_url = media["logo_url"]
                             
                         except Exception as det_err:
                             phone = "Not Listed"
                             address = f"{city}, India"
                             rating = "4.8"
                             photo_url = ""
+                            logo_url = process_firm_media(title, "")["logo_url"]
                             website = ""
                             extra_text = ""
 
@@ -209,6 +217,7 @@ async def scrape_google_maps_task(
                             "pincode": pincode,
                             "rating": f"★ {rating}" if rating else "★ 4.8",
                             "photo_url": photo_url,
+                            "logo_url": logo_url,
                             "website": website,
                             "maps_url": href,
                             "description": description,
@@ -217,6 +226,8 @@ async def scrape_google_maps_task(
                             "reason": classification["reason"]
                         }
 
+                        # Save permanently to SQLite history database
+                        save_scraped_lead(record)
                         collected_records.append(record)
 
                         if progress_callback:
