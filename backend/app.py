@@ -116,6 +116,57 @@ async def start_scan(req: ScanRequest, background_tasks: BackgroundTasks):
     background_tasks.add_task(runner)
     return {"task_id": task_id, "status": "started"}
 
+class Pipeline10xRequest(BaseModel):
+    city: str = "Indore"
+    category: str = "Jewellers"
+    count: int = 10
+    live_submit: bool = True
+
+@app.post("/api/start-pipeline-10x")
+async def start_pipeline_10x(req: Pipeline10xRequest, background_tasks: BackgroundTasks):
+    """Initializes and runs the autonomous 10X pipeline with live event dispatching."""
+    from backend.pipeline import run_autonomous_10x_pipeline
+    task_id = str(uuid.uuid4())
+    
+    TASKS[task_id] = {
+        "status": "running",
+        "city": req.city,
+        "category": req.category,
+        "count": req.count,
+        "records": []
+    }
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def pipeline_runner():
+        try:
+            res = await run_autonomous_10x_pipeline(
+                task_id=task_id,
+                city=req.city,
+                category=req.category,
+                count=req.count,
+                live_submit=req.live_submit,
+                progress_callback=dispatch_event
+            )
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": str(e)
+            })
+
+    background_tasks.add_task(pipeline_runner)
+    return {"task_id": task_id, "status": "started"}
+
 @app.get("/api/stream-progress/{task_id}")
 async def stream_progress(task_id: str, request: Request):
     """Server-Sent Events (SSE) stream for live scan progress."""

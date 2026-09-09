@@ -139,6 +139,8 @@ def append_to_master_excel(records: List[Dict[str, Any]], excel_path: str):
     for i, rec in enumerate(records):
         cur_row = start_row + i
         sl_no = cur_row - 1
+        rec["row_idx"] = cur_row
+        rec["sl"] = sl_no
         
         row_values = [
             sl_no,

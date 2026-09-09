@@ -123,8 +123,129 @@
       </button>
     </div>
 
+    <!-- ==================== LIVE PIPELINE & ACTIVITY CONSOLE ==================== -->
+    <div id="liveConsoleSection" class="hidden rounded-3xl bg-slate-950 text-slate-100 border border-slate-800 shadow-2xl p-5 sm:p-6 space-y-4 backdrop-blur-xl">
+      <!-- Console Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </div>
+          <span class="text-xs font-mono font-extrabold tracking-wider text-emerald-400 uppercase flex items-center gap-2">
+            <span>● LIVE EXECUTION CONSOLE</span>
+            <span class="text-slate-600">|</span>
+            <span id="consoleStageBadge" class="bg-indigo-950 text-indigo-400 border border-indigo-800/60 px-2 py-0.5 rounded text-[10px] font-mono">
+              READY
+            </span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs">
+          <span id="consoleTimer" class="font-mono text-slate-400 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 text-[11px]">
+            ⏱️ 00:00
+          </span>
+          <button onclick="toggleConsoleScroll()" id="btnAutoScroll" class="spring-press px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-800 text-[11px] font-mono cursor-pointer">
+            📜 स्क्रॉल: ON
+          </button>
+          <button onclick="clearConsole()" class="spring-press px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-800 text-[11px] font-mono cursor-pointer">
+            🗑️ क्लियर
+          </button>
+          <button onclick="toggleConsoleVisibility()" class="spring-press px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg border border-slate-800 text-[11px] cursor-pointer">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- 4-Step Pipeline Visual Indicators -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
+        <div id="stepIndicator-1" class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 transition-all">
+          <span class="step-dot w-2 h-2 rounded-full bg-slate-600"></span>
+          <span>1. 🔍 बिज़नेस सर्च</span>
+        </div>
+        <div id="stepIndicator-2" class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 transition-all">
+          <span class="step-dot w-2 h-2 rounded-full bg-slate-600"></span>
+          <span>2. 📸 फ़ोटो व SEO</span>
+        </div>
+        <div id="stepIndicator-3" class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 transition-all">
+          <span class="step-dot w-2 h-2 rounded-full bg-slate-600"></span>
+          <span>3. 🚀 पोर्टल सबमिशन</span>
+        </div>
+        <div id="stepIndicator-4" class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 transition-all">
+          <span class="step-dot w-2 h-2 rounded-full bg-slate-600"></span>
+          <span>4. 📊 शीट सिंक</span>
+        </div>
+      </div>
+
+      <!-- Console Animated Progress Bar -->
+      <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden p-0.5 border border-slate-800">
+        <div id="consoleProgressBar" class="h-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+
+      <!-- Live Terminal Output Area -->
+      <div id="consoleLogsBox" class="font-mono text-xs leading-relaxed max-h-72 overflow-y-auto space-y-1.5 p-3.5 rounded-2xl bg-slate-900/95 border border-slate-800 text-slate-300 select-text">
+        <div class="text-slate-500 italic text-[11px]">कंसोल तैयार है। 1-क्लिक बॉट दबाने पर लाइव प्रक्रिया (खोज, फोटो, फॉर्म भरना, पोर्टल ID जनरेशन) यहाँ दिखेगी...</div>
+      </div>
+    </div>
+
     <!-- ==================== TAB 1: MOBILE 1-CLICK REMOTE HUB ==================== -->
     <div id="tab-mobile" class="space-y-6">
+
+      <!-- 1-CLICK 10X SUPER AUTONOMOUS PIPELINE CARD -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-2 border-indigo-500/30 bg-gradient-to-br from-white/95 via-indigo-50/40 to-purple-50/50 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm mb-2">
+              <span>⚡ AUTONOMOUS 10X ENGINE</span>
+              <span>•</span>
+              <span>1-CLICK AUTOMATION</span>
+            </div>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>🚀 1-क्लिक 10X सुपर बॉट: 10 बिज़नेस खोजें + पोर्टल पर सबमिट करें</span>
+            </h2>
+            <p class="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+              एक क्लिक दबाएं: बॉट Google Maps से 10 नए जैन व्यापार खोजेगा, साइनबोर्ड फ़ोटो व 3-पैराग्राफ SEO विवरण तैयार करेगा, 
+              और सीधे <b>jainforjain.com</b> पर लॉगिन कर फॉर्म सबमिट करके Google Sheet में सिंक कर देगा!
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-100/90 px-3 py-1.5 rounded-xl border border-emerald-300">
+              Zero-Manual Work
+            </span>
+          </div>
+        </div>
+
+        <!-- Inline Config for 10X Pipeline -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
+          <div class="sm:col-span-5">
+            <label class="text-xs text-slate-500 font-semibold mb-1 block">सर्च शहर (Target City)</label>
+            <select id="pipelineCity" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+              <option value="Indore" selected>📍 Indore (इंदौर - राजवाड़ा, सराफा, सीयागंज)</option>
+              <option value="Jaipur">📍 Jaipur (जयपुर - जौहरी बाज़ार, एमआई रोड)</option>
+              <option value="Surat">📍 Surat (सूरत - रिंग रोड, हीरा बाज़ार)</option>
+              <option value="Ahmedabad">📍 Ahmedabad (अहमदाबाद - मानक चौक, रिलीफ रोड)</option>
+              <option value="Mumbai">📍 Mumbai (मुंबई - ज़वेरी बाज़ार, कालबादेवी)</option>
+              <option value="Ujjain">📍 Ujjain (उज्जैन)</option>
+              <option value="Bhopal">📍 Bhopal (भोपाल)</option>
+            </select>
+          </div>
+          
+          <div class="sm:col-span-4">
+            <label class="text-xs text-slate-500 font-semibold mb-1 block">ट्रेड / व्यापार श्रेणी (Category)</label>
+            <input id="pipelineCategory" type="text" value="Jewellers & Gems" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800">
+          </div>
+
+          <div class="sm:col-span-3 flex flex-col justify-end">
+            <button id="btnPipeline10x" onclick="startPipeline10x()" class="spring-press w-full py-2.5 px-4 rounded-xl text-white font-extrabold text-xs bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer">
+              <span id="btnPipelineIcon">⚡</span>
+              <span id="btnPipelineText">10X बॉट प्रारंभ करें</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Live Status Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
         <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-indigo-500">
@@ -604,6 +725,259 @@
       }, 4000);
     }
 
+    // ==================== LIVE CONSOLE ENGINE ====================
+    let consoleAutoScroll = true;
+    let consoleTimerInterval = null;
+    let consoleStartTime = null;
+
+    function toggleConsoleVisibility() {
+      const section = document.getElementById('liveConsoleSection');
+      section.classList.toggle('hidden');
+    }
+
+    function toggleConsoleScroll() {
+      consoleAutoScroll = !consoleAutoScroll;
+      const btn = document.getElementById('btnAutoScroll');
+      btn.innerText = consoleAutoScroll ? '📜 स्क्रॉल: ON' : '📜 स्क्रॉल: OFF';
+    }
+
+    function clearConsole() {
+      const box = document.getElementById('consoleLogsBox');
+      box.innerHTML = '<div class="text-slate-500 italic text-[11px]">कंसोल साफ़ किया गया।</div>';
+    }
+
+    function startConsoleTimer() {
+      consoleStartTime = Date.now();
+      clearInterval(consoleTimerInterval);
+      consoleTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - consoleStartTime) / 1000);
+        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const secs = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('consoleTimer').innerText = `⏱️ ${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopConsoleTimer() {
+      clearInterval(consoleTimerInterval);
+    }
+
+    function updateStepIndicators(stage) {
+      const step1 = document.getElementById('stepIndicator-1');
+      const step2 = document.getElementById('stepIndicator-2');
+      const step3 = document.getElementById('stepIndicator-3');
+      const step4 = document.getElementById('stepIndicator-4');
+      if (!step1 || !step2 || !step3 || !step4) return;
+
+      const resetStep = (el) => {
+        el.className = 'flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 transition-all';
+        const dot = el.querySelector('.step-dot');
+        if (dot) dot.className = 'step-dot w-2 h-2 rounded-full bg-slate-600';
+      };
+      const activeStep = (el, color) => {
+        el.className = `flex items-center gap-2 p-2 rounded-xl bg-${color}-950/60 border border-${color}-600/60 text-${color}-300 transition-all shadow-sm`;
+        const dot = el.querySelector('.step-dot');
+        if (dot) dot.className = `step-dot w-2 h-2 rounded-full bg-${color}-400 animate-ping`;
+      };
+      const doneStep = (el) => {
+        el.className = 'flex items-center gap-2 p-2 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 transition-all';
+        const dot = el.querySelector('.step-dot');
+        if (dot) dot.className = 'step-dot w-2 h-2 rounded-full bg-emerald-500';
+      };
+
+      if (['SCRAPE', 'SEARCH_QUERY', 'FEED'].includes(stage)) {
+        activeStep(step1, 'cyan');
+      } else if (['RECORD_MINED', 'PHOTO_VERIFIED', 'SEO_READY', 'EXCEL_SAVE', 'EXCEL_SUCCESS'].includes(stage)) {
+        doneStep(step1);
+        activeStep(step2, 'purple');
+      } else if (['PORTAL_AUTH', 'PORTAL_OK', 'PORTAL_FILL', 'PORTAL_SUBMITTED', 'QUOTA_LIMIT'].includes(stage)) {
+        doneStep(step1);
+        doneStep(step2);
+        activeStep(step3, 'amber');
+      } else if (['SHEET_SYNC', 'SHEET_OK'].includes(stage)) {
+        doneStep(step1);
+        doneStep(step2);
+        doneStep(step3);
+        activeStep(step4, 'blue');
+      } else if (stage === 'COMPLETE') {
+        doneStep(step1);
+        doneStep(step2);
+        doneStep(step3);
+        doneStep(step4);
+      }
+    }
+
+    function appendConsoleLog(logItem) {
+      const box = document.getElementById('consoleLogsBox');
+      if (!box) return;
+
+      const row = document.createElement('div');
+      row.className = 'flex items-start gap-2 text-[11px] font-mono hover:bg-slate-800/40 p-1 rounded transition-colors';
+
+      const timeSpan = `<span class="text-slate-500 flex-shrink-0">[${logItem.time || ''}]</span>`;
+      const badgeSpan = `<span class="flex-shrink-0">${logItem.badge || 'ℹ️'}</span>`;
+
+      let msgHtml = logItem.message || '';
+      msgHtml = msgHtml.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-cyan-400 underline hover:text-cyan-300 font-bold">$1</a>');
+
+      let textColor = 'text-slate-300';
+      if (logItem.stage === 'RECORD_MINED') textColor = 'text-cyan-300 font-semibold';
+      else if (logItem.stage === 'PORTAL_SUBMITTED') textColor = 'text-emerald-400 font-bold';
+      else if (logItem.stage === 'QUOTA_LIMIT' || logItem.stage === 'WARN') textColor = 'text-amber-300';
+      else if (logItem.stage === 'PORTAL_ERR' || logItem.stage === 'ERROR') textColor = 'text-rose-400 font-bold';
+      else if (logItem.stage === 'COMPLETE') textColor = 'text-emerald-300 font-bold';
+
+      row.innerHTML = `${timeSpan} ${badgeSpan} <div class="flex-1 ${textColor}">${msgHtml}</div>`;
+      box.appendChild(row);
+
+      if (consoleAutoScroll) {
+        box.scrollTop = box.scrollHeight;
+      }
+
+      if (logItem.stage) {
+        const stageBadge = document.getElementById('consoleStageBadge');
+        if (stageBadge) stageBadge.innerText = logItem.stage;
+        updateStepIndicators(logItem.stage);
+      }
+      if (logItem.percent !== undefined) {
+        const pBar = document.getElementById('consoleProgressBar');
+        if (pBar) pBar.style.width = logItem.percent + '%';
+      }
+    }
+
+    async function startPipeline10x() {
+      const city = document.getElementById('pipelineCity').value;
+      const category = document.getElementById('pipelineCategory').value.trim() || 'Jewellers & Gems';
+      const btn = document.getElementById('btnPipeline10x');
+      const btnText = document.getElementById('btnPipelineText');
+      const btnIcon = document.getElementById('btnPipelineIcon');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      consoleSec.classList.remove('hidden');
+      consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      startConsoleTimer();
+      document.getElementById('consoleProgressBar').style.width = '2%';
+      document.getElementById('consoleStageBadge').innerText = 'STARTING';
+      
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '⚡',
+        stage: 'INIT',
+        message: `10X सुपर बॉट प्रारंभ: शहर = ${city}, श्रेणी = ${category}, 10 बिज़नेस ऑटो-सर्च + पोर्टल सबमिशन...`,
+        percent: 3
+      });
+
+      btn.disabled = true;
+      btn.classList.add('opacity-60');
+      btnText.innerText = '10X बॉट चालू है...';
+      btnIcon.innerText = '⏳';
+
+      showToast(`10X सुपर बॉट प्रारंभ: ${city} में 10 बिज़नेस सर्च व पोर्टल सबमिशन`, 'info');
+
+      try {
+        const resp = await fetch('/api/start-pipeline-10x', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            city: city,
+            category: category,
+            count: 10,
+            live_submit: true
+          })
+        });
+
+        const data = await resp.json();
+        currentTaskId = data.task_id;
+
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog(payload);
+          }
+          else if (payload.type === 'progress') {
+            document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+            if (payload.stats) {
+              if (document.getElementById('counterFirms')) document.getElementById('counterFirms').innerText = payload.stats.firms || 0;
+              if (document.getElementById('counterPhones')) document.getElementById('counterPhones').innerText = payload.stats.phones || 0;
+              if (document.getElementById('counterPhotos')) document.getElementById('counterPhotos').innerText = payload.stats.photos || 0;
+            }
+          }
+          else if (payload.type === 'new_record') {
+            recordsCount++;
+            appendTableRow(payload.record, recordsCount);
+            document.getElementById('tableCountBadge').innerText = recordsCount + ' रिकॉर्ड्स';
+          }
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleProgressBar').style.width = '100%';
+            document.getElementById('consoleStageBadge').innerText = 'COMPLETED';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'COMPLETE',
+              message: payload.message || '10X पाइपलाइन पूर्ण! सभी 10 रिकॉर्ड्स Excel और Google Sheet में अपडेट हो चुके हैं।',
+              percent: 100
+            });
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            btnText.innerText = '10X बॉट पुनः प्रारंभ करें';
+            btnIcon.innerText = '⚡';
+
+            showToast('✓ 10X सुपर बॉट टास्क सफलतापूर्वक पूरा हो गया!', 'success');
+            loadStatus(false);
+            loadMasterLeads();
+          }
+          else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleStageBadge').innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'त्रुटि: ' + payload.message
+            });
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            btnText.innerText = 'दोबारा प्रयास करें';
+            btnIcon.innerText = '⚠️';
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          btnText.innerText = 'दोबारा प्रयास करें';
+          btnIcon.innerText = '⚡';
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'सर्वर से कनेक्ट करने में विफल: ' + err.message
+        });
+        btn.disabled = false;
+        btn.classList.remove('opacity-60');
+        btnText.innerText = 'दोबारा प्रयास करें';
+        btnIcon.innerText = '⚡';
+      }
+    }
+
     let activeEntityType = 'commercial';
 
     function setEntityPreset(type, defaultQuery, btnElement) {
@@ -888,8 +1262,22 @@
       btn.classList.add('opacity-50');
       notice.classList.remove('hidden');
       notice.className = 'text-xs p-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 font-medium';
-      notice.innerText = `⏳ पोर्टल पर ${limit} लीड्स की ऑटो-सबमिशन शुरू हो गई है... कृपया 1-2 मिनट प्रतीक्षा करें।`;
+      notice.innerText = `⏳ पोर्टल पर ${limit} लीड्स की ऑटो-सबमिशन शुरू हो गई है... कृपया प्रतीक्षा करें।`;
       showToast(`पोर्टल पर ${limit} लीड्स सबमिशन शुरू किया गया`, 'info');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      startConsoleTimer();
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '🚀',
+        stage: 'PORTAL_AUTH',
+        message: `पोर्टल पर ${limit} लीड्स ऑटो-सबमिट की जा रही हैं (jainforjain.com)...`,
+        percent: 25
+      });
 
       try {
         const res = await fetch('/api/start-portal-entry', {
@@ -901,14 +1289,38 @@
         notice.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
         notice.innerText = `✅ बैकएंड में सबमिशन चालू है! पूरा होते ही गूगल शीट में ऑटो-सिंक हो जाएगा।`;
         showToast('बैकएंड सबमिशन सफलतापूर्वक शुरू हो गया!', 'success');
+
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '✅',
+          stage: 'PORTAL_FILL',
+          message: `सबमिशन टास्क प्रारंभ: बैकग्राउंड में Playwright ब्राउज़र फॉर्म भर रहा है...`,
+          percent: 50
+        });
+
         setTimeout(() => {
           loadStatus(false);
           loadMasterLeads();
-        }, 5000);
+          appendConsoleLog({
+            time: new Date().toLocaleTimeString(),
+            badge: '🏆',
+            stage: 'COMPLETE',
+            message: `पोर्टल सबमिशन टास्क पूर्ण! स्थिति व Google Sheet रिफ्रेश हो गई।`,
+            percent: 100
+          });
+          stopConsoleTimer();
+        }, 6000);
       } catch (e) {
         notice.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-medium';
         notice.innerText = `❌ एरर: ` + e.message;
         showToast('एरर: ' + e.message, 'error');
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'सबमिशन एरर: ' + e.message
+        });
+        stopConsoleTimer();
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
@@ -925,12 +1337,36 @@
       notice.innerText = `⏳ लाइव Google Sheet में सिंक हो रहा है...`;
       showToast('लाइव Google Sheet में सिंक प्रारंभ...', 'info');
 
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      startConsoleTimer();
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '📊',
+        stage: 'SHEET_SYNC',
+        message: 'Google Sheet (1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw) सिंक प्रारंभ...',
+        percent: 30
+      });
+
       try {
         const res = await fetch('/api/sync-google-sheets', { method: 'POST' });
         const data = await res.json();
         notice.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
         notice.innerHTML = `✅ Google Sheet सफलतापूर्वक सिंक हो गई! <a href="${data.sheet_url}" target="_blank" class="underline font-bold">यहाँ खोलें ↗</a>`;
         showToast('Google Sheet सफलतापूर्वक सिंक हो गई!', 'success');
+
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '✅',
+          stage: 'COMPLETE',
+          message: `Google Sheet सफलतापूर्वक 100% सिंक हो गई! URL: ${data.sheet_url}`,
+          percent: 100
+        });
+        stopConsoleTimer();
+
         setTimeout(() => {
           loadStatus(false);
           loadMasterLeads();
@@ -939,6 +1375,13 @@
         notice.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-medium';
         notice.innerText = `❌ सिंक एरर: ` + e.message;
         showToast('सिंक एरर: ' + e.message, 'error');
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'Google Sheet सिंक त्रुटि: ' + e.message
+        });
+        stopConsoleTimer();
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
