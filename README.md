@@ -15,6 +15,18 @@ An autonomous, **₹0 API Cost (Zero-API)** firm intelligence and lead extractio
 - **Formatted Excel (.xlsx) Delivery:** Auto-filtered spreadsheets with clickable photo links, color-coded verification badges, and an executive summary sheet.
 - **Modern Web Dashboard:** Light mesh-gradient aesthetic, glassmorphism, and live streaming metrics HUD via Server-Sent Events (SSE).
 
+## ☁️ 24/7 Cloud Deployment (PC Shut-Off Ready)
+
+Deploy with 1-click so the bot and mobile dashboard run 24 hours a day in the cloud without needing your PC:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Mohit12836/JAIN-BUSINESS-SEARCH-TOOL-)
+
+### 1-Click Cloud Deploy:
+Click the button above or visit:
+👉 **[https://render.com/deploy?repo=https://github.com/Mohit12836/JAIN-BUSINESS-SEARCH-TOOL-](https://render.com/deploy?repo=https://github.com/Mohit12836/JAIN-BUSINESS-SEARCH-TOOL-)**
+
+Render will automatically detect the pre-configured `Dockerfile` and `render.yaml` and deploy your autonomous lead engine in 1 click!
+
 ---
 
 ## 🚀 Quickstart (Windows)
