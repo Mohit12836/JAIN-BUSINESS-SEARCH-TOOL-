@@ -1,111 +1,298 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi" class="h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JainBiz Lead Miner | JainForJain.com Data Entry Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JainBiz Pro ✦ Autonomous Lead Engine & Portal Closer</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    @keyframes gradientShift {
+    :root {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    @keyframes auroraShift {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 0.35; transform: scale(1); }
-      50% { opacity: 0.75; transform: scale(1.04); }
-    }
-    .mesh-gradient-bg {
-      background: linear-gradient(135deg, #f5f7ff 0%, #fdf2f8 35%, #f0fdf4 70%, #eff6ff 100%);
-      background-size: 300% 300%;
-      animation: gradientShift 18s ease infinite;
+    .aurora-bg {
+      background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+                  radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
+                  radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+                  linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      background-size: 200% 200%;
+      animation: auroraShift 18s ease infinite;
     }
     .glass-panel {
-      background: rgba(255, 255, 255, 0.84);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.8) inset;
+      box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 1px 1px rgba(255, 255, 255, 0.9) inset;
     }
     .glass-input {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.92);
       border: 1.5px solid #e2e8f0;
-      transition: all 0.25s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .glass-input:focus {
       border-color: #6366f1;
+      background: #ffffff;
       box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
       outline: none;
     }
-    .btn-gradient {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-      background-size: 200% 200%;
-      transition: all 0.3s ease;
+    .spring-press {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
     }
-    .btn-gradient:hover:not(:disabled) {
-      background-position: right center;
+    .spring-press:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4);
     }
-    .btn-excel {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      transition: all 0.3s ease;
-    }
-    .btn-excel:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px -6px rgba(16, 185, 129, 0.4);
-    }
-    .badge-pill {
-      transition: all 0.2s ease;
-    }
-    .badge-pill:hover {
-      transform: translateY(-1px);
+    .spring-press:active {
+      transform: scale(0.97) translateY(0);
     }
   </style>
 </head>
-<body class="mesh-gradient-bg min-h-screen text-slate-800 antialiased p-4 sm:p-8 font-sans selection:bg-indigo-100 selection:text-indigo-700">
+<body class="aurora-bg min-h-full text-slate-800 antialiased font-sans selection:bg-indigo-500 selection:text-white p-4 sm:p-6 pb-20">
 
   <!-- Ambient Light Orbs -->
   <div class="fixed top-[-100px] left-[-100px] w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none -z-10 animate-[pulseGlow_10s_ease-in-out_infinite]"></div>
   <div class="fixed bottom-[-100px] right-[-100px] w-96 h-96 bg-indigo-200/40 rounded-full blur-3xl pointer-events-none -z-10 animate-[pulseGlow_12s_ease-in-out_infinite]"></div>
 
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- Header & Brand -->
-    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel rounded-2xl p-5">
+    <!-- Top Navigation Header -->
+    <header class="glass-panel rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-500/25">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/25 flex-shrink-0">
           ✦
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-bold bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 bg-clip-text text-transparent">
-              JainBiz Miner Pro
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 bg-clip-text text-transparent">
+              JainBiz Pro
             </h1>
-            <span class="px-2.5 py-0.5 text-xs font-semibold bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200/60">
-              🎯 JainForJain.com Ready
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              24/7 Cloud Ready
             </span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">Autonomous Pan-India Firm Intelligence & Data Entry Accelerator</p>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Autonomous Lead Mining & JainForJain.com Portal Entry System</p>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2 text-xs">
-        <a href="https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing" target="_blank" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm transition">
-          📊 लाइव Google Sheet
+      <!-- Quick Action Badges -->
+      <div class="flex flex-wrap items-center gap-2 text-xs w-full sm:w-auto justify-start sm:justify-end">
+        <a href="https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing" target="_blank" class="spring-press inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-semibold shadow-sm shadow-emerald-600/20">
+          <span>📊 लाइव Google Sheet</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
         </a>
-        <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200/70 px-3 py-1.5 rounded-full font-medium shadow-sm">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-          Ready to Mine
-        </div>
-        <div class="bg-white/80 text-teal-700 border border-teal-200 px-3 py-1.5 rounded-full shadow-sm font-semibold">
-          ⚡ 26-कॉलम ऑटो-फॉर्मेट
-        </div>
+        <a href="https://jainforjain.com/member/business-listings" target="_blank" class="spring-press inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl font-semibold">
+          <span>🏛️ पोर्टल डैशबोर्ड</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </a>
       </div>
     </header>
 
-    <!-- Main Control Console -->
-    <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
+    <!-- Navigation Pill Tabs (Framer Motion Inspired) -->
+    <div class="flex items-center justify-between overflow-x-auto pb-1 gap-2">
+      <div class="inline-flex p-1.5 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-sm gap-1">
+        <button onclick="switchTab('tab-mobile')" id="btn-tab-mobile" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm cursor-pointer">
+          📱 मोबाइल 1-क्लिक हब
+        </button>
+        <button onclick="switchTab('tab-portal')" id="btn-tab-portal" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+          🏛️ लाइव पोर्टल (5 इंदौर लिस्टिंग्स)
+        </button>
+        <button onclick="switchTab('tab-scanner')" id="btn-tab-scanner" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+          ⚡ नया शहर / स्कैनर
+        </button>
+        <button onclick="switchTab('tab-table')" id="btn-tab-table" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+          📊 26-कॉलम डेटा टेबल
+        </button>
+      </div>
+
+      <button onclick="loadStatus(true)" class="spring-press hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/80 rounded-xl text-xs font-semibold text-slate-600 border border-slate-200 shadow-sm cursor-pointer">
+        <svg id="refreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        <span>रिफ्रेश</span>
+      </button>
+    </div>
+
+    <!-- ==================== TAB 1: MOBILE 1-CLICK REMOTE HUB ==================== -->
+    <div id="tab-mobile" class="space-y-6">
+      <!-- Live Status Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-indigo-500">
+          <div class="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider">सक्रिय शहर</div>
+          <div id="statCity" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">Indore (इंदौर)</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-purple-500">
+          <div class="text-[11px] font-semibold text-purple-600 uppercase tracking-wider">वर्तमान मार्केट</div>
+          <div id="statArea" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">Rajwada (राजवाड़ा)</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-slate-400">
+          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">कुल लीड्स</div>
+          <div id="statTotal" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">19</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-emerald-500 bg-emerald-50/40">
+          <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">पोर्टल पर लाइव ✅</div>
+          <div id="statSubmitted" class="text-base sm:text-lg font-extrabold text-emerald-800 mt-1">5</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-amber-500 bg-amber-50/40 col-span-2 sm:col-span-1">
+          <div class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider">तैयार लीड्स ⏳</div>
+          <div id="statReady" class="text-base sm:text-lg font-extrabold text-amber-800 mt-1">13</div>
+        </div>
+      </div>
+
+      <!-- Hero Remote Control Panel -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
+        <div>
+          <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <span>📱 1-टैप ऑटोनोमस एक्शन्स (Mobile Actions)</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">बिना PC छुए अपने फोन से सीधे लीड्स सबमिट और गूगल शीट सिंक करें</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="rounded-2xl p-5 space-y-3 bg-white/70 border border-slate-200/80 flex flex-col justify-between hover:border-emerald-300 transition-all shadow-sm">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">🚀</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                  Zero-Manual Work
+                </span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-900 mt-2">पोर्टल पर अगली 5 लीड्स सबमिट करो</h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                बॉट बैकग्राउंड में jainforjain.com पर लॉगिन करेगा, इंदौर के फॉर्म भरेगा, और नया JFJ बिजनेस ID जनरेट कर देगा।
+              </p>
+            </div>
+            <button id="btnAutoSubmit" onclick="triggerPortalSubmit(5)" class="spring-press w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer">
+              <span>🚀 5 लीड्स ऑटो-सबमिट शुरू करें</span>
+            </button>
+          </div>
+
+          <div class="rounded-2xl p-5 space-y-3 bg-white/70 border border-slate-200/80 flex flex-col justify-between hover:border-blue-300 transition-all shadow-sm">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">📊</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
+                  Instant Cloud Sync
+                </span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-900 mt-2">लाइव Google Sheet में पुश करें</h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                सारे 26 कॉलम्स, फोन नंबर, HD फोटो लिंक्स और नई JFJ IDs को सीधे आपकी पर्सनल Google Sheet में रिफ्रेश करता है।
+              </p>
+            </div>
+            <button id="btnSyncSheets" onclick="triggerGoogleSheetSync()" class="spring-press w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 cursor-pointer">
+              <span>📊 लाइव Google Sheet में सिंक करें</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="mobileActionNotice" class="hidden text-xs p-4 rounded-2xl font-medium transition-all"></div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: LIVE PORTAL LISTINGS (5 INDORE LISTINGS) ==================== -->
+    <div id="tab-portal" class="hidden space-y-6">
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <span>🏛️ पोर्टल पर लाइव 5 इंदौर लिस्टिंग्स</span>
+              <span class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">100% Live Proof</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">ये 5 प्रमुख जैन मंदिर व धर्मशालाएं jainforjain.com पर सफलतापूर्वक रजिस्टर हो चुकी हैं:</p>
+          </div>
+          <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-200/60">
+            अकाउंट कोटा: 5/5 फुल
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="p-4 rounded-2xl bg-white/90 border border-slate-200 shadow-sm space-y-2 hover:border-indigo-300 transition">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00252</span>
+              <span class="text-slate-400 font-semibold text-[10px]">Item #252</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 leading-snug">Shree Parshwanath Digambar Jain Mandir</h4>
+            <div class="text-xs text-slate-500">कैटेगरी: <b>Mandir-Trust (300)</b> | इंदौर</div>
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+              <a href="https://jainforjain.com/member/business-listings/252/edit" target="_blank" class="text-xs text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+              <span class="text-slate-300">|</span>
+              <a href="https://jainforjain.com/shree-parshwanath-digambar-jain-mandir" target="_blank" class="text-xs text-emerald-600 font-bold hover:underline">👁️ प्रोफाइल देखें</a>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white/90 border border-slate-200 shadow-sm space-y-2 hover:border-indigo-300 transition">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00253</span>
+              <span class="text-slate-400 font-semibold text-[10px]">Item #253</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 leading-snug">Kanch Mandir (कांच मंदिर)</h4>
+            <div class="text-xs text-slate-500">कैटेगरी: <b>Mandir-Trust (300)</b> | इंदौर</div>
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+              <a href="https://jainforjain.com/member/business-listings/253/edit" target="_blank" class="text-xs text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+              <span class="text-slate-300">|</span>
+              <a href="https://jainforjain.com/kanch-mandir" target="_blank" class="text-xs text-emerald-600 font-bold hover:underline">👁️ प्रोफाइल देखें</a>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white/90 border border-slate-200 shadow-sm space-y-2 hover:border-indigo-300 transition">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00254</span>
+              <span class="text-slate-400 font-semibold text-[10px]">Item #254</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 leading-snug">Shree Digambar Jain Marwadi Mandir</h4>
+            <div class="text-xs text-slate-500">कैटेगरी: <b>Mandir-Trust (300)</b> | इंदौर</div>
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+              <a href="https://jainforjain.com/member/business-listings/254/edit" target="_blank" class="text-xs text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+              <span class="text-slate-300">|</span>
+              <a href="https://jainforjain.com/shree-digambar-jain-marwadi-mandir" target="_blank" class="text-xs text-emerald-600 font-bold hover:underline">👁️ प्रोफाइल देखें</a>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white/90 border border-slate-200 shadow-sm space-y-2 hover:border-indigo-300 transition">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00255</span>
+              <span class="text-slate-400 font-semibold text-[10px]">Item #255</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 leading-snug">Dada Vadi Jain Dharamshala</h4>
+            <div class="text-xs text-slate-500">कैटेगरी: <b>Mandir-Trust (300)</b> | इंदौर</div>
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+              <a href="https://jainforjain.com/member/business-listings/255/edit" target="_blank" class="text-xs text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+              <span class="text-slate-300">|</span>
+              <a href="https://jainforjain.com/dada-vadi-jain-dharamshala" target="_blank" class="text-xs text-emerald-600 font-bold hover:underline">👁️ प्रोफाइल देखें</a>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white/90 border border-slate-200 shadow-sm space-y-2 hover:border-indigo-300 transition">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00256</span>
+              <span class="text-slate-400 font-semibold text-[10px]">Item #256</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 leading-snug">Lal mandir (लाल मंदिर)</h4>
+            <div class="text-xs text-slate-500">कैटेगरी: <b>Mandir-Trust (300)</b> | इंदौर</div>
+            <div class="flex gap-2 pt-2 border-t border-slate-100">
+              <a href="https://jainforjain.com/member/business-listings/256/edit" target="_blank" class="text-xs text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+              <span class="text-slate-300">|</span>
+              <a href="https://jainforjain.com/lal-mandir" target="_blank" class="text-xs text-emerald-600 font-bold hover:underline">👁️ प्रोफाइल देखें</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: NEW SEARCH & CRAWLER ==================== -->
+    <div id="tab-scanner" class="hidden space-y-6">
+      <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
       
       <!-- Quick Entity Selector Buttons -->
       <div class="p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-2.5">
@@ -284,58 +471,10 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- 1-Click Mobile Actions Panel -->
-    <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/60 pb-3">
-        <div>
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>📱 मोबाइल 1-क्लिक रिमोट कंट्रोल (Mobile Hub)</span>
-            <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold">Real-Time</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">बिना PC छुए अपने फोन से सीधे जैनफॉरजैन पोर्टल और गूगल शीट को कंट्रोल करें</p>
-        </div>
-        <button onclick="loadStatus()" class="text-xs text-slate-600 hover:text-indigo-600 flex items-center gap-1 font-medium bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm cursor-pointer">
-          🔄 रिफ्रेश स्टेटस
-        </button>
-      </div>
-
-      <!-- Quick Status Badges -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-center">
-          <div class="text-[11px] text-indigo-600 font-medium">सक्रिय शहर</div>
-          <div id="statCity" class="text-sm font-bold text-indigo-950 mt-0.5">Indore (इंदौर)</div>
-        </div>
-        <div class="bg-purple-50/70 p-3 rounded-xl border border-purple-100 text-center">
-          <div class="text-[11px] text-purple-600 font-medium">करंट एरिया</div>
-          <div id="statArea" class="text-sm font-bold text-purple-950 mt-0.5">Rajwada (राजवाड़ा)</div>
-        </div>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-          <div class="text-[11px] text-slate-500 font-medium">कुल लीड्स</div>
-          <div id="statTotal" class="text-sm font-bold text-slate-800 mt-0.5">19</div>
-        </div>
-        <div class="bg-emerald-50/80 p-3 rounded-xl border border-emerald-200 text-center">
-          <div class="text-[11px] text-emerald-700 font-medium">पोर्टल पर लाइव ✅</div>
-          <div id="statSubmitted" class="text-sm font-bold text-emerald-800 mt-0.5">1</div>
-        </div>
-        <div class="bg-amber-50/80 p-3 rounded-xl border border-amber-200 text-center col-span-2 sm:col-span-1">
-          <div class="text-[11px] text-amber-700 font-medium">तैयार लीड्स ⏳</div>
-          <div id="statReady" class="text-sm font-bold text-amber-800 mt-0.5">18</div>
-        </div>
-      </div>
-
-      <!-- Mobile Action Buttons Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-        <button id="btnAutoSubmit" onclick="triggerPortalSubmit(5)" class="py-3 px-4 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md flex items-center justify-center gap-2 cursor-pointer transition">
-          <span>🚀 पोर्टल पर 5 लीड्स ऑटो-सबमिट करो</span>
-        </button>
-        <button id="btnSyncSheets" onclick="triggerGoogleSheetSync()" class="py-3 px-4 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md flex items-center justify-center gap-2 cursor-pointer transition">
-          <span>📊 लाइव Google Sheet में सिंक करो</span>
-        </button>
-      </div>
-      <div id="mobileActionNotice" class="hidden text-xs p-3 rounded-xl bg-slate-100 text-slate-700 font-medium"></div>
-    </section>
-
+  <!-- ==================== TAB 4: 26-COLUMN DATA TABLE ==================== -->
+  <div id="tab-table" class="hidden space-y-6">
     <!-- Results Table & Export Card -->
     <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -371,12 +510,13 @@
               <th class="py-3 px-3">लोकेशन / शहर</th>
               <th class="py-3 px-3 text-center">📸 साइनबोर्ड फ़ोटो</th>
               <th class="py-3 px-3 text-center">🏬 शोरूम / गैलरी</th>
+              <th class="py-3 px-3 text-center">🏛️ स्टेटस / पोर्टल ID</th>
             </tr>
           </thead>
           <tbody id="dataTableBody" class="divide-y divide-slate-100">
             <tr id="emptyRow">
-              <td colspan="8" class="py-8 text-center text-slate-400 font-medium">
-                स्कैन शुरू करने पर लाइव रिकॉर्ड्स यहाँ प्रदर्शित होंगे।
+              <td colspan="10" class="py-8 text-center text-slate-400 font-medium">
+                स्कैन शुरू करने पर या मास्टर लोड होने पर लाइव रिकॉर्ड्स यहाँ प्रदर्शित होंगे।
               </td>
             </tr>
           </tbody>
@@ -396,6 +536,73 @@
     let currentTaskId = null;
     let eventSource = null;
     let recordsCount = 0;
+    let masterLeadsLoaded = false;
+
+    function switchTab(tabId) {
+      const tabs = ['tab-mobile', 'tab-portal', 'tab-scanner', 'tab-table'];
+      tabs.forEach(t => {
+        const el = document.getElementById(t);
+        const btn = document.getElementById('btn-' + t);
+        if (el) {
+          if (t === tabId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+        if (btn) {
+          if (t === tabId) {
+            btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm cursor-pointer';
+          } else {
+            btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+          }
+        }
+      });
+      if (tabId === 'tab-table' && !masterLeadsLoaded) {
+        loadMasterLeads();
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const bgColors = {
+        'success': 'bg-emerald-600 border-emerald-500',
+        'error': 'bg-rose-600 border-rose-500',
+        'warning': 'bg-amber-600 border-amber-500',
+        'info': 'bg-slate-900 border-slate-700'
+      };
+      const icons = {
+        'success': '✓',
+        'error': '✕',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+      };
+
+      const bg = bgColors[type] || bgColors.info;
+      const icon = icons[type] || icons.info;
+
+      toast.className = `pointer-events-auto flex items-center gap-3 p-3.5 rounded-2xl text-white text-xs font-semibold shadow-xl border ${bg} transition-all duration-300 transform translate-y-3 opacity-0`;
+      toast.innerHTML = `
+        <span class="text-sm font-bold flex-shrink-0">${icon}</span>
+        <div class="flex-1 leading-snug">${message}</div>
+        <button onclick="this.parentElement.remove()" class="text-white/70 hover:text-white text-xs ml-2 cursor-pointer font-bold">✕</button>
+      `;
+
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 350);
+      }, 4000);
+    }
 
     let activeEntityType = 'commercial';
 
@@ -544,8 +751,11 @@
 
     function appendTableRow(rec, idx) {
       const tbody = document.getElementById('dataTableBody');
+      const emptyRow = document.getElementById('emptyRow');
+      if (emptyRow) emptyRow.remove();
+
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-indigo-50/30 transition-colors';
+      tr.className = 'hover:bg-indigo-50/40 transition-colors border-b border-slate-100';
 
       const sfPhoto = rec.storefront_photo || rec.photo_url || '';
       const sfCell = sfPhoto 
@@ -562,6 +772,27 @@
         ? `<img src="${rec.website_logo}" alt="Logo" class="w-5 h-5 rounded border border-slate-200 object-contain flex-shrink-0" onerror="this.style.display='none'">`
         : '';
 
+      const leadId = rec.j4j_lead_id || '';
+      const statusText = rec.submission_status || '';
+      const viewUrl = rec.j4j_view_url || '';
+
+      let statusBadge = '';
+      if (statusText.includes('Submitted') || leadId) {
+        statusBadge = `
+          <div class="flex flex-col items-center gap-1">
+            <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono font-bold text-[10px] px-2 py-0.5 rounded-md">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              ${leadId || 'Submitted'}
+            </span>
+            ${viewUrl ? `<a href="${viewUrl}" target="_blank" class="text-[10px] text-emerald-600 font-bold hover:underline">लाइव देखें ↗</a>` : ''}
+          </div>
+        `;
+      } else if (statusText.includes('Ready') || !statusText) {
+        statusBadge = `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-md">⏳ तैयार</span>`;
+      } else {
+        statusBadge = `<span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">${statusText}</span>`;
+      }
+
       tr.innerHTML = `
         <td class="py-3 px-3 font-mono text-slate-400">${idx}</td>
         <td class="py-3 px-3 font-bold text-slate-800">
@@ -569,13 +800,13 @@
             ${webLogoImg}
             <div>
               <div class="leading-tight">${rec.name}</div>
-              <div class="text-[10px] text-slate-400 font-normal mt-0.5">${rec.reason || ''}</div>
+              <div class="text-[10px] text-slate-400 font-normal mt-0.5">${rec.reason || rec.address || ''}</div>
             </div>
           </div>
         </td>
         <td class="py-3 px-3">
           <span class="bg-teal-50 text-teal-800 border border-teal-200 px-2 py-0.5 rounded-md font-semibold text-[11px]">
-            ${rec.j4j_category || 'Business & Industry'}
+            ${rec.j4j_category || rec.category || 'Business & Industry'}
           </span>
         </td>
         <td class="py-3 px-3 font-semibold text-indigo-700 font-sans">
@@ -588,12 +819,31 @@
         <td class="py-3 px-3 text-center font-mono font-bold text-slate-600 bg-slate-50/50 rounded">
           ${rec.pincode || 'N/A'}
         </td>
-        <td class="py-3 px-3 text-slate-500 max-w-xs truncate">${rec.city}, ${rec.state}</td>
+        <td class="py-3 px-3 text-slate-500 max-w-xs truncate">${rec.city || 'Indore'}, ${rec.state || 'Madhya Pradesh'}</td>
         <td class="py-3 px-3 text-center">${sfCell}</td>
         <td class="py-3 px-3 text-center">${scCell}</td>
+        <td class="py-3 px-3 text-center">${statusBadge}</td>
       `;
 
-      tbody.prepend(tr);
+      tbody.appendChild(tr);
+    }
+
+    async function loadMasterLeads() {
+      try {
+        const res = await fetch('/api/leads');
+        const data = await res.json();
+        if (data.leads && data.leads.length > 0) {
+          const tbody = document.getElementById('dataTableBody');
+          tbody.innerHTML = '';
+          data.leads.forEach((l, i) => {
+            appendTableRow(l, i + 1);
+          });
+          document.getElementById('tableCountBadge').innerText = `${data.leads.length} मास्टर रिकॉर्ड्स`;
+          masterLeadsLoaded = true;
+        }
+      } catch (err) {
+        console.error("Failed to load master leads:", err);
+      }
     }
 
     function downloadExcel() {
@@ -601,20 +851,33 @@
       window.location.href = `/api/download-excel/${currentTaskId}`;
     }
 
-    async function loadStatus() {
+    async function loadStatus(showFeedback = false) {
+      const refreshIcon = document.getElementById('refreshIcon');
+      if (refreshIcon && showFeedback) {
+        refreshIcon.classList.add('animate-spin');
+      }
       try {
         const res = await fetch('/api/current-status');
         const data = await res.json();
-        document.getElementById('statCity').innerText = data.city || 'Indore';
-        document.getElementById('statTotal').innerText = data.total_leads || 0;
-        document.getElementById('statSubmitted').innerText = data.submitted_leads || 0;
-        document.getElementById('statReady').innerText = data.ready_leads || 0;
+        if (document.getElementById('statCity')) document.getElementById('statCity').innerText = data.city || 'Indore';
+        if (document.getElementById('statTotal')) document.getElementById('statTotal').innerText = data.total_leads || 0;
+        if (document.getElementById('statSubmitted')) document.getElementById('statSubmitted').innerText = data.submitted_leads || 0;
+        if (document.getElementById('statReady')) document.getElementById('statReady').innerText = data.ready_leads || 0;
         
         const areas = ["Rajwada", "Sarafa Bazar", "Marothia Bazar", "Sitlamata Bazar", "MT Cloth Market", "Siya Ganj"];
         const curArea = areas[data.area_idx] || "Rajwada";
-        document.getElementById('statArea').innerText = curArea;
+        if (document.getElementById('statArea')) document.getElementById('statArea').innerText = curArea;
+
+        if (showFeedback) {
+          showToast('डैशबोर्ड और लीड्स स्थिति रिफ्रेश हो गई!', 'success');
+        }
       } catch (e) {
         console.error("Failed to load status:", e);
+        if (showFeedback) showToast('स्थिति रिफ्रेश करने में असमर्थ', 'error');
+      } finally {
+        if (refreshIcon && showFeedback) {
+          setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
+        }
       }
     }
 
@@ -626,6 +889,7 @@
       notice.classList.remove('hidden');
       notice.className = 'text-xs p-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 font-medium';
       notice.innerText = `⏳ पोर्टल पर ${limit} लीड्स की ऑटो-सबमिशन शुरू हो गई है... कृपया 1-2 मिनट प्रतीक्षा करें।`;
+      showToast(`पोर्टल पर ${limit} लीड्स सबमिशन शुरू किया गया`, 'info');
 
       try {
         const res = await fetch('/api/start-portal-entry', {
@@ -636,10 +900,15 @@
         const data = await res.json();
         notice.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
         notice.innerText = `✅ बैकएंड में सबमिशन चालू है! पूरा होते ही गूगल शीट में ऑटो-सिंक हो जाएगा।`;
-        setTimeout(loadStatus, 5000);
+        showToast('बैकएंड सबमिशन सफलतापूर्वक शुरू हो गया!', 'success');
+        setTimeout(() => {
+          loadStatus(false);
+          loadMasterLeads();
+        }, 5000);
       } catch (e) {
         notice.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-medium';
         notice.innerText = `❌ एरर: ` + e.message;
+        showToast('एरर: ' + e.message, 'error');
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
@@ -654,16 +923,22 @@
       notice.classList.remove('hidden');
       notice.className = 'text-xs p-3 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 font-medium';
       notice.innerText = `⏳ लाइव Google Sheet में सिंक हो रहा है...`;
+      showToast('लाइव Google Sheet में सिंक प्रारंभ...', 'info');
 
       try {
         const res = await fetch('/api/sync-google-sheets', { method: 'POST' });
         const data = await res.json();
         notice.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
         notice.innerHTML = `✅ Google Sheet सफलतापूर्वक सिंक हो गई! <a href="${data.sheet_url}" target="_blank" class="underline font-bold">यहाँ खोलें ↗</a>`;
-        setTimeout(loadStatus, 2000);
+        showToast('Google Sheet सफलतापूर्वक सिंक हो गई!', 'success');
+        setTimeout(() => {
+          loadStatus(false);
+          loadMasterLeads();
+        }, 2000);
       } catch (e) {
         notice.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-800 border border-rose-200 font-medium';
         notice.innerText = `❌ सिंक एरर: ` + e.message;
+        showToast('सिंक एरर: ' + e.message, 'error');
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
@@ -671,7 +946,10 @@
     }
 
     // Auto-load status on page open
-    window.addEventListener('DOMContentLoaded', loadStatus);
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStatus(false);
+      loadMasterLeads();
+    });
   </script>
 </body>
 </html>

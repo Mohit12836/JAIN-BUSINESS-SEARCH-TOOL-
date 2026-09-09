@@ -182,6 +182,19 @@ async def get_current_status():
         "completed_areas": progress.get("completed_areas", [])
     }
 
+@app.get("/api/leads")
+async def get_master_leads():
+    """Returns all leads from the master Excel workbook."""
+    from backend.auto_entry_bot import load_leads_from_excel
+    excel_path = get_master_excel_path()
+    leads = []
+    if os.path.exists(excel_path):
+        try:
+            leads = load_leads_from_excel(excel_path)
+        except Exception:
+            pass
+    return {"leads": leads, "total": len(leads)}
+
 class EntryRequest(BaseModel):
     limit: int = 5
     live: bool = True
