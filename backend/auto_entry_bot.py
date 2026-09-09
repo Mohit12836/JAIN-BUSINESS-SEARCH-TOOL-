@@ -32,6 +32,36 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+import tempfile
+import urllib.request
+import time
+
+def download_temp_image(image_url: str, filename_prefix: str = "j4j_img") -> Optional[str]:
+    """Downloads an online image URL to a local temporary file for file uploading."""
+    if not image_url or not image_url.startswith("http"):
+        return None
+    try:
+        temp_dir = os.path.join(tempfile.gettempdir(), "j4j_uploads")
+        os.makedirs(temp_dir, exist_ok=True)
+        clean_url = image_url
+        if "=w" in clean_url:
+            clean_url = clean_url.split("=")[0] + "=s1600"
+        ext = ".jpg"
+        if ".png" in clean_url.lower():
+            ext = ".png"
+        temp_file = os.path.join(temp_dir, f"{filename_prefix}_{int(time.time()*1000)}{ext}")
+        req = urllib.request.Request(
+            clean_url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        )
+        with urllib.request.urlopen(req, timeout=12) as response, open(temp_file, "wb") as out_file:
+            out_file.write(response.read())
+        if os.path.exists(temp_file) and os.path.getsize(temp_file) > 1000:
+            return temp_file
+    except Exception as e:
+        print(f"⚠️ Image download warning ({image_url[:40]}...): {e}")
+    return None
+
 LOGIN_URL = "https://jainforjain.com/member/login"
 CREATE_URL = "https://jainforjain.com/member/business-listings/create"
 LISTINGS_URL = "https://jainforjain.com/member/business-listings"
@@ -392,10 +422,10 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             return false;
         }''', desc_text)
 
-    # ------------------ STEP 7: TAB 4 (IMAGES) ------------------
-    print("--> Configuring Tab 4: Logo Display Style (Square)...")
+    # ------------------ STEP 7: TAB 4 (IMAGES & PHOTO UPLOAD) ------------------
+    print("--> Configuring Tab 4: Uploading Genuine Signboard / Storefront Photo...")
     await page.click('button:has-text("Images")')
-    await page.wait_for_timeout(1000)
+    await page.wait_for_timeout(1500)
     await page.evaluate('''() => {
         const el = document.getElementById("data.dynamic_data.logo_display_type");
         if (el && el.options.length > 1) {
@@ -403,6 +433,22 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             el.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }''')
+    
+    # Upload genuine storefront photo to portal
+    photo_url = lead.get("storefront_photo") or lead.get("photo_url") or ""
+    if photo_url:
+        clean_lead_name = re.sub(r'\W+', '_', lead.get('name', 'lead'))[:15]
+        temp_img_path = download_temp_image(photo_url, filename_prefix=clean_lead_name)
+        if temp_img_path and os.path.exists(temp_img_path):
+            try:
+                file_inputs = await page.query_selector_all('input[type="file"]')
+                if file_inputs:
+                    print(f"--> Uploading image file to portal: {temp_img_path}")
+                    await file_inputs[0].set_input_files(temp_img_path)
+                    await page.wait_for_timeout(3500)
+                    print("✓ Image file successfully attached to listing form!")
+            except Exception as up_err:
+                print(f"⚠️ Photo upload notice: {up_err}")
     
     # Return to Tab 1
     await page.click('button:has-text("Business Details")')

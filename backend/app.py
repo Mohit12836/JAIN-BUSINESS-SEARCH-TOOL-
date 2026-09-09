@@ -246,6 +246,127 @@ async def get_master_leads():
             pass
     return {"leads": leads, "total": len(leads)}
 
+class ExtractLeadsRequest(BaseModel):
+    city: str = "Indore"
+    category: str = "Jewellers"
+    count: int = 10
+
+@app.post("/api/extract-leads")
+async def extract_leads(req: ExtractLeadsRequest, background_tasks: BackgroundTasks):
+    """Step 1: 1-Click extraction of leads, saves to Excel, syncs to Google Sheets, streams progress."""
+    from backend.pipeline import run_autonomous_10x_pipeline
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {
+        "status": "running",
+        "city": req.city,
+        "category": req.category,
+        "count": req.count,
+        "records": []
+    }
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            res = await run_autonomous_10x_pipeline(
+                task_id=task_id,
+                city=req.city,
+                category=req.category,
+                count=req.count,
+                live_submit=False,
+                progress_callback=dispatch_event
+            )
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": str(e)
+            })
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started"}
+
+class TimerSubmitRequest(BaseModel):
+    delay_seconds: int = 60
+    limit: int = 5
+    city_filter: str = ""
+
+@app.post("/api/start-timer-submit")
+async def start_timer_submit(req: TimerSubmitRequest, background_tasks: BackgroundTasks):
+    """Step 2: 1-Click scheduled submit with configurable timer, photo uploads, live sheet sync."""
+    from backend.scheduled_submitter import run_scheduled_submission, SUBMISSION_CONTROLS
+    if SUBMISSION_CONTROLS.get("is_running"):
+        return {"status": "already_running", "message": "टाइमर सबमिशन पहले से चल रहा है"}
+    
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {"status": "running"}
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            res = await run_scheduled_submission(
+                delay_seconds=req.delay_seconds,
+                limit=req.limit,
+                city_filter=req.city_filter if req.city_filter else None,
+                progress_callback=dispatch_event
+            )
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": str(e)
+            })
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started"}
+
+@app.post("/api/stop-timer-submit")
+async def stop_timer():
+    """Stops the running scheduled submitter."""
+    from backend.scheduled_submitter import stop_scheduled_submission
+    stop_scheduled_submission()
+    return {"status": "stopped", "message": "टाइमर रोकने का निर्देश दे दिया गया है"}
+
+@app.get("/api/timer-status")
+async def get_timer_status():
+    """Returns the live state and countdown of the scheduled submitter."""
+    from backend.scheduled_submitter import SUBMISSION_CONTROLS
+    return SUBMISSION_CONTROLS
+
+@app.get("/api/inspect-portal")
+async def inspect_portal():
+    """Step 3: 1-Click inspect portal listings, approval status and live screenshot without manual login."""
+    from backend.portal_inspector import inspect_portal_account
+    result = await inspect_portal_account()
+    return result
+
+@app.get("/api/portal-screenshot")
+async def get_portal_screenshot():
+    """Returns the live full-page screenshot of jainforjain.com member portal."""
+    from backend.portal_inspector import SCREENSHOT_PATH
+    if os.path.exists(SCREENSHOT_PATH):
+        return FileResponse(SCREENSHOT_PATH, media_type="image/png")
+    return {"error": "Screenshot not yet generated"}
+
 class EntryRequest(BaseModel):
     limit: int = 5
     live: bool = True

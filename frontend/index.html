@@ -188,137 +188,355 @@
       </div>
     </div>
 
-    <!-- ==================== TAB 1: MOBILE 1-CLICK REMOTE HUB ==================== -->
+    <!-- ==================== TAB 1: 3-STEP 1-CLICK MASTER AUTONOMOUS CONTROL CENTER ==================== -->
     <div id="tab-mobile" class="space-y-6">
 
-      <!-- 1-CLICK 10X SUPER AUTONOMOUS PIPELINE CARD -->
-      <div class="glass-panel rounded-3xl p-6 sm:p-8 space-y-5 border-2 border-indigo-500/30 bg-gradient-to-br from-white/95 via-indigo-50/40 to-purple-50/50 shadow-xl relative overflow-hidden">
-        <div class="absolute -right-10 -top-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+      <!-- Live Status Metrics Banner -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-indigo-500">
+          <div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">सक्रिय शहर</div>
+          <div id="statCity" class="text-base font-extrabold text-slate-900 mt-0.5">Indore (इंदौर)</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-purple-500">
+          <div class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">वर्तमान मार्केट</div>
+          <div id="statArea" class="text-base font-extrabold text-slate-900 mt-0.5">Rajwada (राजवाड़ा)</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-slate-400">
+          <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">कुल लीड्स</div>
+          <div id="statTotal" class="text-base font-extrabold text-slate-900 mt-0.5">19</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-emerald-500 bg-emerald-50/40">
+          <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">पोर्टल पर लाइव ✅</div>
+          <div id="statSubmitted" class="text-base font-extrabold text-emerald-800 mt-0.5">5</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-amber-500 bg-amber-50/40 col-span-2 sm:col-span-1">
+          <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">तैयार लीड्स ⏳</div>
+          <div id="statReady" class="text-base font-extrabold text-amber-800 mt-0.5">14</div>
+        </div>
+      </div>
 
+      <!-- ==================== STEP 1 CARD: ⚡ 1-CLICK EXTRACT & SAVE TO SHEET ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-indigo-500/30 bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/40 shadow-xl space-y-4 relative overflow-hidden">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm mb-2">
-              <span>⚡ AUTONOMOUS 10X ENGINE</span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-sm mb-1.5">
+              <span>⚡ चरण 1</span>
               <span>•</span>
-              <span>1-CLICK AUTOMATION</span>
+              <span>1-क्लिक डेटा निकालो व शीट में सेव करो</span>
             </div>
-            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <span>🚀 1-क्लिक 10X सुपर बॉट: 10 बिज़नेस खोजें + पोर्टल पर सबमिट करें</span>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              Google Maps से 10, 20 या 50 जैन बिज़नेस निकालें और तुरंत Google Sheet में दर्ज करें
             </h2>
-            <p class="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
-              एक क्लिक दबाएं: बॉट Google Maps से 10 नए जैन व्यापार खोजेगा, साइनबोर्ड फ़ोटो व 3-पैराग्राफ SEO विवरण तैयार करेगा, 
-              और सीधे <b>jainforjain.com</b> पर लॉगिन कर फॉर्म सबमिट करके Google Sheet में सिंक कर देगा!
+            <p class="text-xs text-slate-500 mt-0.5">
+              दुकान की साइनबोर्ड फ़ोटो, मालिक का नाम, फ़ोन/व्हाट्सएप, पिनकोड और 3-पैरा SEO विवरण तुरंत नीचे टेबल और गूगल शीट में लाइव सेव होंगे।
             </p>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-emerald-700 bg-emerald-100/90 px-3 py-1.5 rounded-xl border border-emerald-300">
-              Zero-Manual Work
-            </span>
-          </div>
+          <span class="text-xs font-bold text-indigo-700 bg-indigo-100/80 px-3 py-1.5 rounded-xl border border-indigo-300 self-start sm:self-center flex-shrink-0">
+            Auto-Sync Ready
+          </span>
         </div>
 
-        <!-- Inline Config for 10X Pipeline -->
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
-          <div class="sm:col-span-5">
-            <label class="text-xs text-slate-500 font-semibold mb-1 block">सर्च शहर (Target City)</label>
-            <select id="pipelineCity" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+        <!-- Controls: City, Category, Count Pills -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+          <div class="sm:col-span-4">
+            <label class="text-[11px] text-slate-600 font-bold mb-1 block">📍 शहर (City)</label>
+            <select id="step1City" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
               <option value="Indore" selected>📍 Indore (इंदौर - राजवाड़ा, सराफा, सीयागंज)</option>
               <option value="Jaipur">📍 Jaipur (जयपुर - जौहरी बाज़ार, एमआई रोड)</option>
               <option value="Surat">📍 Surat (सूरत - रिंग रोड, हीरा बाज़ार)</option>
               <option value="Ahmedabad">📍 Ahmedabad (अहमदाबाद - मानक चौक, रिलीफ रोड)</option>
               <option value="Mumbai">📍 Mumbai (मुंबई - ज़वेरी बाज़ार, कालबादेवी)</option>
-              <option value="Ujjain">📍 Ujjain (उज्जैन)</option>
-              <option value="Bhopal">📍 Bhopal (भोपाल)</option>
+              <option value="Bhopal">📍 Bhopal (भोपाल - न्यू मार्केट, चौक)</option>
+              <option value="Ujjain">📍 Ujjain (उज्जैन - फ्रीगंज)</option>
             </select>
           </div>
-          
+
           <div class="sm:col-span-4">
-            <label class="text-xs text-slate-500 font-semibold mb-1 block">ट्रेड / व्यापार श्रेणी (Category)</label>
-            <input id="pipelineCategory" type="text" value="Jewellers & Gems" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800">
+            <label class="text-[11px] text-slate-600 font-bold mb-1 block">🏬 व्यापार श्रेणी (Category)</label>
+            <input id="step1Category" type="text" value="Jewellers & Gems" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800" placeholder="उदा: Jewellers, Textiles, Mandir...">
           </div>
 
-          <div class="sm:col-span-3 flex flex-col justify-end">
-            <button id="btnPipeline10x" onclick="startPipeline10x()" class="spring-press w-full py-2.5 px-4 rounded-xl text-white font-extrabold text-xs bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer">
-              <span id="btnPipelineIcon">⚡</span>
-              <span id="btnPipelineText">10X बॉट प्रारंभ करें</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live Status Cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
-        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-indigo-500">
-          <div class="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider">सक्रिय शहर</div>
-          <div id="statCity" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">Indore (इंदौर)</div>
-        </div>
-        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-purple-500">
-          <div class="text-[11px] font-semibold text-purple-600 uppercase tracking-wider">वर्तमान मार्केट</div>
-          <div id="statArea" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">Rajwada (राजवाड़ा)</div>
-        </div>
-        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-slate-400">
-          <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">कुल लीड्स</div>
-          <div id="statTotal" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">19</div>
-        </div>
-        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-emerald-500 bg-emerald-50/40">
-          <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">पोर्टल पर लाइव ✅</div>
-          <div id="statSubmitted" class="text-base sm:text-lg font-extrabold text-emerald-800 mt-1">5</div>
-        </div>
-        <div class="glass-panel rounded-2xl p-4 text-center border-l-4 border-l-amber-500 bg-amber-50/40 col-span-2 sm:col-span-1">
-          <div class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider">तैयार लीड्स ⏳</div>
-          <div id="statReady" class="text-base sm:text-lg font-extrabold text-amber-800 mt-1">13</div>
-        </div>
-      </div>
-
-      <!-- Hero Remote Control Panel -->
-      <div class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
-        <div>
-          <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-            <span>📱 1-टैप ऑटोनोमस एक्शन्स (Mobile Actions)</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">बिना PC छुए अपने फोन से सीधे लीड्स सबमिट और गूगल शीट सिंक करें</p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="rounded-2xl p-5 space-y-3 bg-white/70 border border-slate-200/80 flex flex-col justify-between hover:border-emerald-300 transition-all shadow-sm">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-2xl">🚀</span>
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
-                  Zero-Manual Work
-                </span>
-              </div>
-              <h3 class="text-sm font-bold text-slate-900 mt-2">पोर्टल पर अगली 5 लीड्स सबमिट करो</h3>
-              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                बॉट बैकग्राउंड में jainforjain.com पर लॉगिन करेगा, इंदौर के फॉर्म भरेगा, और नया JFJ बिजनेस ID जनरेट कर देगा।
-              </p>
+          <div class="sm:col-span-4">
+            <label class="text-[11px] text-slate-600 font-bold mb-1 block">🎯 कितनी लीड्स निकालनी हैं?</label>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button type="button" onclick="setExtractCount(10, this)" class="pill-count spring-press py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-sm cursor-pointer text-center">10</button>
+              <button type="button" onclick="setExtractCount(20, this)" class="pill-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-indigo-50 cursor-pointer text-center">20</button>
+              <button type="button" onclick="setExtractCount(50, this)" class="pill-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-indigo-50 cursor-pointer text-center">50</button>
+              <button type="button" onclick="setExtractCount(100, this)" class="pill-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-indigo-50 cursor-pointer text-center">100</button>
             </div>
-            <button id="btnAutoSubmit" onclick="triggerPortalSubmit(5)" class="spring-press w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer">
-              <span>🚀 5 लीड्स ऑटो-सबमिट शुरू करें</span>
-            </button>
+          </div>
+        </div>
+
+        <!-- Big 1-Click Action Button -->
+        <div class="pt-2">
+          <button id="btnExtractStep1" onclick="runStep1Extract()" class="spring-press w-full py-3.5 px-6 rounded-2xl text-white font-extrabold text-sm bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-3 cursor-pointer">
+            <span class="text-base" id="iconExtractStep1">⚡</span>
+            <span id="textExtractStep1">⚡ <span id="extractCountDisplay">10</span> नए जैन बिज़नेस निकालो और Google Sheet में सेव करो</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 2 CARD: 🚀 1-CLICK SCHEDULED FILL WITH TIMER ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-emerald-500/30 bg-gradient-to-br from-white via-emerald-50/25 to-teal-50/30 shadow-xl space-y-4 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm mb-1.5">
+              <span>🚀 चरण 2</span>
+              <span>•</span>
+              <span>साइट पर ऑटो-भरो (टाइमर व फ़ोटो सहित)</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              1-क्लिक में jainforjain.com पर टाइमर से फॉर्म भरें और फ़ोटो अपलोड करें
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              बैकएंड बॉट लॉगिन करेगा, हर लीड की <b>साइनबोर्ड फ़ोटो अपलोड करेगा</b>, टाइमर के अनुसार सबमिट करके JFJ बिजनेस ID Google Sheet में अपडेट करेगा।
+            </p>
+          </div>
+          <span class="text-xs font-bold text-emerald-700 bg-emerald-100/90 px-3 py-1.5 rounded-xl border border-emerald-300 self-start sm:self-center flex-shrink-0">
+            📸 Photo Upload Active
+          </span>
+        </div>
+
+        <!-- Timer & Limit Controls -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+          <!-- Timer Delay Selector -->
+          <div class="sm:col-span-7">
+            <label class="text-[11px] text-slate-600 font-bold mb-1 block">⏱️ टाइमर अंतराल (प्रत्येक लीड के बीच कितना वेट करें?)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button type="button" onclick="setTimerDelay(30, this)" class="pill-timer spring-press py-2 px-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center">⚡ 30 सेकंड</button>
+              <button type="button" onclick="setTimerDelay(60, this)" class="pill-timer spring-press py-2 px-2 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-sm cursor-pointer text-center">⏱️ 1 मिनट ⭐</button>
+              <button type="button" onclick="setTimerDelay(120, this)" class="pill-timer spring-press py-2 px-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center">⏱️ 2 मिनट</button>
+              <button type="button" onclick="setTimerDelay(300, this)" class="pill-timer spring-press py-2 px-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center">⏳ 5 मिनट</button>
+            </div>
+            <input type="hidden" id="customTimerInput" value="60">
           </div>
 
-          <div class="rounded-2xl p-5 space-y-3 bg-white/70 border border-slate-200/80 flex flex-col justify-between hover:border-blue-300 transition-all shadow-sm">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-2xl">📊</span>
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
-                  Instant Cloud Sync
-                </span>
-              </div>
-              <h3 class="text-sm font-bold text-slate-900 mt-2">लाइव Google Sheet में पुश करें</h3>
-              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                सारे 26 कॉलम्स, फोन नंबर, HD फोटो लिंक्स और नई JFJ IDs को सीधे आपकी पर्सनल Google Sheet में रिफ्रेश करता है।
-              </p>
+          <!-- Limit Selector -->
+          <div class="sm:col-span-5">
+            <label class="text-[11px] text-slate-600 font-bold mb-1 block">📋 कितनी लीड्स सबमिट करनी हैं?</label>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button type="button" onclick="setSubmitLimit(5, this)" class="pill-limit spring-press py-2 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-sm cursor-pointer text-center">5</button>
+              <button type="button" onclick="setSubmitLimit(10, this)" class="pill-limit spring-press py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center">10</button>
+              <button type="button" onclick="setSubmitLimit(20, this)" class="pill-limit spring-press py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center">20</button>
+              <button type="button" onclick="setSubmitLimit(999, this)" class="pill-limit spring-press py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center">सभी</button>
             </div>
-            <button id="btnSyncSheets" onclick="triggerGoogleSheetSync()" class="spring-press w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 cursor-pointer">
-              <span>📊 लाइव Google Sheet में सिंक करें</span>
+          </div>
+        </div>
+
+        <!-- Real-Time Countdown & Photo Upload Notice HUD -->
+        <div id="timerActiveHUD" class="hidden p-4 rounded-2xl bg-gradient-to-r from-emerald-900 to-slate-900 text-white border border-emerald-700/60 shadow-lg space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <span id="hudCountdownText" class="text-xs font-mono font-bold text-emerald-300">
+                ⏱️ टाइमर सक्रिय: अगली लीड 60 सेकंड में सबमिट होगी...
+              </span>
+            </div>
+            <span class="text-[10px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">
+              AUTO-DELAY ON
+            </span>
+          </div>
+          <div class="text-[11px] text-slate-300 flex items-center gap-2">
+            <span>📸 स्टोरफ्रंट साइनबोर्ड फ़ोटो:</span>
+            <span class="text-emerald-300 font-semibold">पोर्टल फॉर्म पर ऑटो-अपलोड हो रही है (FilePond Input)</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons: Start & Stop -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
+          <div class="sm:col-span-9">
+            <button id="btnStartTimerSubmit" onclick="runStep2TimerSubmit()" class="spring-press w-full py-3.5 px-6 rounded-2xl text-white font-extrabold text-sm bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-3 cursor-pointer">
+              <span class="text-base" id="iconTimerSubmit">🚀</span>
+              <span id="textTimerSubmit">🚀 साइट पर ऑटो-भरना शुरू करो (jainforjain.com)</span>
+            </button>
+          </div>
+          <div class="sm:col-span-3">
+            <button id="btnStopTimerSubmit" onclick="stopStep2TimerSubmit()" disabled class="spring-press w-full py-3.5 px-4 rounded-2xl text-slate-400 font-extrabold text-xs bg-slate-100 border border-slate-200 flex items-center justify-center gap-2 cursor-not-allowed transition">
+              <span>⏹️ टाइमर रोको</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STEP 3 CARD: 👁️ 1-CLICK PORTAL LIVE INSPECTOR ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-purple-500/30 bg-gradient-to-br from-white via-purple-50/25 to-pink-50/30 shadow-xl space-y-4 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm mb-1.5">
+              <span>👁️ चरण 3</span>
+              <span>•</span>
+              <span>साइट का लाइव स्टेटस बिना लॉगिन किये यहीं देखो</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              पोर्टल पर क्या-क्या अपडेट हुआ, एक क्लिक में लाइव लिस्टिंग्स और स्क्रीनशॉट देखें
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              अलग-अलग जाकर लॉगिन करने की ज़रूरत नहीं! बॉट अंदर जाकर वर्तमान स्थिति, लाइव लिंक्स और फुल स्क्रीनशॉट यहीं दिखा देगा।
+            </p>
+          </div>
+          <button id="btnInspectStep3" onclick="runStep3InspectPortal()" class="spring-press px-5 py-2.5 rounded-xl text-white font-extrabold text-xs bg-gradient-to-r from-purple-600 to-pink-600 shadow-md shadow-purple-600/25 flex items-center gap-2 cursor-pointer self-start sm:self-center flex-shrink-0">
+            <span id="iconInspectStep3">🔄</span>
+            <span id="textInspectStep3">पोर्टल से लाइव स्टेटस फेच करो</span>
+          </button>
+        </div>
+
+        <!-- Dynamic Portal Listings Display Grid -->
+        <div id="step3ListingsContainer" class="space-y-3 pt-1">
+          <div class="flex items-center justify-between text-xs text-slate-500 border-b border-slate-200/80 pb-2">
+            <span class="font-bold text-slate-700">🏛️ पोर्टल पर सक्रिय लिस्टिंग्स (Live Accounts):</span>
+            <span id="portalListingsBadge" class="font-mono font-bold bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full">
+              5/5 लिस्टिंग्स एक्टिव
+            </span>
+          </div>
+
+          <!-- Cards Grid -->
+          <div id="portalCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00252</span>
+                <span class="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">Live ✅</span>
+              </div>
+              <h4 class="font-bold text-xs text-slate-900 leading-snug">Shree Parshwanath Digambar Jain Mandir</h4>
+              <div class="text-[11px] text-slate-500">Mandir-Trust (300) | इंदौर</div>
+              <div class="flex gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                <a href="https://jainforjain.com/member/business-listings/252/edit" target="_blank" class="text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+                <span class="text-slate-300">|</span>
+                <a href="https://jainforjain.com/shree-parshwanath-digambar-jain-mandir" target="_blank" class="text-emerald-600 font-bold hover:underline">👁️ लाइव देखें</a>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00253</span>
+                <span class="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">Live ✅</span>
+              </div>
+              <h4 class="font-bold text-xs text-slate-900 leading-snug">Kanch Mandir (कांच मंदिर)</h4>
+              <div class="text-[11px] text-slate-500">Mandir-Trust (300) | इंदौर</div>
+              <div class="flex gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                <a href="https://jainforjain.com/member/business-listings/253/edit" target="_blank" class="text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+                <span class="text-slate-300">|</span>
+                <a href="https://jainforjain.com/kanch-mandir" target="_blank" class="text-emerald-600 font-bold hover:underline">👁️ लाइव देखें</a>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00254</span>
+                <span class="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">Live ✅</span>
+              </div>
+              <h4 class="font-bold text-xs text-slate-900 leading-snug">Shree Digambar Jain Marwadi Mandir</h4>
+              <div class="text-[11px] text-slate-500">Mandir-Trust (300) | इंदौर</div>
+              <div class="flex gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                <a href="https://jainforjain.com/member/business-listings/254/edit" target="_blank" class="text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+                <span class="text-slate-300">|</span>
+                <a href="https://jainforjain.com/shree-digambar-jain-marwadi-mandir" target="_blank" class="text-emerald-600 font-bold hover:underline">👁️ लाइव देखें</a>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00255</span>
+                <span class="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">Live ✅</span>
+              </div>
+              <h4 class="font-bold text-xs text-slate-900 leading-snug">Dada Vadi Jain Dharamshala</h4>
+              <div class="text-[11px] text-slate-500">Mandir-Trust (300) | इंदौर</div>
+              <div class="flex gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                <a href="https://jainforjain.com/member/business-listings/255/edit" target="_blank" class="text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+                <span class="text-slate-300">|</span>
+                <a href="https://jainforjain.com/dada-vadi-jain-dharamshala" target="_blank" class="text-emerald-600 font-bold hover:underline">👁️ लाइव देखें</a>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">JFJ-00256</span>
+                <span class="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">Live ✅</span>
+              </div>
+              <h4 class="font-bold text-xs text-slate-900 leading-snug">Lal mandir (लाल मंदिर)</h4>
+              <div class="text-[11px] text-slate-500">Mandir-Trust (300) | इंदौर</div>
+              <div class="flex gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                <a href="https://jainforjain.com/member/business-listings/256/edit" target="_blank" class="text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>
+                <span class="text-slate-300">|</span>
+                <a href="https://jainforjain.com/lal-mandir" target="_blank" class="text-emerald-600 font-bold hover:underline">👁️ लाइव देखें</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1-Click Live Screenshot Preview Box -->
+          <div class="pt-2">
+            <details class="group rounded-2xl bg-white/80 border border-slate-200/80 p-3.5 transition-all">
+              <summary class="flex items-center justify-between cursor-pointer font-bold text-xs text-slate-800 select-none">
+                <span class="flex items-center gap-2">
+                  <span>📸 पोर्टल लाइव फुल-पेज स्क्रीनशॉट देखें (Live Proof Screenshot)</span>
+                  <span id="screenshotStatusBadge" class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">उपलब्ध</span>
+                </span>
+                <span class="text-indigo-600 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="pt-3">
+                <p class="text-[11px] text-slate-500 mb-2">यह स्क्रीनशॉट बैकएंड बॉट द्वारा jainforjain.com के अंदर से सीधे लिया गया है:</p>
+                <div class="rounded-xl overflow-hidden border border-slate-200 bg-slate-950/5">
+                  <img id="portalScreenshotImg" src="/api/portal-screenshot" alt="Portal Live Screenshot" class="w-full h-auto max-h-[500px] object-cover object-top hover:object-contain transition-all" onerror="this.parentElement.innerHTML='<div class=\'p-8 text-center text-xs text-slate-400\'>स्क्रीनशॉट लोड करने के लिए ऊपर <b>\'पोर्टल से लाइव स्टेटस फेच करो\'</b> बटन दबाएं।</div>'">
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 26-COLUMN REAL-TIME MASTER DATA TABLE ==================== -->
+      <section class="glass-panel rounded-3xl p-5 sm:p-7 space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>📊 26-कॉलम मास्टर डेटा टेबल (Live Extracted Records)</span>
+              <span id="tableCountBadge" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full border border-indigo-200 font-bold">
+                0 रिकॉर्ड्स
+              </span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">साइनबोर्ड फ़ोटो लिंक, मालिक, पिनकोड, फ़ोन व स्टेटस सब यहाँ लाइव अपडेट होते हैं</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="triggerGoogleSheetSync()" class="spring-press inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 cursor-pointer">
+              <span>📊 Google Sheet सिंक</span>
+            </button>
+            <button id="downloadBtn" onclick="downloadExcel()" class="btn-excel text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-1.5 cursor-pointer">
+              <span>📥 Excel फ़ाइल</span>
             </button>
           </div>
         </div>
 
-        <div id="mobileActionNotice" class="hidden text-xs p-4 rounded-2xl font-medium transition-all"></div>
-      </div>
+        <!-- Table Container -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm max-h-96">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50/90 sticky top-0 text-slate-700 font-semibold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+              <tr>
+                <th class="py-3 px-3">#</th>
+                <th class="py-3 px-3">फ़र्म का नाम</th>
+                <th class="py-3 px-3">J4J श्रेणी (Category)</th>
+                <th class="py-3 px-3">मालिक / प्रोपराइटर</th>
+                <th class="py-3 px-3">फ़ोन / व्हाट्सएप</th>
+                <th class="py-3 px-3 text-center">पिनकोड</th>
+                <th class="py-3 px-3">लोकेशन / शहर</th>
+                <th class="py-3 px-3 text-center">📸 साइनबोर्ड फ़ोटो</th>
+                <th class="py-3 px-3 text-center">🏬 शोरूम / गैलरी</th>
+                <th class="py-3 px-3 text-center">🏛️ स्टेटस / पोर्टल ID</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody" class="divide-y divide-slate-100">
+              <tr id="emptyRow">
+                <td colspan="10" class="py-8 text-center text-slate-400 font-medium">
+                  मास्टर डेटा लोड हो रहा है...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
     </div>
 
     <!-- ==================== TAB 2: LIVE PORTAL LISTINGS (5 INDORE LISTINGS) ==================== -->
@@ -844,12 +1062,384 @@
       }
     }
 
+    // ==================== 3-STEP WORKFLOW STATE & HANDLERS ====================
+    let selectedExtractCount = 10;
+    let selectedTimerDelay = 60;
+    let selectedSubmitLimit = 5;
+
+    function setExtractCount(count, btnEl) {
+      selectedExtractCount = count;
+      document.querySelectorAll('.pill-count').forEach(b => {
+        b.className = 'pill-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-indigo-50 cursor-pointer text-center';
+      });
+      if (btnEl) {
+        btnEl.className = 'pill-count spring-press py-2 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-sm cursor-pointer text-center';
+      }
+      const displayEl = document.getElementById('extractCountDisplay');
+      if (displayEl) displayEl.innerText = count;
+    }
+
+    function setTimerDelay(seconds, btnEl) {
+      selectedTimerDelay = seconds;
+      const customEl = document.getElementById('customTimerInput');
+      if (customEl) customEl.value = seconds;
+      document.querySelectorAll('.pill-timer').forEach(b => {
+        b.className = 'pill-timer spring-press py-2 px-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center';
+      });
+      if (btnEl) {
+        btnEl.className = 'pill-timer spring-press py-2 px-2 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-sm cursor-pointer text-center';
+      }
+    }
+
+    function setSubmitLimit(limit, btnEl) {
+      selectedSubmitLimit = limit;
+      document.querySelectorAll('.pill-limit').forEach(b => {
+        b.className = 'pill-limit spring-press py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 cursor-pointer text-center';
+      });
+      if (btnEl) {
+        btnEl.className = 'pill-limit spring-press py-2 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-sm cursor-pointer text-center';
+      }
+    }
+
+    // STEP 1: EXTRACT LEADS & SYNC TO SHEET
+    async function runStep1Extract() {
+      const city = document.getElementById('step1City').value;
+      const category = document.getElementById('step1Category').value.trim() || 'Jewellers & Gems';
+      const count = selectedExtractCount || 10;
+
+      const btn = document.getElementById('btnExtractStep1');
+      const btnText = document.getElementById('textExtractStep1');
+      const btnIcon = document.getElementById('iconExtractStep1');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      consoleSec.classList.remove('hidden');
+      consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      startConsoleTimer();
+      document.getElementById('consoleProgressBar').style.width = '3%';
+      document.getElementById('consoleStageBadge').innerText = 'MINING';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '⚡',
+        stage: 'INIT',
+        message: `चरण 1 प्रारंभ: ${city} से ${count} जैन बिज़नेस खोजे जा रहे हैं ('${category}')...`,
+        percent: 5
+      });
+
+      btn.disabled = true;
+      btn.classList.add('opacity-60');
+      btnText.innerText = `खोज जारी है: Google Maps से ${count} बिज़नेस निकाले जा रहे हैं...`;
+      btnIcon.innerText = '⏳';
+
+      showToast(`चरण 1: ${city} से ${count} बिज़नेस एक्सट्रैक्शन प्रारंभ...`, 'info');
+
+      try {
+        const resp = await fetch('/api/extract-leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, category, count })
+        });
+
+        const data = await resp.json();
+        currentTaskId = data.task_id;
+
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog(payload);
+          } else if (payload.type === 'progress') {
+            document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+          } else if (payload.type === 'new_record') {
+            recordsCount++;
+            appendTableRow(payload.record, recordsCount);
+            document.getElementById('tableCountBadge').innerText = recordsCount + ' रिकॉर्ड्स';
+          } else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleProgressBar').style.width = '100%';
+            document.getElementById('consoleStageBadge').innerText = 'COMPLETED';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'COMPLETE',
+              message: payload.message || `चरण 1 पूर्ण! सभी ${count} रिकॉर्ड्स Master Excel और Google Sheet में दर्ज हो चुके हैं।`,
+              percent: 100
+            });
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            btnText.innerHTML = `⚡ <span id="extractCountDisplay">${count}</span> नए जैन बिज़नेस निकालो और Google Sheet में सेव करो`;
+            btnIcon.innerText = '⚡';
+
+            showToast(`✓ ${count} बिज़नेस सफलतापूर्वक Google Sheet में सेव हो गए!`, 'success');
+            loadStatus(false);
+            loadMasterLeads();
+          } else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleStageBadge').innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'त्रुटि: ' + payload.message
+            });
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            btnText.innerHTML = `⚡ <span id="extractCountDisplay">${count}</span> नए जैन बिज़नेस निकालो और Google Sheet में सेव करो`;
+            btnIcon.innerText = '⚠️';
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          btnText.innerHTML = `⚡ <span id="extractCountDisplay">${count}</span> नए जैन बिज़नेस निकालो और Google Sheet में सेव करो`;
+          btnIcon.innerText = '⚡';
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        btn.disabled = false;
+        btn.classList.remove('opacity-60');
+        showToast('कनेक्शन त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    // STEP 2: START SCHEDULED FILL WITH CONFIGURABLE TIMER
+    async function runStep2TimerSubmit() {
+      const customVal = parseInt(document.getElementById('customTimerInput').value);
+      const delaySeconds = customVal || selectedTimerDelay || 60;
+      const limit = selectedSubmitLimit || 5;
+
+      const startBtn = document.getElementById('btnStartTimerSubmit');
+      const stopBtn = document.getElementById('btnStopTimerSubmit');
+      const iconTimer = document.getElementById('iconTimerSubmit');
+      const textTimer = document.getElementById('textTimerSubmit');
+      const hud = document.getElementById('timerActiveHUD');
+      const hudText = document.getElementById('hudCountdownText');
+
+      startBtn.disabled = true;
+      startBtn.classList.add('opacity-60');
+      iconTimer.innerText = '⏳';
+      textTimer.innerText = `टाइमर सक्रिय (${delaySeconds}s delay) | सबमिशन चालू...`;
+
+      stopBtn.disabled = false;
+      stopBtn.className = 'spring-press w-full py-3.5 px-4 rounded-2xl text-white font-extrabold text-xs bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer transition';
+
+      hud.classList.remove('hidden');
+      hudText.innerText = `⏱️ टाइमर सक्रिय: पोर्टल लॉगिन हो रहा है, पहली लीड सबमिट की जाएगी...`;
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      consoleSec.classList.remove('hidden');
+      consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      startConsoleTimer();
+      document.getElementById('consoleProgressBar').style.width = '5%';
+      document.getElementById('consoleStageBadge').innerText = 'TIMER_SUBMIT';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '🚀',
+        stage: 'PORTAL_AUTH',
+        message: `चरण 2 प्रारंभ: टाइमर = ${delaySeconds}s, सीमा = ${limit} लीड्स। पोर्टल लॉगिन व फ़ोटो अपलोड चालू...`,
+        percent: 5
+      });
+
+      showToast(`चरण 2 प्रारंभ: ${delaySeconds}s टाइमर के साथ पोर्टल सबमिशन शुरू`, 'info');
+
+      try {
+        const resp = await fetch('/api/start-timer-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            delay_seconds: delaySeconds,
+            limit: limit,
+            city_filter: ''
+          })
+        });
+
+        const data = await resp.json();
+        currentTaskId = data.task_id;
+
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog(payload);
+          } else if (payload.type === 'countdown') {
+            hudText.innerHTML = `⏱️ टाइमर सक्रिय: अगली लीड '<b>${payload.next_lead}</b>' <b>${payload.seconds_remaining}s</b> में सबमिट होगी... [${payload.completed}/${payload.total} सबमिट]`;
+          } else if (payload.type === 'lead_updated') {
+            showToast(`🎉 ${payload.name} सबमिट! ID: ${payload.biz_id}`, 'success');
+            loadMasterLeads();
+            loadStatus(false);
+          } else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            hud.classList.add('hidden');
+
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-60');
+            iconTimer.innerText = '🚀';
+            textTimer.innerText = '🚀 साइट पर ऑटो-भरना शुरू करो (jainforjain.com)';
+
+            stopBtn.disabled = true;
+            stopBtn.className = 'spring-press w-full py-3.5 px-4 rounded-2xl text-slate-400 font-extrabold text-xs bg-slate-100 border border-slate-200 flex items-center justify-center gap-2 cursor-not-allowed transition';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'COMPLETE',
+              message: payload.message || 'शेड्यूल्ड सबमिशन पूर्ण! Google Sheet में IDs अपडेट हो चुकी हैं।',
+              percent: 100
+            });
+
+            showToast('✓ शेड्यूल्ड सबमिशन पूर्ण!', 'success');
+            loadStatus(false);
+            loadMasterLeads();
+          } else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            hud.classList.add('hidden');
+
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-60');
+            iconTimer.innerText = '⚠️';
+            textTimer.innerText = 'पुनः प्रयास करें';
+
+            stopBtn.disabled = true;
+            stopBtn.className = 'spring-press w-full py-3.5 px-4 rounded-2xl text-slate-400 font-extrabold text-xs bg-slate-100 border border-slate-200 flex items-center justify-center gap-2 cursor-not-allowed transition';
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          hud.classList.add('hidden');
+          startBtn.disabled = false;
+          startBtn.classList.remove('opacity-60');
+          iconTimer.innerText = '🚀';
+          textTimer.innerText = '🚀 साइट पर ऑटो-भरना शुरू करो (jainforjain.com)';
+          stopBtn.disabled = true;
+          stopBtn.className = 'spring-press w-full py-3.5 px-4 rounded-2xl text-slate-400 font-extrabold text-xs bg-slate-100 border border-slate-200 flex items-center justify-center gap-2 cursor-not-allowed transition';
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        hud.classList.add('hidden');
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-60');
+        stopBtn.disabled = true;
+        showToast('कनेक्शन त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    // STEP 2 STOP ACTION
+    async function stopStep2TimerSubmit() {
+      const hudText = document.getElementById('hudCountdownText');
+      if (hudText) hudText.innerText = '⏹️ टाइमर रोकने का निर्देश भेजा गया... कृपया रुकने तक प्रतीक्षा करें।';
+      showToast('टाइमर रोकने का निर्देश दिया गया...', 'warning');
+
+      try {
+        await fetch('/api/stop-timer-submit', { method: 'POST' });
+      } catch (e) {
+        console.error("Failed to signal stop:", e);
+      }
+    }
+
+    // STEP 3: 1-CLICK PORTAL INSPECTOR
+    async function runStep3InspectPortal() {
+      const btn = document.getElementById('btnInspectStep3');
+      const icon = document.getElementById('iconInspectStep3');
+      const text = document.getElementById('textInspectStep3');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-60');
+      icon.className = 'animate-spin inline-block';
+      text.innerText = 'पोर्टल जांचा जा रहा है (लॉगिन व स्क्रीनशॉट)...';
+
+      showToast('पोर्टल जांच प्रारंभ: jainforjain.com से लाइव डेटा फेच हो रहा है...', 'info');
+
+      try {
+        const resp = await fetch('/api/inspect-portal');
+        const data = await resp.json();
+
+        if (data.success) {
+          const grid = document.getElementById('portalCardsGrid');
+          const badge = document.getElementById('portalListingsBadge');
+          if (badge) badge.innerText = `${data.count} लिस्टिंग्स एक्टिव`;
+
+          if (grid && data.listings && data.listings.length > 0) {
+            grid.innerHTML = '';
+            data.listings.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'p-3.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm space-y-1.5 hover:border-purple-300 transition';
+              const isLive = item.status.toLowerCase().includes('live') || item.status.toLowerCase().includes('approved') || item.status.toLowerCase().includes('publish');
+              const statusBadge = isLive 
+                ? '<span class="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">Live ✅</span>'
+                : `<span class="text-amber-600 font-bold text-[10px] bg-amber-50 px-2 py-0.5 rounded-full">${item.status || 'Pending ⏳'}</span>`;
+
+              card.innerHTML = `
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">${item.id || 'JFJ-LIVE'}</span>
+                  ${statusBadge}
+                </div>
+                <h4 class="font-bold text-xs text-slate-900 leading-snug">${item.name}</h4>
+                <div class="text-[11px] text-slate-500">${item.category}</div>
+                <div class="flex gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                  ${item.edit_url ? `<a href="${item.edit_url}" target="_blank" class="text-indigo-600 font-bold hover:underline">✏️ एडिट करें</a>` : ''}
+                  ${item.edit_url && item.view_url ? `<span class="text-slate-300">|</span>` : ''}
+                  ${item.view_url ? `<a href="${item.view_url}" target="_blank" class="text-emerald-600 font-bold hover:underline">👁️ लाइव देखें</a>` : ''}
+                </div>
+              `;
+              grid.appendChild(card);
+            });
+          }
+
+          const img = document.getElementById('portalScreenshotImg');
+          if (img) {
+            img.src = `/api/portal-screenshot?t=${Date.now()}`;
+          }
+          const ssBadge = document.getElementById('screenshotStatusBadge');
+          if (ssBadge) ssBadge.innerText = 'अपडेटेड अभी ✅';
+
+          showToast(`✓ पोर्टल लाइव स्टेटस फेच सफल! कुल ${data.count} लिस्टिंग्स मिलीं।`, 'success');
+        } else {
+          showToast('पोर्टल फेच सूचना: ' + (data.error || 'लिस्टिंग्स लोड नहीं हो सकीं'), 'warning');
+        }
+      } catch (err) {
+        showToast('पोर्टल कनेक्शन त्रुटि: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-60');
+        icon.className = '';
+        icon.innerText = '🔄';
+        text.innerText = 'पोर्टल से लाइव स्टेटस फेच करो';
+      }
+    }
+
     async function startPipeline10x() {
-      const city = document.getElementById('pipelineCity').value;
-      const category = document.getElementById('pipelineCategory').value.trim() || 'Jewellers & Gems';
-      const btn = document.getElementById('btnPipeline10x');
-      const btnText = document.getElementById('btnPipelineText');
-      const btnIcon = document.getElementById('btnPipelineIcon');
+      const city = document.getElementById('step1City') ? document.getElementById('step1City').value : 'Indore';
+      const category = (document.getElementById('step1Category') || document.getElementById('pipelineCategory') || {}).value || 'Jewellers & Gems';
+      const btn = document.getElementById('btnPipeline10x') || document.getElementById('btnExtractStep1');
+      const btnText = document.getElementById('btnPipelineText') || document.getElementById('textExtractStep1');
+      const btnIcon = document.getElementById('btnPipelineIcon') || document.getElementById('iconExtractStep1');
 
       const consoleSec = document.getElementById('liveConsoleSection');
       consoleSec.classList.remove('hidden');
