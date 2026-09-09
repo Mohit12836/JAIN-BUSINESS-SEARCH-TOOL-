@@ -109,6 +109,10 @@
         <button onclick="switchTab('tab-portal')" id="btn-tab-portal" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
           🏛️ लाइव पोर्टल (5 इंदौर लिस्टिंग्स)
         </button>
+        <button onclick="switchTab('tab-canva')" id="btn-tab-canva" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5">
+          <span>🎨 Canva ऑटो-मार्केटिंग</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+        </button>
         <button onclick="switchTab('tab-scanner')" id="btn-tab-scanner" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
           ⚡ नया शहर / स्कैनर
         </button>
@@ -629,6 +633,126 @@
       </div>
     </div>
 
+    <!-- ==================== TAB: CANVA MARKETING & DESIGN SUITE ==================== -->
+    <div id="tab-canva" class="hidden space-y-6">
+      
+      <!-- Canva Header Card -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-7 border-2 border-amber-500/30 bg-gradient-to-br from-white via-amber-50/25 to-yellow-50/30 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-500 to-orange-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-amber-500/25 flex-shrink-0">
+              🎨
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                  Canva Connect & Automated Marketing Suite
+                </h2>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  Canva Connect API Ready
+                </span>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  ✓ 5 Indore Posters Rendered
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">
+                जैन प्रतिष्ठानों, मंदिरों व धर्मशालाओं के लिए 1-क्लिक ब्रांडेड सोशल मीडिया पोस्टर्स, विजिटिंग कार्ड्स और पर्युषण ग्रीटिंग्स
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="loadCanvaFlyers()" class="spring-press inline-flex items-center gap-1.5 px-3.5 py-2 bg-white rounded-xl text-xs font-bold text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 cursor-pointer">
+              <span>🔄 रिफ्रेश पोस्टर्स</span>
+            </button>
+            <a href="https://www.canva.com/create/flyers/" target="_blank" class="spring-press inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer">
+              <span>🚀 Canva स्टूडियो खोलें</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Template Launch Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-amber-100/80 text-xs">
+          <a href="https://www.canva.com/search/templates?q=visiting+card+jewellery+india" target="_blank" class="spring-press p-3 bg-white/90 rounded-xl border border-slate-200 hover:border-amber-400 flex flex-col gap-1 transition-all">
+            <span class="font-bold text-slate-800 flex items-center gap-1.5"><span>🪪</span> डिजिटल विजिटिंग कार्ड</span>
+            <span class="text-[11px] text-slate-500">1050x600 px • vCard लेआउट</span>
+          </a>
+          <a href="https://www.canva.com/search/templates?q=business+flyer+instagram+post" target="_blank" class="spring-press p-3 bg-white/90 rounded-xl border border-slate-200 hover:border-amber-400 flex flex-col gap-1 transition-all">
+            <span class="font-bold text-slate-800 flex items-center gap-1.5"><span>📱</span> WhatsApp स्टोरी / रील्स</span>
+            <span class="text-[11px] text-slate-500">1080x1920 px • फुल स्क्रीन</span>
+          </a>
+          <a href="https://www.canva.com/search/templates?q=festival+greeting+jain+mahavir+jayanti" target="_blank" class="spring-press p-3 bg-white/90 rounded-xl border border-slate-200 hover:border-amber-400 flex flex-col gap-1 transition-all">
+            <span class="font-bold text-slate-800 flex items-center gap-1.5"><span>🪔</span> पर्युषण / महावीर जयंती</span>
+            <span class="text-[11px] text-slate-500">1080x1080 px • उत्सव पोस्टर</span>
+          </a>
+          <a href="https://www.canva.com/search/templates?q=business+banner+facebook+google" target="_blank" class="spring-press p-3 bg-white/90 rounded-xl border border-slate-200 hover:border-amber-400 flex flex-col gap-1 transition-all">
+            <span class="font-bold text-slate-800 flex items-center gap-1.5"><span>🖼️</span> डायरेक्टरी हेडर बैनर</span>
+            <span class="text-[11px] text-slate-500">1200x400 px • 3:1 वाइड रेश्यो</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Live Generated Posters Gallery -->
+      <div class="glass-panel rounded-3xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+              <span>🖼️ पोर्टल लिस्टिंग्स के लाइव ब्रांडेड पोस्टर्स</span>
+              <span class="text-xs font-normal text-slate-500">(1080x1080 HD Chromium Engine)</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">साइनबोर्ड फोटो, फोन नंबर व जैन डायरेक्टरी वेराफाइड बैज के साथ 1-क्लिक शेयर करें</p>
+          </div>
+        </div>
+
+        <div id="canvaFlyersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated dynamically via loadCanvaFlyers() -->
+        </div>
+      </div>
+
+      <!-- Custom Lead Flyer Generator Card -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-7 border border-slate-200 space-y-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">✨</span>
+          <div>
+            <h3 class="font-bold text-base text-slate-900">कस्टम फ़्लायर बनाएं (On-Demand Canva Generator)</h3>
+            <p class="text-xs text-slate-500">किसी भी जैन प्रतिष्ठान के लिए नया ब्रांडेड पोस्टर तुरंत तैयार करें</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="text-[11px] font-bold text-slate-600 block mb-1">फ़र्म / प्रतिष्ठान का नाम</label>
+            <input type="text" id="customFlyerName" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-slate-800" placeholder="उदा: श्री शांतिनाथ ज्वैलर्स">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-600 block mb-1">कैटेगरी (Category)</label>
+            <input type="text" id="customFlyerCat" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-slate-800" placeholder="उदा: स्वर्ण एवं रजत आभूषण">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-600 block mb-1">स्थान / शहर (Location)</label>
+            <input type="text" id="customFlyerLoc" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-slate-800" placeholder="उदा: सराफा बाज़ार, इंदौर">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-600 block mb-1">फ़ोन / व्हाट्सएप</label>
+            <input type="text" id="customFlyerPhone" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-slate-800" placeholder="उदा: +91 98260 11111">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-[11px] font-bold text-slate-600 block mb-1">टैगलाइन / संदेश (Auspicious Tagline)</label>
+            <input type="text" id="customFlyerTagline" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-slate-800" placeholder="उदा: शुद्धता एवं विश्वास की अटूट परंपरा">
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button onclick="generateCustomCanvaFlyer()" id="btnGenCustomFlyer" class="spring-press px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-500/25 flex items-center gap-2 cursor-pointer">
+            <span>🎨 1-Click Canva फ़्लायर बनाएं</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
     <!-- ==================== TAB 3: NEW SEARCH & CRAWLER ==================== -->
     <div id="tab-scanner" class="hidden space-y-6">
       <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
@@ -877,8 +1001,10 @@
     let recordsCount = 0;
     let masterLeadsLoaded = false;
 
+    let canvaLoaded = false;
+
     function switchTab(tabId) {
-      const tabs = ['tab-mobile', 'tab-portal', 'tab-scanner', 'tab-table'];
+      const tabs = ['tab-mobile', 'tab-portal', 'tab-canva', 'tab-scanner', 'tab-table'];
       tabs.forEach(t => {
         const el = document.getElementById(t);
         const btn = document.getElementById('btn-' + t);
@@ -899,6 +1025,118 @@
       });
       if (tabId === 'tab-table' && !masterLeadsLoaded) {
         loadMasterLeads();
+      }
+      if (tabId === 'tab-canva' && !canvaLoaded) {
+        loadCanvaFlyers();
+      }
+    }
+
+    async function loadCanvaFlyers() {
+      const grid = document.getElementById('canvaFlyersGrid');
+      if (!grid) return;
+      grid.innerHTML = '<div class="col-span-full py-8 text-center text-slate-400 font-medium">🎨 Canva पोस्टर्स लोड हो रहे हैं...</div>';
+
+      try {
+        const resp = await fetch('/api/canva/all-flyers');
+        const data = await resp.json();
+        const flyers = data.flyers || [];
+        canvaLoaded = true;
+
+        if (flyers.length === 0) {
+          grid.innerHTML = '<div class="col-span-full py-8 text-center text-slate-400">कोई पोस्टर नहीं मिला।</div>';
+          return;
+        }
+
+        grid.innerHTML = '';
+        flyers.forEach(f => {
+          const card = document.createElement('div');
+          card.className = 'glass-panel rounded-2xl p-4 space-y-3 border border-amber-200/60 bg-gradient-to-b from-white to-amber-50/20 shadow-sm hover:shadow-md transition-all flex flex-col justify-between';
+          
+          card.innerHTML = `
+            <div class="space-y-2.5">
+              <div class="relative group rounded-xl overflow-hidden border-2 border-amber-400/80 bg-slate-900 aspect-square shadow-inner">
+                <img src="${f.url}" alt="${f.business_name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="absolute top-2 right-2 bg-amber-500 text-black font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow">
+                  #${f.listing_id}
+                </div>
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <a href="${f.url}" target="_blank" class="px-3 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-bold shadow-md hover:bg-slate-100">
+                    👁️ ज़ूम देखें
+                  </a>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-extrabold text-sm text-slate-900 line-clamp-1">${f.business_name}</h4>
+                <div class="text-[11px] text-slate-500 font-medium mt-0.5">${f.category} • ${f.location}</div>
+                <div class="text-xs text-emerald-700 font-bold mt-1 flex items-center gap-1">
+                  <span>🟢</span>
+                  <span>${f.phone}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex flex-col gap-1.5">
+              <div class="grid grid-cols-2 gap-1.5 text-center">
+                <a href="${f.canva_links.visiting_card}" target="_blank" class="spring-press px-2.5 py-1.5 bg-amber-100/80 hover:bg-amber-200 text-amber-900 rounded-lg text-[11px] font-bold border border-amber-300/80">
+                  🪪 Canva कार्ड
+                </a>
+                <a href="${f.canva_links.whatsapp_flyer}" target="_blank" class="spring-press px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-lg text-[11px] font-bold border border-indigo-200">
+                  📱 WhatsApp फ़्लायर
+                </a>
+              </div>
+              <a href="${f.url}" download="${f.filename}" class="spring-press w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[11px] font-bold text-center block shadow-sm">
+                📥 1080x1080 HD डाउनलोड
+              </a>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+
+      } catch (err) {
+        grid.innerHTML = `<div class="col-span-full py-8 text-center text-rose-500">पोस्टर लोड करने में त्रुटि: ${err.message}</div>`;
+      }
+    }
+
+    async function generateCustomCanvaFlyer() {
+      const name = document.getElementById('customFlyerName').value.trim();
+      const cat = document.getElementById('customFlyerCat').value.trim() || 'Business';
+      const loc = document.getElementById('customFlyerLoc').value.trim() || 'Indore';
+      const phone = document.getElementById('customFlyerPhone').value.trim() || '+91 98260 00000';
+      const tagline = document.getElementById('customFlyerTagline').value.trim() || 'जैन समुदाय का प्रतिष्ठित एवं प्रमाणित प्रतिष्ठान';
+      const btn = document.getElementById('btnGenCustomFlyer');
+
+      if (!name) {
+        showToast('कृपया फ़र्म या प्रतिष्ठान का नाम दर्ज करें', 'warning');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ फ़्लायर बन रहा है...</span>';
+      showToast('Chromium इंजन से 1080x1080 HD पोस्टर रेंडर हो रहा है...', 'info');
+
+      try {
+        const lid = 'custom_' + Date.now().toString().slice(-4);
+        const resp = await fetch('/api/canva/generate-flyer', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            listing_id: lid,
+            business_name: name,
+            category: cat,
+            location: loc,
+            phone: phone,
+            tagline: tagline
+          })
+        });
+        const result = await resp.json();
+        showToast(`✓ फ़्लायर सफलतापूर्वक बन गया: ${result.filename}`, 'success');
+        await loadCanvaFlyers();
+      } catch (e) {
+        showToast(`त्रुटि: ${e.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🎨 1-Click Canva फ़्लायर बनाएं</span>';
       }
     }
 

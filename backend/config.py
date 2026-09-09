@@ -21,15 +21,17 @@ def get_master_excel_path() -> str:
     desktop_dir = os.path.join(os.path.expanduser("~"), "Desktop")
     if os.path.exists(desktop_dir):
         desktop_excel = os.path.join(desktop_dir, "Jain_Leads_Verified_Photos_HD.xlsx")
-        if os.path.exists(desktop_excel):
+        if os.path.exists(desktop_excel) and os.path.getsize(desktop_excel) > 500:
             return desktop_excel
 
     # 2. Check repo /data directory (Cloud / Docker / Linux VPS)
     data_excel = os.path.join(DATA_DIR, "Jain_Leads_Verified_Photos_HD.xlsx")
-    if os.path.exists(data_excel):
+    if os.path.exists(data_excel) and os.path.getsize(data_excel) > 500:
         return data_excel
         
     # Default fallback
+    if os.path.exists(data_excel):
+        return data_excel
     if os.path.exists(desktop_dir):
         return os.path.join(desktop_dir, "Jain_Leads_Verified_Photos_HD.xlsx")
     return data_excel

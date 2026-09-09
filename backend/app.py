@@ -395,6 +395,85 @@ async def start_portal_entry(req: EntryRequest, background_tasks: BackgroundTask
         "limit": req.limit
     }
 
+# ==================== CANVA CONNECTOR & MARKETING SUITE ====================
+from backend.canva_connector import CanvaConnector
+canva_conn = CanvaConnector()
+
+@app.get("/api/canva/templates")
+async def get_canva_templates():
+    """Returns available Canva marketing templates for Indian & Jain businesses."""
+    return {
+        "templates": [
+            {"id": "visiting_card", "title": "Digital Visiting Card (vCard)", "size": "1050x600", "desc": "व्यक्तिगत व व्यावसायिक विजिटिंग कार्ड"},
+            {"id": "whatsapp_flyer", "title": "WhatsApp Story / Flyer", "size": "1080x1920", "desc": "फुल-स्क्रीन स्टेटस व स्टोरी पोस्टर"},
+            {"id": "festival_greeting", "title": "Festival Greeting Card", "size": "1080x1080", "desc": "पर्युषण, महावीर जयंती, नववर्ष बधाई"},
+            {"id": "social_banner", "title": "Social Header Banner", "size": "1200x400", "desc": "फेसबुक व वेबसाइट बैनर"},
+        ]
+    }
+
+@app.get("/api/canva/flyer/{filename}")
+async def serve_canva_flyer(filename: str):
+    """Serves generated Canva marketing flyer image."""
+    flyer_path = os.path.join(canva_conn.output_dir, filename)
+    if os.path.exists(flyer_path):
+        return FileResponse(flyer_path, media_type="image/png")
+    return {"error": "Flyer not found"}
+
+@app.get("/api/canva/all-flyers")
+async def get_all_canva_flyers():
+    """Returns all generated Canva flyers with metadata and deep Canva links."""
+    defaults = [
+        {"id": "252", "name": "श्री पार्श्वनाथ दिगंबर जैन मंदिर", "cat": "धार्मिक एवं सांस्कृतिक केंद्र", "loc": "राजवाड़ा, इंदौर", "phone": "+91 94250 55555"},
+        {"id": "253", "name": "कांच मंदिर (Glass Temple)", "cat": "ऐतिहासिक धरोहर एवं धार्मिक स्थल", "loc": "इतवारिया बाज़ार, इंदौर", "phone": "+91 98260 12345"},
+        {"id": "254", "name": "श्री दिगंबर जैन मारवाड़ी बड़ा मंदिर", "cat": "धार्मिक एवं सामाजिक केंद्र", "loc": "छत्रीबाग, इंदौर", "phone": "+91 98260 34567"},
+        {"id": "255", "name": "दादा बाड़ी जैन धर्मशाला", "cat": "तीर्थयात्री सेवा एवं धर्मशाला", "loc": "साउथ तुकोगंज, इंदौर", "phone": "+91 98260 45678"},
+        {"id": "256", "name": "लाल मंदिर (Lal Mandir)", "cat": "धार्मिक एवं ऐतिहासिक धरोहर", "loc": "मल्हारगंज, इंदौर", "phone": "+91 98260 56789"}
+    ]
+    
+    items = []
+    for d in defaults:
+        fn = f"flyer_{d['id']}.png"
+        fp = os.path.join(canva_conn.output_dir, fn)
+        clinks = canva_conn.get_canva_template_links(d["name"], d["cat"])
+        items.append({
+            "listing_id": d["id"],
+            "business_name": d["name"],
+            "category": d["cat"],
+            "location": d["loc"],
+            "phone": d["phone"],
+            "filename": fn,
+            "url": f"/api/canva/flyer/{fn}" if os.path.exists(fp) else None,
+            "canva_links": clinks
+        })
+    return {"flyers": items}
+
+class GenerateFlyerRequest(BaseModel):
+    listing_id: str
+    business_name: str
+    category: str = "Business"
+    location: str = "Indore"
+    phone: str = ""
+    tagline: str = "जैन समुदाय का प्रतिष्ठित एवं प्रमाणित प्रतिष्ठान"
+
+@app.post("/api/canva/generate-flyer")
+async def generate_canva_flyer_api(req: GenerateFlyerRequest):
+    """Generates an HD Canva marketing flyer on demand for any business."""
+    photos_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "indore_photos")
+    photo_path = os.path.join(photos_dir, f"{req.listing_id}_photo.jpg")
+    if not os.path.exists(photo_path):
+        photo_path = None
+    
+    res = await canva_conn.generate_branded_marketing_flyer_async(
+        listing_id=req.listing_id,
+        business_name=req.business_name,
+        category=req.category,
+        location=req.location,
+        phone=req.phone,
+        photo_path=photo_path,
+        tagline=req.tagline
+    )
+    return res
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
