@@ -474,6 +474,43 @@ async def generate_canva_flyer_api(req: GenerateFlyerRequest):
     )
     return res
 
+# ==================== CANVA STOREFRONT UPLOADER ENGINE ====================
+from backend.canva_storefront_generator import storefront_generator
+
+@app.get("/api/canva/storefront/{filename}")
+async def serve_canva_storefront(filename: str):
+    """Serves generated Canva storefront logo or banner image."""
+    sf_path = os.path.join(storefront_generator.output_dir, filename)
+    if os.path.exists(sf_path):
+        return FileResponse(sf_path, media_type="image/png")
+    return {"error": "Storefront asset not found"}
+
+class StorefrontGenRequest(BaseModel):
+    firm_name: str
+    category: str = "Business"
+    city: str = "Indore"
+    phone: str = ""
+    address: str = ""
+
+@app.post("/api/canva/generate-storefront")
+async def generate_canva_storefront_api(req: StorefrontGenRequest):
+    """Generates 1:1 Logo and 1200x500 Banner for shops with missing or poor photos."""
+    logo_path, banner_path = await storefront_generator.generate_storefront_assets_async(
+        firm_name=req.firm_name,
+        category=req.category,
+        city=req.city,
+        phone=req.phone,
+        address=req.address
+    )
+    logo_fn = os.path.basename(logo_path)
+    banner_fn = os.path.basename(banner_path)
+    return {
+        "success": True,
+        "firm_name": req.firm_name,
+        "logo_url": f"/api/canva/storefront/{logo_fn}",
+        "banner_url": f"/api/canva/storefront/{banner_fn}"
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

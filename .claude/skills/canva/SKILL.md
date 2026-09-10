@@ -101,3 +101,23 @@ A production-grade Canva integration must never break if Canva API credentials o
 - Ensure store photos are cropped to optimal aspect ratio (1:1 or 16:9) before embedding.
 - Cache generated design URLs and local flyer files to prevent redundant rendering.
 - Always provide both the generated high-res visual and a direct editable Canva link.
+
+---
+
+## 5. Portal Image Fallback: Automated Storefront Card & Banner Generator
+
+When scraping business listings for directory portals (such as **JainForJain.com**), many physical shops lack clean Google Maps photos (or have blurry 360-panoramas, low-resolution snapshots, or missing images).
+
+Instead of submitting empty image slots or low-quality photos:
+1. **1:1 Square Profile Logo (800x800):**
+   - Premium gold-rimmed medallion with sacred Jain emblem / mandir icon (or circular crop of the real photo if usable).
+   - High-contrast Devanagari & English shop name, category pill, and verified badge.
+   - Formatted specifically for the portal's 1:1 Logo FilePond uploader.
+2. **Wide Storefront Signboard Banner (1200x500):**
+   - Designed to mimic an official 3D storefront hoarding / commercial signboard.
+   - Includes official verified listing ribbon, bold firm title, category, city/location, and verified phone number.
+   - Formatted specifically for the portal's Banner FilePond uploader.
+3. **Autonomous Submission Trigger (`backend/auto_entry_bot.py`):**
+   - The bot inspects the scraped image before submission.
+   - If the image is `< 10KB` or missing, it triggers `storefront_generator.generate_storefront_assets_async()`, creates both files in `< 1 sec`, and attaches them to the portal form automatically.
+

@@ -434,21 +434,68 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         }
     }''')
     
-    # Upload genuine storefront photo to portal
+    # -------------------------------------------------------------
+    # SMART PHOTO & CANVA STOREFRONT UPLOADER
+    # If genuine photo exists (> 10KB), upload it.
+    # If photo is missing, broken, or low-quality:
+    # Automatically generate Canva-designed Storefront Logo & Banner!
+    # -------------------------------------------------------------
+    from backend.canva_storefront_generator import storefront_generator
+
     photo_url = lead.get("storefront_photo") or lead.get("photo_url") or ""
+    temp_img_path = None
     if photo_url:
         clean_lead_name = re.sub(r'\W+', '_', lead.get('name', 'lead'))[:15]
         temp_img_path = download_temp_image(photo_url, filename_prefix=clean_lead_name)
-        if temp_img_path and os.path.exists(temp_img_path):
+    
+    # Check if we have a valid photo (> 10KB)
+    has_valid_photo = temp_img_path and os.path.exists(temp_img_path) and os.path.getsize(temp_img_path) > 10000
+
+    logo_upload_file = temp_img_path if has_valid_photo else None
+    banner_upload_file = temp_img_path if has_valid_photo else None
+
+    if not has_valid_photo:
+        print(f"🎨 [Canva Auto-Designer]: Shop '{lead.get('name')}' photo missing or low-quality.")
+        print("   Generating professional Canva Storefront Logo and Banner...")
+        try:
+            gen_logo, gen_banner = await storefront_generator.generate_storefront_assets_async(
+                firm_name=lead.get("name", "Jain Business"),
+                category=lead.get("category_clean", lead.get("category", "Business")),
+                city=lead.get("city", "Indore"),
+                phone=lead.get("phone", ""),
+                existing_photo_path=temp_img_path if temp_img_path and os.path.exists(temp_img_path) else None
+            )
+            if gen_logo and os.path.exists(gen_logo):
+                logo_upload_file = gen_logo
+            if gen_banner and os.path.exists(gen_banner):
+                banner_upload_file = gen_banner
+        except Exception as c_err:
+            print(f"⚠️ Canva storefront generator warning: {c_err}")
+
+    # Upload to FilePond inputs (file_inputs[0] = Logo, file_inputs[1] = Banner)
+    try:
+        file_inputs = await page.query_selector_all('input[type="file"]')
+        if file_inputs:
+            if logo_upload_file and os.path.exists(logo_upload_file):
+                print(f"--> Uploading to Logo FilePond: {logo_upload_file}")
+                await file_inputs[0].set_input_files(logo_upload_file)
+            
+            if len(file_inputs) > 1 and banner_upload_file and os.path.exists(banner_upload_file):
+                print(f"--> Uploading to Banner FilePond: {banner_upload_file}")
+                await file_inputs[1].set_input_files(banner_upload_file)
+
+            print("--> Waiting for FilePond upload completion...")
             try:
-                file_inputs = await page.query_selector_all('input[type="file"]')
-                if file_inputs:
-                    print(f"--> Uploading image file to portal: {temp_img_path}")
-                    await file_inputs[0].set_input_files(temp_img_path)
-                    await page.wait_for_timeout(3500)
-                    print("✓ Image file successfully attached to listing form!")
-            except Exception as up_err:
-                print(f"⚠️ Photo upload notice: {up_err}")
+                await page.wait_for_selector(
+                    '.filepond--item[data-filepond-item-state="processing-complete"], .filepond--image-preview, .filepond--file-info',
+                    timeout=18000
+                )
+                print("✓ Storefront images successfully uploaded and attached!")
+            except Exception as fe:
+                print(f"FilePond wait notice: {fe}")
+                await page.wait_for_timeout(3500)
+    except Exception as up_err:
+        print(f"⚠️ Photo upload error: {up_err}")
     
     # Return to Tab 1
     await page.click('button:has-text("Business Details")')
