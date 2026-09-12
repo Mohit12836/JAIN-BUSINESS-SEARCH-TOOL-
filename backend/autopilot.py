@@ -42,17 +42,23 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "is_active": False,
-    "daily_time": "10:00",
-    "frequency_hours": 24,
-    "batch_size": 50,
+    "interval_minutes": 30,
+    "batch_size": 20,
+    "active_window": "12_hours",  # "12_hours" (09:00 - 21:00) or "24_hours"
+    "window_start": "09:00",
+    "window_end": "21:00",
+    "daily_time": "09:00",
+    "frequency_hours": 0.5,
     "city": "Indore",
     "category": "Jewellers & All Commercial",
-    "upload_mode": "instant",  # "instant" (0s delay) or "throttled" (delay_seconds)
-    "delay_seconds": 60,
+    "upload_mode": "instant",
+    "delay_seconds": 0,
     "last_run_timestamp": None,
     "last_run_result": None,
     "next_run_timestamp": None,
     "total_runs": 0,
+    "today_date": datetime.datetime.now().strftime("%Y-%m-%d"),
+    "today_submitted": 0,
     "running_state": "idle"  # "idle", "running", "completed", "error"
 }
 
@@ -77,24 +83,45 @@ def save_autopilot_config(cfg: Dict[str, Any]):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)
 
-def calculate_next_run(daily_time: str = "10:00", freq_hours: int = 24) -> str:
-    """Calculates the formatted timestamp for the next run."""
+def calculate_next_run(cfg: Optional[Dict[str, Any]] = None, daily_time: str = "09:00", freq_hours: float = 0.5) -> str:
+    """Calculates formatted timestamp for the next run adhering to 30-min interval & active window."""
+    if cfg is None:
+        cfg = load_autopilot_config()
+        
+    interval_mins = cfg.get("interval_minutes", 30)
+    active_window = cfg.get("active_window", "12_hours")
+    window_start_str = cfg.get("window_start", "09:00")
+    window_end_str = cfg.get("window_end", "21:00")
+    
     now = datetime.datetime.now()
+    
+    if active_window == "24_hours":
+        candidate = now + datetime.timedelta(minutes=interval_mins)
+        return candidate.strftime("%Y-%m-%d %H:%M:%S")
+        
+    # 12-hour window (default: 09:00 to 21:00)
     try:
-        parts = daily_time.split(":")
-        target_hour = int(parts[0])
-        target_min = int(parts[1]) if len(parts) > 1 else 0
+        sh, sm = map(int, window_start_str.split(":"))
+        eh, em = map(int, window_end_str.split(":"))
     except Exception:
-        target_hour, target_min = 10, 0
-
-    candidate = now.replace(hour=target_hour, minute=target_min, second=0, microsecond=0)
-    if candidate <= now:
-        if freq_hours <= 12:
-            candidate = now + datetime.timedelta(hours=freq_hours)
+        sh, sm = 9, 0
+        eh, em = 21, 0
+        
+    window_start = now.replace(hour=sh, minute=sm, second=0, microsecond=0)
+    window_end = now.replace(hour=eh, minute=em, second=0, microsecond=0)
+    
+    if now < window_start:
+        return window_start.strftime("%Y-%m-%d %H:%M:%S")
+    elif now >= window_end:
+        tomorrow_start = window_start + datetime.timedelta(days=1)
+        return tomorrow_start.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        candidate = now + datetime.timedelta(minutes=interval_mins)
+        if candidate >= window_end:
+            tomorrow_start = window_start + datetime.timedelta(days=1)
+            return tomorrow_start.strftime("%Y-%m-%d %H:%M:%S")
         else:
-            candidate += datetime.timedelta(days=1)
-
-    return candidate.strftime("%Y-%m-%d %H:%M:%S")
+            return candidate.strftime("%Y-%m-%d %H:%M:%S")
 
 def toggle_autopilot(active: Optional[bool] = None) -> Dict[str, Any]:
     """Toggles autopilot ON/OFF and calculates next run time."""
@@ -105,7 +132,7 @@ def toggle_autopilot(active: Optional[bool] = None) -> Dict[str, Any]:
         cfg["is_active"] = bool(active)
 
     if cfg["is_active"]:
-        cfg["next_run_timestamp"] = calculate_next_run(cfg.get("daily_time", "10:00"), cfg.get("frequency_hours", 24))
+        cfg["next_run_timestamp"] = calculate_next_run(cfg)
     else:
         cfg["next_run_timestamp"] = None
 
@@ -417,17 +444,23 @@ async def execute_full_autonomous_cycle(
 async def run_autopilot_background_worker():
     """
     Background worker that runs indefinitely inside the FastAPI process.
-    Checks autopilot_config.json every 30 seconds.
-    Triggers execute_full_autonomous_cycle when scheduled time arrives.
+    Checks autopilot_config.json every 15 seconds.
+    Triggers execute_streamed_live_pipeline when scheduled time arrives.
     """
-    print("⏰ [Autopilot Daemon] Background worker loop started.")
+    print("⏰ [Autopilot Daemon] 24/7 Background worker loop started.")
     while True:
         try:
             cfg = load_autopilot_config()
+            today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+            if cfg.get("today_date") != today_str:
+                cfg["today_date"] = today_str
+                cfg["today_submitted"] = 0
+                save_autopilot_config(cfg)
+
             if cfg.get("is_active", False) and cfg.get("running_state") != "running":
                 next_run_str = cfg.get("next_run_timestamp")
                 if not next_run_str:
-                    cfg["next_run_timestamp"] = calculate_next_run(cfg.get("daily_time", "10:00"), cfg.get("frequency_hours", 24))
+                    cfg["next_run_timestamp"] = calculate_next_run(cfg)
                     save_autopilot_config(cfg)
                     next_run_str = cfg["next_run_timestamp"]
 
@@ -437,28 +470,32 @@ async def run_autopilot_background_worker():
                     next_dt = datetime.datetime.now()
 
                 if datetime.datetime.now() >= next_dt:
-                    print(f"⏰ [Autopilot Daemon] Scheduled execution time reached ({next_run_str})! Triggering autonomous run...")
+                    print(f"⏰ [Autopilot Daemon] Scheduled execution time reached ({next_run_str})! Triggering 30-min streamed run (target: {cfg.get('batch_size', 20)})...")
                     cfg["running_state"] = "running"
                     save_autopilot_config(cfg)
 
-                    res = await execute_full_autonomous_cycle(
-                        batch_size=cfg.get("batch_size", 50),
-                        city=cfg.get("city", "Indore"),
-                        category=cfg.get("category", "Jewellers & All Commercial"),
-                        upload_mode=cfg.get("upload_mode", "instant"),
-                        delay_seconds=cfg.get("delay_seconds", 0)
-                    )
+                    try:
+                        from backend.auto_batch_engine import execute_streamed_live_pipeline
+                        res = await execute_streamed_live_pipeline(
+                            target_count=cfg.get("batch_size", 20),
+                            city=cfg.get("city", "Indore"),
+                            category=cfg.get("category", "Jewellers & All Commercial")
+                        )
+                    except Exception as exec_err:
+                        print(f"⚠️ [Autopilot Daemon] Error during run: {exec_err}")
+                        res = {"status": "error", "message": str(exec_err), "submitted_count": 0}
 
                     cfg = load_autopilot_config()
                     cfg["last_run_timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     cfg["last_run_result"] = res
                     cfg["total_runs"] = cfg.get("total_runs", 0) + 1
+                    cfg["today_submitted"] = cfg.get("today_submitted", 0) + res.get("submitted_count", 0)
                     cfg["running_state"] = "idle"
-                    cfg["next_run_timestamp"] = calculate_next_run(cfg.get("daily_time", "10:00"), cfg.get("frequency_hours", 24))
+                    cfg["next_run_timestamp"] = calculate_next_run(cfg)
                     save_autopilot_config(cfg)
-                    print(f"⏰ [Autopilot Daemon] Autonomous run completed. Next run scheduled for: {cfg['next_run_timestamp']}")
+                    print(f"⏰ [Autopilot Daemon] Streamed run completed. Today submitted: {cfg['today_submitted']}. Next run: {cfg['next_run_timestamp']}")
 
         except Exception as e:
             print(f"⚠️ [Autopilot Daemon] Exception in loop: {e}")
 
-        await asyncio.sleep(30)
+        await asyncio.sleep(15)

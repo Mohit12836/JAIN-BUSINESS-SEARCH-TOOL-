@@ -254,7 +254,8 @@ async def crawl_area_deep(
     entity_type: str = "commercial",
     excel_path: Optional[str] = None,
     auto_sync_sheets: bool = True,
-    progress_callback: Optional[Any] = None
+    progress_callback: Optional[Any] = None,
+    on_lead_verified_callback: Optional[Any] = None
 ) -> List[Dict[str, Any]]:
     """Crawls a specific micro-area exhaustively without leaving a single business or entity behind."""
     if not excel_path:
@@ -461,7 +462,16 @@ async def crawl_area_deep(
                                 })
                             except Exception:
                                 pass
-                        
+
+                        if on_lead_verified_callback:
+                            try:
+                                if asyncio.iscoroutinefunction(on_lead_verified_callback):
+                                    await on_lead_verified_callback(rec)
+                                else:
+                                    on_lead_verified_callback(rec)
+                            except Exception as cb_err:
+                                print(f"  ⚠️ Error in on_lead_verified_callback: {cb_err}")
+
                     except Exception as err:
                         print(f"  Error on place '{title}': {err}")
                         
@@ -470,7 +480,7 @@ async def crawl_area_deep(
                 
         await browser.close()
         
-    if collected_records:
+    if collected_records and not on_lead_verified_callback:
         append_to_master_excel(collected_records, excel_path)
         if auto_sync_sheets:
             try:

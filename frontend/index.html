@@ -278,7 +278,21 @@
               रोडमैप अपने-आप आगे बढ़ेगा
             </span>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div id="cardBatch20" onclick="setAutoBatchCount(20)" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm">
+              <div>
+                <div class="text-xs sm:text-sm font-black text-slate-900">20 एंट्रीज़</div>
+                <div class="text-[10px] text-slate-500 font-medium">सुपर-फास्ट स्ट्रीम (~5 min)</div>
+              </div>
+              <div id="checkBatch20" class="w-4 h-4 rounded-full border-2 border-slate-300"></div>
+            </div>
+            <div id="cardBatch50" onclick="setAutoBatchCount(50)" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm">
+              <div>
+                <div class="text-xs sm:text-sm font-black text-slate-900">50 एंट्रीज़</div>
+                <div class="text-[10px] text-slate-500 font-medium">क्विक टेस्टिंग रन</div>
+              </div>
+              <div id="checkBatch50" class="w-4 h-4 rounded-full border-2 border-slate-300"></div>
+            </div>
             <div id="cardBatch100" onclick="setAutoBatchCount(100)" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm">
               <div>
                 <div class="text-xs sm:text-sm font-black text-slate-900">100 एंट्रीज़</div>
@@ -290,18 +304,11 @@
               <div>
                 <div class="text-xs sm:text-sm font-black text-indigo-950 flex items-center gap-1.5">
                   <span>150 एंट्रीज़</span>
-                  <span class="bg-indigo-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md">रिकमेंडेड ⭐</span>
+                  <span class="bg-indigo-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md">⭐</span>
                 </div>
                 <div class="text-[10px] text-indigo-700 font-medium">संपूर्ण एरिया कवरेज</div>
               </div>
               <div id="checkBatch150" class="w-4 h-4 rounded-full bg-indigo-600 border-2 border-indigo-600 flex items-center justify-center text-white text-[9px]">✓</div>
-            </div>
-            <div id="cardBatch50" onclick="setAutoBatchCount(50)" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm col-span-2 sm:col-span-1">
-              <div>
-                <div class="text-xs sm:text-sm font-black text-slate-900">50 एंट्रीज़</div>
-                <div class="text-[10px] text-slate-500 font-medium">क्विक टेस्टिंग रन</div>
-              </div>
-              <div id="checkBatch50" class="w-4 h-4 rounded-full border-2 border-slate-300"></div>
             </div>
           </div>
         </div>
@@ -334,13 +341,157 @@
             </span>
             <span class="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
               <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              jainforjain.com (2-Worker Safe Shield)
+              सर्च होते ही सीधे लाइव (On-The-Fly)
             </span>
           </div>
           <div class="text-indigo-600 font-bold">
-            ऑटो-एडवांस रोडमैप सक्रिय ⚡
+            स्ट्रीम-लाइव मोड सक्रिय ⚡
           </div>
         </div>
+      </div>
+
+      <!-- ==================== ⏱️ 24/7 FULL AUTOMATION SCHEDULER HERO CARD ==================== -->
+      <div id="cardAutopilotScheduler" class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-emerald-500/60 bg-gradient-to-br from-white via-emerald-50/40 to-teal-50/50 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <!-- Ambient Glow -->
+        <div class="absolute -top-24 -right-24 w-60 h-60 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-60 h-60 bg-teal-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Header with Live Master Toggle -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-emerald-100 pb-5">
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-lg shadow-emerald-600/30">
+              <span>⏱️ 24/7 फुल ऑटोमेशन शेड्यूलर</span>
+              <span>•</span>
+              <span>हर 30 मिनट में 20 लीड्स</span>
+              <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+            </div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex flex-wrap items-center gap-2">
+              <span>दिन के 12 घंटे लगातार ऑटो-रन (480 लीड्स/दिन)</span>
+              <span id="badgeAutopilotState" class="text-xs px-2.5 py-1 rounded-full font-bold bg-slate-200 text-slate-700">
+                ⚪ रुका हुआ (Paused)
+              </span>
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+              बिना किसी क्लिक के बैकग्राउंड में लगातार चलेगा — <b>जैसे ही लीड सर्च होगी, तुरंत 15 सेकंड में Canva HD लोगो/बैनर बनकर jainforjain.com पर फ़ोटो सहित लाइव हो जाएगी!</b>
+            </p>
+          </div>
+
+          <!-- Master Toggle Switch Box -->
+          <div class="flex-shrink-0 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-emerald-200/80 shadow-md flex items-center gap-4">
+            <div class="text-right">
+              <div class="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider">
+                ऑटो-पायलट स्थिति
+              </div>
+              <div class="text-xs font-black text-slate-900" id="labelAutopilotToggle">
+                ⚪ शेड्यूलर बंद
+              </div>
+            </div>
+            <button onclick="toggleAutopilotFromUI()" id="btnMasterSchedulerToggle" class="spring-press relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none bg-slate-300 cursor-pointer">
+              <span id="switchSchedulerCircle" class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md translate-x-1"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Live Status & Countdown Metric Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-white/90 p-3.5 rounded-2xl border border-emerald-200 text-center shadow-sm relative overflow-hidden">
+            <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">⏳ अगला रन टाइमर</div>
+            <div class="text-lg sm:text-xl font-black text-emerald-950 mt-0.5" id="metricNextRunCountdown">--:--</div>
+            <div class="text-[9px] text-slate-500 font-semibold mt-0.5" id="metricNextRunTime">अनुसूची लोड हो रही है...</div>
+          </div>
+          <div class="bg-emerald-50/80 p-3.5 rounded-2xl border border-emerald-200 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">🎯 बैच फ्रीक्वेंसी</div>
+            <div class="text-lg sm:text-xl font-black text-emerald-900 mt-0.5" id="metricBatchFreqDisplay">20 लीड्स / 30m</div>
+            <div class="text-[9px] text-emerald-600 font-semibold mt-0.5">स्ट्रीम-लाइव मोड</div>
+          </div>
+          <div class="bg-teal-50/80 p-3.5 rounded-2xl border border-teal-200 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-teal-700 uppercase tracking-wider">🕒 सक्रिय विंडो</div>
+            <div class="text-base sm:text-lg font-black text-teal-950 mt-0.5" id="metricActiveWindow">12 घंटे (09:00-21:00)</div>
+            <div class="text-[9px] text-teal-600 font-semibold mt-0.5">कुल 24 रन प्रतिदिन</div>
+          </div>
+          <div class="bg-cyan-50/80 p-3.5 rounded-2xl border border-cyan-200 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-cyan-700 uppercase tracking-wider">📊 आज पोर्टल पर लाइव</div>
+            <div class="text-lg sm:text-xl font-black text-cyan-900 mt-0.5">
+              <span id="metricTodaySubmitted">0</span> <span class="text-xs font-bold text-slate-500">/ 480</span>
+            </div>
+            <div class="text-[9px] text-cyan-600 font-semibold mt-0.5">लक्ष्य 480 लीड्स/दिन</div>
+          </div>
+        </div>
+
+        <!-- Quick Action Row -->
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <button id="btnRunAutopilotNow" onclick="runAutopilotNowFromHero()" class="spring-press w-full sm:w-2/3 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white font-black text-sm sm:text-base shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2.5 cursor-pointer">
+            <span class="text-xl" id="iconAutopilotNow">⚡</span>
+            <span id="textAutopilotNow">अभी 20 लीड्स लाइव करें (Force Run Now)</span>
+          </button>
+          
+          <button onclick="toggleSchedulerSettings()" class="spring-press w-full sm:w-1/3 py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs sm:text-sm border border-emerald-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+            <span>⚙️ शेड्यूलर सेटिंग्स</span>
+          </button>
+        </div>
+
+        <!-- Inline Scheduler Settings Drawer (Expandable) -->
+        <div id="schedulerSettingsDrawer" class="hidden p-4 rounded-2xl bg-white border border-emerald-200 space-y-4">
+          <div class="text-xs font-black text-slate-900 uppercase tracking-wide flex items-center justify-between">
+            <span>⚙️ ऑटो-पायलट शेड्यूलर कॉन्फ़िगरेशन:</span>
+            <button onclick="toggleSchedulerSettings()" class="text-slate-400 hover:text-slate-600 text-xs cursor-pointer">✕ बंद करें</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">रन अंतराल (Interval):</label>
+              <select id="cfgInterval" class="w-full p-2 rounded-xl border border-slate-300 font-semibold">
+                <option value="15">हर 15 मिनट</option>
+                <option value="30" selected>हर 30 मिनट (मानक)</option>
+                <option value="45">हर 45 मिनट</option>
+                <option value="60">हर 1 घंटा</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">बैच आकार (लीड्स प्रति रन):</label>
+              <select id="cfgBatchSize" class="w-full p-2 rounded-xl border border-slate-300 font-semibold">
+                <option value="10">10 लीड्स</option>
+                <option value="20" selected>20 लीड्स (मानक)</option>
+                <option value="35">35 लीड्स</option>
+                <option value="50">50 लीड्स</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">सक्रिय विंडो:</label>
+              <select id="cfgActiveWindow" class="w-full p-2 rounded-xl border border-slate-300 font-semibold">
+                <option value="12_hours" selected>दिन के 12 घंटे (09:00 AM - 09:00 PM)</option>
+                <option value="24_hours">24 घंटे लगातार (Never Stop)</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button onclick="saveSchedulerSettings()" class="spring-press px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs cursor-pointer shadow-sm">
+              💾 सेटिंग्स सहेजें (Save Settings)
+            </button>
+          </div>
+        </div>
+
+        <!-- Safety Assurance Strip -->
+        <div class="pt-2 border-t border-emerald-100 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-600">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              सर्च होते ही 15s में लाइव
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+              24/7 बैकग्राउंड डेमन (VPS सिस्टम सर्विस)
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-lg border border-cyan-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+              Google Sheets ऑटो-सिंक
+            </span>
+          </div>
+          <div class="text-emerald-700 font-bold">
+            Zero Browser Dependency 🚀
+          </div>
+        </div>
+
       </div>
 
       <!-- Live Status Metrics Banner for Instant Tab -->
@@ -2375,7 +2526,7 @@
 
     function setAutoBatchCount(count) {
       selectedAutoBatchCount = count;
-      [50, 100, 150].forEach(c => {
+      [20, 50, 100, 150].forEach(c => {
         const card = document.getElementById(`cardBatch${c}`);
         const check = document.getElementById(`checkBatch${c}`);
         if (card && check) {
@@ -2614,6 +2765,311 @@
           stage: 'ERROR',
           message: 'कॉल विफल: ' + err.message
         });
+      }
+    }
+
+    // ==================== ⏱️ 24/7 FULL AUTOMATION SCHEDULER LOGIC ====================
+    let autopilotSecondsLeft = 0;
+    let autopilotCountdownInterval = null;
+    let currentAutopilotConfig = {};
+
+    function startAutopilotCountdown() {
+      if (autopilotCountdownInterval) clearInterval(autopilotCountdownInterval);
+      autopilotCountdownInterval = setInterval(() => {
+        const countdownEl = document.getElementById('metricNextRunCountdown');
+        if (!countdownEl) return;
+
+        if (!currentAutopilotConfig.is_active) {
+          countdownEl.innerText = 'रोका गया';
+          return;
+        }
+
+        if (autopilotSecondsLeft <= 0) {
+          countdownEl.innerText = '⚡ रन जारी...';
+          return;
+        }
+
+        autopilotSecondsLeft--;
+        const m = Math.floor(autopilotSecondsLeft / 60);
+        const s = autopilotSecondsLeft % 60;
+        countdownEl.innerText = `${m}m ${s < 10 ? '0' : ''}${s}s`;
+      }, 1000);
+    }
+
+    async function loadAutopilotStatus() {
+      try {
+        const resp = await fetch('/api/autopilot/status');
+        const data = await resp.json();
+        currentAutopilotConfig = data;
+
+        const btnToggle = document.getElementById('btnMasterSchedulerToggle');
+        const circle = document.getElementById('switchSchedulerCircle');
+        const labelToggle = document.getElementById('labelAutopilotToggle');
+        const badgeState = document.getElementById('badgeAutopilotState');
+
+        if (data.is_active) {
+          if (btnToggle) btnToggle.className = 'spring-press relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none bg-emerald-600 cursor-pointer shadow-md ring-2 ring-emerald-400/30';
+          if (circle) circle.className = 'inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md translate-x-9';
+          if (labelToggle) labelToggle.innerHTML = '<span class="text-emerald-700 font-extrabold">🟢 चालू (24/7 सक्रिय)</span>';
+          if (badgeState) {
+            badgeState.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse';
+            badgeState.innerText = '🟢 24/7 ऑटो-रन सक्रिय';
+          }
+        } else {
+          if (btnToggle) btnToggle.className = 'spring-press relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none bg-slate-300 cursor-pointer';
+          if (circle) circle.className = 'inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-md translate-x-1';
+          if (labelToggle) labelToggle.innerHTML = '<span class="text-slate-600 font-bold">⚪ शेड्यूलर बंद (OFF)</span>';
+          if (badgeState) {
+            badgeState.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-slate-200 text-slate-700';
+            badgeState.innerText = '⚪ रुका हुआ (Paused)';
+          }
+        }
+
+        const nextRunTimeEl = document.getElementById('metricNextRunTime');
+        if (nextRunTimeEl) {
+          nextRunTimeEl.innerText = data.is_active ? `अगला: ${data.next_run_timestamp || 'तय किया जा रहा है'}` : 'स्विच ON करें';
+        }
+
+        const freqEl = document.getElementById('metricBatchFreqDisplay');
+        if (freqEl) {
+          freqEl.innerText = `${data.batch_size || 20} लीड्स / ${data.interval_minutes || 30}m`;
+        }
+
+        const winEl = document.getElementById('metricActiveWindow');
+        if (winEl) {
+          winEl.innerText = data.active_window === '24_hours' ? '24 घंटे लगातार' : '12 घंटे (09:00-21:00)';
+        }
+
+        const subEl = document.getElementById('metricTodaySubmitted');
+        if (subEl) {
+          subEl.innerText = data.today_submitted || 0;
+        }
+
+        autopilotSecondsLeft = data.seconds_to_next_run || 0;
+        startAutopilotCountdown();
+
+        // Populate drawer inputs
+        const intSelect = document.getElementById('cfgInterval');
+        if (intSelect && data.interval_minutes) intSelect.value = data.interval_minutes;
+        const bSelect = document.getElementById('cfgBatchSize');
+        if (bSelect && data.batch_size) bSelect.value = data.batch_size;
+        const winSelect = document.getElementById('cfgActiveWindow');
+        if (winSelect && data.active_window) winSelect.value = data.active_window;
+
+      } catch (err) {
+        console.warn('Autopilot status notice:', err);
+      }
+    }
+
+    async function toggleAutopilotFromUI() {
+      try {
+        const resp = await fetch('/api/autopilot/toggle', { method: 'POST' });
+        const data = await resp.json();
+        await loadAutopilotStatus();
+        if (data.config && data.config.is_active) {
+          showToast(`🟢 24/7 फुल ऑटोमेशन शेड्यूलर सक्रिय! हर 30 मिनट में 20 लीड्स पोर्टल पर लाइव होंगी।`, 'success');
+        } else {
+          showToast('⚪ 24/7 फुल ऑटोमेशन शेड्यूलर रोक दिया गया।', 'info');
+        }
+      } catch (e) {
+        showToast('टॉगल त्रुटि: ' + e.message, 'error');
+      }
+    }
+
+    function toggleSchedulerSettings() {
+      const drawer = document.getElementById('schedulerSettingsDrawer');
+      if (drawer) {
+        drawer.classList.toggle('hidden');
+      }
+    }
+
+    async function saveSchedulerSettings() {
+      const interval_minutes = parseInt(document.getElementById('cfgInterval').value, 10);
+      const batch_size = parseInt(document.getElementById('cfgBatchSize').value, 10);
+      const active_window = document.getElementById('cfgActiveWindow').value;
+
+      try {
+        const resp = await fetch('/api/autopilot/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            interval_minutes,
+            batch_size,
+            active_window
+          })
+        });
+        const data = await resp.json();
+        await loadAutopilotStatus();
+        toggleSchedulerSettings();
+        showToast('💾 शेड्यूलर सेटिंग्स सुरक्षित! नया शेड्यूल सक्रिय।', 'success');
+      } catch (err) {
+        showToast('सेव करने में त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    async function runAutopilotNowFromHero() {
+      const btn = document.getElementById('btnRunAutopilotNow');
+      const btnText = document.getElementById('textAutopilotNow');
+      const btnIcon = document.getElementById('iconAutopilotNow');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      stopConsoleTimer();
+      const timerEl = document.getElementById('consoleTimer');
+      if (timerEl) timerEl.innerText = '⚡ ऑन-द-फ्लाई स्ट्रीम (0s डिले)';
+      
+      const pBar = document.getElementById('consoleProgressBar');
+      if (pBar) pBar.style.width = '8%';
+      const stageBadge = document.getElementById('consoleStageBadge');
+      if (stageBadge) stageBadge.innerText = 'STREAM_INIT';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '⚡',
+        stage: 'INIT',
+        message: '⚡ 20 लीड्स ऑन-द-फ्लाई स्ट्रीम टेस्ट रन प्रारंभ | जैसे ही सर्च होगी ➔ Canva ➔ पोर्टल पर सीधे लाइव!',
+        percent: 8
+      });
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        if (btnText) btnText.innerText = '⚡ 20 लीड्स स्ट्रीम हो रही हैं...';
+        if (btnIcon) btnIcon.innerText = '⏳';
+      }
+
+      showToast('⚡ 20 लीड्स ऑन-द-फ्लाई स्ट्रीम रन प्रारंभ...', 'info');
+
+      try {
+        const resp = await fetch('/api/autopilot/run-now', { method: 'POST' });
+        const data = await resp.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टास्क प्रारंभ नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        let pollTimer = null;
+        let isDone = false;
+
+        function finishSuccess(result) {
+          if (isDone) return;
+          isDone = true;
+          if (eventSource) eventSource.close();
+          if (pollTimer) clearInterval(pollTimer);
+          stopConsoleTimer();
+
+          if (timerEl) timerEl.innerText = '⚡ संपन्न (100%)';
+          if (pBar) pBar.style.width = '100%';
+          if (stageBadge) stageBadge.innerText = 'COMPLETED';
+
+          appendConsoleLog({
+            time: new Date().toLocaleTimeString(),
+            badge: '🏆',
+            stage: 'DONE',
+            message: '20 लीड्स ऑन-द-फ्लाई रन पूर्ण! सभी 20 लीड्स jainforjain.com व Google Sheet में 100% लाइव!',
+            percent: 100
+          });
+
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = 'अभी 20 लीड्स लाइव करें (Force Run Now)';
+            if (btnIcon) btnIcon.innerText = '⚡';
+          }
+
+          showToast('🏆 20 लीड्स पोर्टल पर लाइव सबमिट हो गईं!', 'success');
+          loadAutoBatchStatus();
+          loadAutopilotStatus();
+          loadStatus(false);
+          loadMasterLeads();
+          loadSearchHistory();
+        }
+
+        function finishError(msg) {
+          if (isDone) return;
+          isDone = true;
+          if (eventSource) eventSource.close();
+          if (pollTimer) clearInterval(pollTimer);
+          stopConsoleTimer();
+
+          if (stageBadge) stageBadge.innerText = 'ERROR';
+          appendConsoleLog({
+            time: new Date().toLocaleTimeString(),
+            badge: '❌',
+            stage: 'ERROR',
+            message: 'त्रुटि: ' + msg
+          });
+
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = 'अभी 20 लीड्स लाइव करें (Force Run Now)';
+            if (btnIcon) btnIcon.innerText = '⚡';
+          }
+          showToast('रन विफल: ' + msg, 'error');
+        }
+
+        eventSource.onmessage = (e) => {
+          try {
+            const ev = JSON.parse(e.data);
+            if (ev.type === 'heartbeat') return;
+            if (ev.type === 'progress' && pBar) {
+              pBar.style.width = `${ev.percent}%`;
+            }
+            if (ev.type === 'log') {
+              appendConsoleLog(ev);
+              if (ev.percent && pBar) pBar.style.width = `${ev.percent}%`;
+            }
+            if (ev.type === 'complete') {
+              finishSuccess(ev);
+            }
+            if (ev.type === 'error') {
+              finishError(ev.message || 'अज्ञात त्रुटि');
+            }
+          } catch (err) {
+            console.error('SSE parse error:', err);
+          }
+        };
+
+        eventSource.onerror = (err) => {
+          console.warn('SSE disconnected, falling back to polling...', err);
+        };
+
+        pollTimer = setInterval(async () => {
+          if (isDone) {
+            clearInterval(pollTimer);
+            return;
+          }
+          try {
+            const taskResp = await fetch(`/api/tasks/${currentTaskId}`);
+            if (taskResp.ok) {
+              const taskInfo = await taskResp.json();
+              if (taskInfo.status === 'completed') {
+                finishSuccess(taskInfo.result);
+              } else if (taskInfo.status === 'failed') {
+                finishError(taskInfo.message || 'टास्क विफल');
+              }
+            }
+          } catch (pe) {
+            console.warn('Polling check error:', pe);
+          }
+        }, 3000);
+
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          if (btnText) btnText.innerText = 'अभी 20 लीड्स लाइव करें (Force Run Now)';
+          if (btnIcon) btnIcon.innerText = '⚡';
+        }
+        showToast('रन त्रुटि: ' + err.message, 'error');
       }
     }
 
@@ -4586,11 +5042,13 @@
     // Auto-load status on page open
     window.addEventListener('DOMContentLoaded', () => {
       loadAutoBatchStatus();
+      loadAutopilotStatus();
       loadStatus(false);
       loadMasterLeads();
       loadSearchHistory();
       loadAutopilotConfig();
       loadSaturationRoadmap();
+      setInterval(loadAutopilotStatus, 15000);
       setInterval(loadAutopilotConfig, 20000);
       setInterval(loadAutoBatchStatus, 30000);
     });

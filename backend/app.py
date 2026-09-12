@@ -589,9 +589,13 @@ async def api_turbo_full_pipeline(req: TurboPipelineRequest, background_tasks: B
 
 class AutopilotSaveRequest(BaseModel):
     is_active: bool | None = None
-    daily_time: str | None = None
-    frequency_hours: int | None = None
+    interval_minutes: int | None = None
     batch_size: int | None = None
+    active_window: str | None = None  # "12_hours" or "24_hours"
+    window_start: str | None = None   # "09:00"
+    window_end: str | None = None     # "21:00"
+    daily_time: str | None = None
+    frequency_hours: float | None = None
     city: str | None = None
     category: str | None = None
     upload_mode: str | None = None
@@ -602,18 +606,42 @@ async def api_get_autopilot_config():
     """Returns the persistent 24/7 autopilot scheduler configuration and status."""
     return load_autopilot_config()
 
+@app.get("/api/autopilot/status")
+async def api_get_autopilot_status():
+    """Returns real-time status with countdown timer until next 30-min run."""
+    cfg = load_autopilot_config()
+    now = datetime.datetime.now()
+    next_run_str = cfg.get("next_run_timestamp")
+    seconds_left = 0
+    if next_run_str:
+        try:
+            ndt = datetime.datetime.strptime(next_run_str, "%Y-%m-%d %H:%M:%S")
+            diff = (ndt - now).total_seconds()
+            seconds_left = max(0, int(diff))
+        except Exception:
+            pass
+    return {
+        **cfg,
+        "seconds_to_next_run": seconds_left,
+        "server_time": now.strftime("%H:%M:%S")
+    }
+
 @app.post("/api/autopilot/save")
 async def api_save_autopilot_config(req: AutopilotSaveRequest):
     """Saves updated parameters for the 24/7 autopilot scheduler."""
     cfg = load_autopilot_config()
     if req.is_active is not None:
         cfg["is_active"] = req.is_active
-    if req.daily_time is not None:
-        cfg["daily_time"] = req.daily_time
-    if req.frequency_hours is not None:
-        cfg["frequency_hours"] = req.frequency_hours
+    if req.interval_minutes is not None:
+        cfg["interval_minutes"] = req.interval_minutes
     if req.batch_size is not None:
         cfg["batch_size"] = req.batch_size
+    if req.active_window is not None:
+        cfg["active_window"] = req.active_window
+    if req.window_start is not None:
+        cfg["window_start"] = req.window_start
+    if req.window_end is not None:
+        cfg["window_end"] = req.window_end
     if req.city is not None:
         cfg["city"] = req.city
     if req.category is not None:
@@ -624,7 +652,7 @@ async def api_save_autopilot_config(req: AutopilotSaveRequest):
         cfg["delay_seconds"] = req.delay_seconds
 
     if cfg.get("is_active"):
-        cfg["next_run_timestamp"] = calculate_next_run(cfg.get("daily_time", "10:00"), cfg.get("frequency_hours", 24))
+        cfg["next_run_timestamp"] = calculate_next_run(cfg)
     else:
         cfg["next_run_timestamp"] = None
 
@@ -643,14 +671,23 @@ async def api_toggle_autopilot(req: AutopilotToggleRequest | None = None):
 
 @app.post("/api/autopilot/run-now")
 async def api_autopilot_run_now(background_tasks: BackgroundTasks):
-    """Manually triggers the autonomous autopilot cycle immediately."""
+    """Manually triggers the autonomous 20-lead streamed live pipeline immediately."""
+    from backend.auto_batch_engine import execute_streamed_live_pipeline
     cfg = load_autopilot_config()
     
     task_id = str(uuid.uuid4())
-    TASKS[task_id] = {"status": "running"}
+    TASKS[task_id] = {
+        "status": "running",
+        "batch_size": cfg.get("batch_size", 20),
+        "city": cfg.get("city", "Indore"),
+        "category": cfg.get("category", "Jewellers & All Commercial"),
+        "events": []
+    }
     TASK_LISTENERS[task_id] = []
 
     def dispatch_event(event_data: Dict[str, Any]):
+        if task_id in TASKS:
+            TASKS[task_id].setdefault("events", []).append(event_data)
         listeners = TASK_LISTENERS.get(task_id, [])
         for q in listeners:
             try:
@@ -662,28 +699,33 @@ async def api_autopilot_run_now(background_tasks: BackgroundTasks):
         try:
             cfg["running_state"] = "running"
             save_autopilot_config(cfg)
-            res = await execute_full_autonomous_cycle(
-                batch_size=cfg.get("batch_size", 50),
+            res = await execute_streamed_live_pipeline(
+                target_count=cfg.get("batch_size", 20),
                 city=cfg.get("city", "Indore"),
                 category=cfg.get("category", "Jewellers & All Commercial"),
-                upload_mode=cfg.get("upload_mode", "instant"),
-                delay_seconds=cfg.get("delay_seconds", 0),
                 progress_callback=dispatch_event
             )
             c = load_autopilot_config()
             c["last_run_timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             c["last_run_result"] = res
             c["total_runs"] = c.get("total_runs", 0) + 1
+            c["today_submitted"] = c.get("today_submitted", 0) + res.get("submitted_count", 0)
             c["running_state"] = "idle"
             if c.get("is_active"):
-                c["next_run_timestamp"] = calculate_next_run(c.get("daily_time", "10:00"), c.get("frequency_hours", 24))
+                c["next_run_timestamp"] = calculate_next_run(c)
             save_autopilot_config(c)
             TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
         except Exception as e:
             c = load_autopilot_config()
             c["running_state"] = "idle"
             save_autopilot_config(c)
             TASKS[task_id]["status"] = "failed"
+            dispatch_event({"type": "error", "message": str(e)})
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started", "batch_size": cfg.get("batch_size", 20)}
+
 class SaturationScanRequest(BaseModel):
     city: str = "Jaipur"
     area: Optional[str] = None
