@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 import asyncio
 
@@ -13,10 +13,13 @@ def main():
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
     
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0"
+    
     config = uvicorn.Config(
         app="backend.app:app",
-        host="127.0.0.1",
-        port=8000,
+        host=host,
+        port=port,
         reload=False,
         loop="asyncio"
     )
