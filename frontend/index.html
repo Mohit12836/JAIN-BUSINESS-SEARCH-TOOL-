@@ -131,6 +131,10 @@
           <span>📋 खोज व कवरेज ट्रैकर</span>
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         </button>
+        <button onclick="switchTab('tab-reports')" id="btn-tab-reports" class="spring-press px-4 py-2 rounded-xl text-xs font-black transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-900 border border-indigo-200 cursor-pointer flex items-center gap-1.5 ring-1 ring-indigo-400/30">
+          <span>📈 रिपोर्ट व एनालिटिक्स (Report Hub)</span>
+          <span class="w-2 h-2 rounded-full bg-indigo-600 animate-ping"></span>
+        </button>
       </div>
 
       <button onclick="loadStatus(true)" class="spring-press hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/80 rounded-xl text-xs font-semibold text-slate-600 border border-slate-200 shadow-sm cursor-pointer">
@@ -2024,6 +2028,309 @@
     </section>
   </div>
 
+  <!-- ==================== TAB 9: MULTI-PERIOD REPORT & ANALYTICS HUB ==================== -->
+  <div id="tab-reports" class="hidden space-y-6">
+      <!-- Hub Header Card -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-7 relative overflow-hidden border border-indigo-200/80 shadow-xl">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div class="space-y-2 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100/80 text-indigo-800 text-xs font-black tracking-wide uppercase border border-indigo-200">
+              <span class="w-2 h-2 rounded-full bg-indigo-600 animate-ping"></span>
+              <span>मल्टी-पीरियड रिपोर्टिंग व एनालिटिक्स इंजन</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
+              दैनिक, साप्ताहिक, मासिक व कस्टम रिपोर्ट हब
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              1 दिन, 2 दिन, 3 दिन, 7 दिन, 15 दिन या किसी भी महीने की पूरी माइनिंग व पोर्टल सबमिशन रिपोर्ट तुरंत निकालें। 3-शीट एक्सेल, CRM CSV डाउनलोड करें या 1-क्लिक में लाइव गूगल शीट पर सिंक करें।
+            </p>
+          </div>
+
+          <!-- 1-Click Multi-Format Export Buttons -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button onclick="downloadActiveReportExcel()" class="spring-press inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white px-4 py-2.5 rounded-2xl text-xs font-black shadow-lg shadow-emerald-600/25 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>📥 3-शीट एक्सेल (.xlsx)</span>
+            </button>
+            <button onclick="downloadActiveReportCSV()" class="spring-press inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-2xl text-xs font-black shadow-md cursor-pointer">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <span>📥 WhatsApp CSV</span>
+            </button>
+            <button onclick="syncReportToGoogleSheets()" class="spring-press inline-flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 px-3.5 py-2.5 rounded-2xl text-xs font-black shadow-sm cursor-pointer">
+              <span class="text-sm">📊</span>
+              <span>Google Sheet सिंक</span>
+            </button>
+            <button onclick="window.print()" class="spring-press inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3 py-2.5 rounded-2xl text-xs font-bold cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+              <span>प्रिंट</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeframe Selector Ribbon -->
+        <div class="mt-6 pt-5 border-t border-indigo-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+            <span class="text-xs font-bold text-slate-500 mr-1 flex-shrink-0">अवधि (Period):</span>
+            <button onclick="setReportTimeframe('1d')" id="tf-btn-1d" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-indigo-600 text-white shadow-sm cursor-pointer whitespace-nowrap">
+              1 दिन (आज)
+            </button>
+            <button onclick="setReportTimeframe('2d')" id="tf-btn-2d" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap">
+              2 दिन
+            </button>
+            <button onclick="setReportTimeframe('3d')" id="tf-btn-3d" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap">
+              3 दिन
+            </button>
+            <button onclick="setReportTimeframe('7d')" id="tf-btn-7d" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap">
+              7 दिन (साप्ताहिक)
+            </button>
+            <button onclick="setReportTimeframe('15d')" id="tf-btn-15d" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap">
+              15 दिन
+            </button>
+            <button onclick="setReportTimeframe('30d')" id="tf-btn-30d" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap">
+              30 दिन (मासिक)
+            </button>
+            <button onclick="setReportTimeframe('all')" id="tf-btn-all" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap">
+              ऑल टाइम (All)
+            </button>
+            <button onclick="toggleCustomDateRow()" id="tf-btn-custom" class="report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 cursor-pointer whitespace-nowrap flex items-center gap-1">
+              <span>📅 कस्टम तारीख</span>
+            </button>
+          </div>
+
+          <!-- Active Period Badge -->
+          <div class="flex items-center gap-2">
+            <span id="reportActivePeriodBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span id="reportActivePeriodText">1 दिन (Last 24 Hours / आज)</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Custom Date Range Row (Hidden by default) -->
+        <div id="customDateRangeRow" class="hidden mt-4 pt-4 border-t border-slate-200/80 bg-slate-50/70 p-4 rounded-2xl flex flex-wrap items-center gap-3 text-xs">
+          <div class="flex items-center gap-2">
+            <label class="font-bold text-slate-700">तारीख से (From):</label>
+            <input type="date" id="reportStartDate" class="glass-input px-3 py-1.5 rounded-xl text-xs font-medium text-slate-800">
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="font-bold text-slate-700">तारीख तक (To):</label>
+            <input type="date" id="reportEndDate" class="glass-input px-3 py-1.5 rounded-xl text-xs font-medium text-slate-800">
+          </div>
+          <button onclick="applyCustomDateRange()" class="spring-press px-4 py-1.5 rounded-xl bg-indigo-600 text-white font-bold cursor-pointer hover:bg-indigo-700 shadow-sm">
+            लागू करें (Apply)
+          </button>
+        </div>
+
+        <!-- Dimensional Secondary Filters -->
+        <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">शहर (City Filter)</label>
+            <select id="reportCityFilter" onchange="loadReportData()" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-semibold text-slate-700">
+              <option value="all">सभी शहर (All Cities)</option>
+              <option value="Indore">इंदौर (Indore)</option>
+              <option value="Jaipur">जयपुर (Jaipur)</option>
+              <option value="Ahmedabad">अहमदाबाद (Ahmedabad)</option>
+              <option value="Bhopal">भोपाल (Bhopal)</option>
+              <option value="Kota">कोटा (Kota)</option>
+              <option value="Ujjain">उज्जैन (Ujjain)</option>
+              <option value="Surat">सूरत (Surat)</option>
+              <option value="Mumbai">मुंबई (Mumbai)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">व्यापार श्रेणी (Category)</label>
+            <select id="reportCategoryFilter" onchange="loadReportData()" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-semibold text-slate-700">
+              <option value="all">सभी श्रेणियाँ (All Categories)</option>
+              <option value="Jewellers">Jewellers & Gems</option>
+              <option value="Fashion">Fashion, Saree & Garments</option>
+              <option value="Food">Food, Sweets & Namkeen</option>
+              <option value="Hardware">Hardware, Steel & Pipes</option>
+              <option value="Finance">CA, Tax & Finance</option>
+              <option value="Health">Pharma, Chemist & Medical</option>
+              <option value="Real Estate">Real Estate & Property</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-1">पोर्टल स्थिति (Portal Status)</label>
+            <select id="reportStatusFilter" onchange="loadReportData()" class="w-full glass-input px-3 py-2 rounded-xl text-xs font-semibold text-slate-700">
+              <option value="all">सभी रिकॉर्ड (All Records)</option>
+              <option value="live">🟢 लाइव पोर्टल पर (Submitted & Live)</option>
+              <option value="ready">🟡 बाकी अनसबमिटेड (Ready to Submit)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive KPI Metric Cards (6 Auto-Fit Tiles) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <!-- 1. Total Leads Mined -->
+        <div class="glass-panel rounded-2xl p-4 border border-indigo-100 flex flex-col justify-between shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-slate-500 uppercase">कुल लीड्स</span>
+            <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-xs">💎</span>
+          </div>
+          <div class="mt-2">
+            <div id="kpiTotalLeads" class="text-2xl font-extrabold text-slate-900 font-mono">0</div>
+            <p class="text-[10px] text-slate-400 mt-0.5">माइन की गई कुल प्रविष्टियाँ</p>
+          </div>
+        </div>
+
+        <!-- 2. Portal Live Submissions -->
+        <div class="glass-panel rounded-2xl p-4 border border-emerald-100 flex flex-col justify-between shadow-sm bg-gradient-to-b from-white to-emerald-50/30">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-emerald-800 uppercase">पोर्टल लाइव</span>
+            <span class="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-mono font-bold" id="kpiLiveRate">0%</span>
+          </div>
+          <div class="mt-2">
+            <div id="kpiLiveLeads" class="text-2xl font-extrabold text-emerald-700 font-mono">0</div>
+            <p class="text-[10px] text-emerald-600 font-medium mt-0.5">JainForJain पर सबमिटेड</p>
+          </div>
+        </div>
+
+        <!-- 3. Unsubmitted Pending -->
+        <div class="glass-panel rounded-2xl p-4 border border-amber-100 flex flex-col justify-between shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-amber-800 uppercase">बाकी सबमिशन</span>
+            <span class="p-1.5 rounded-lg bg-amber-50 text-amber-700 text-xs">⏳</span>
+          </div>
+          <div class="mt-2">
+            <div id="kpiPendingLeads" class="text-2xl font-extrabold text-amber-700 font-mono">0</div>
+            <p class="text-[10px] text-amber-600 font-medium mt-0.5">1-क्लिक सबमिशन हेतु तैयार</p>
+          </div>
+        </div>
+
+        <!-- 4. Verified Contact % -->
+        <div class="glass-panel rounded-2xl p-4 border border-blue-100 flex flex-col justify-between shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-blue-800 uppercase">फोन/WhatsApp %</span>
+            <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-mono font-bold" id="kpiContactRate">0%</span>
+          </div>
+          <div class="mt-2">
+            <div id="kpiVerifiedContacts" class="text-2xl font-extrabold text-blue-700 font-mono">0</div>
+            <p class="text-[10px] text-blue-600 font-medium mt-0.5">सत्यापित 10-अंक मोबाइल</p>
+          </div>
+        </div>
+
+        <!-- 5. Canva HD Assets % -->
+        <div class="glass-panel rounded-2xl p-4 border border-purple-100 flex flex-col justify-between shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-purple-800 uppercase">फोटो व संपत्तियाँ</span>
+            <span class="p-1.5 rounded-lg bg-purple-50 text-purple-600 text-xs font-mono font-bold" id="kpiPhotoRate">0%</span>
+          </div>
+          <div class="mt-2">
+            <div id="kpiPhotosCount" class="text-2xl font-extrabold text-purple-700 font-mono">0</div>
+            <p class="text-[10px] text-purple-600 font-medium mt-0.5">HD स्टोरफ्रंट / लोगो</p>
+          </div>
+        </div>
+
+        <!-- 6. Executed Batches -->
+        <div class="glass-panel rounded-2xl p-4 border border-indigo-100 flex flex-col justify-between shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-indigo-800 uppercase">ऑटो-बैच रन</span>
+            <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-xs">🚀</span>
+          </div>
+          <div class="mt-2">
+            <div id="kpiBatchesCount" class="text-2xl font-extrabold text-indigo-900 font-mono">0</div>
+            <p class="text-[10px] text-slate-400 mt-0.5">इस अवधि में चले सत्र</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytical Breakdown Section (Dual Cards) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- City-wise Breakdown Card -->
+        <div class="glass-panel rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-md space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🏙️</span>
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide">शहर अनुसार विभाजन (City Distribution)</h3>
+            </div>
+            <span id="reportTopCityBadge" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-xl border border-indigo-200">
+              टॉप शहर: Indore
+            </span>
+          </div>
+          <div id="reportCityBarsContainer" class="space-y-3">
+            <div class="py-4 text-center text-xs text-slate-400">डेटा लोड हो रहा है...</div>
+          </div>
+        </div>
+
+        <!-- Category-wise Breakdown Card -->
+        <div class="glass-panel rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-md space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🏷️</span>
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide">व्यापार श्रेणी अनुसार (Industry Breakdown)</h3>
+            </div>
+            <span id="reportTopCategoryBadge" class="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200">
+              टॉप श्रेणी: Jewellers
+            </span>
+          </div>
+          <div id="reportCategoryBarsContainer" class="space-y-3">
+            <div class="py-4 text-center text-xs text-slate-400">डेटा लोड हो रहा है...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Mining & Submission Timeline (Day-by-Day Activity) -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-md space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📅</span>
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide">दैनिक गतिविधि टाइमलाइन (Daily Mining & Submissions)</h3>
+          </div>
+          <span class="text-xs text-slate-500 font-semibold">निकाली गई बनाम पोर्टल सबमिटेड</span>
+        </div>
+        <div id="reportTimelineContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+          <div class="col-span-full py-4 text-center text-xs text-slate-400">टाइमलाइन डेटा लोड हो रहा है...</div>
+        </div>
+      </div>
+
+      <!-- Filtered Leads Table for Selected Period -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+              <span>📋 चुनी गई अवधि की लीड्स सूची</span>
+              <span id="reportTableCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">0 लीड्स</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">सभी 26 कॉलम सत्यापित डेटा, सीधे WhatsApp लिंक व लाइव पोर्टल स्थिति</p>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="text" id="reportTableSearchInput" oninput="filterReportTable()" placeholder="फर्म, फोन या शहर सर्च करें..." class="w-full sm:w-64 glass-input px-3.5 py-2 rounded-xl text-xs text-slate-800">
+          </div>
+        </div>
+
+        <!-- Interactive Leads Table -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-indigo-950 text-white font-semibold uppercase tracking-wider text-[10px]">
+              <tr>
+                <th class="py-3 px-3">क्र.</th>
+                <th class="py-3 px-3">फर्म / व्यापार का नाम</th>
+                <th class="py-3 px-3">श्रेणी (Category)</th>
+                <th class="py-3 px-3">शहर (City)</th>
+                <th class="py-3 px-3">फ़ोन / WhatsApp</th>
+                <th class="py-3 px-3 text-center">पोर्टल स्थिति</th>
+                <th class="py-3 px-3 text-center">फोटो संपत्तियाँ</th>
+                <th class="py-3 px-3 text-center">माइनिंग समय</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody" class="divide-y divide-slate-100 font-medium">
+              <tr>
+                <td colspan="8" class="py-8 text-center text-slate-400 font-medium">
+                  रिपोर्ट डेटा लोड हो रहा है...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentTaskId = null;
     let eventSource = null;
@@ -2033,7 +2340,7 @@
     let canvaLoaded = false;
 
     function switchTab(tabId) {
-      const tabs = ['tab-instant', 'tab-saturation', 'tab-mobile', 'tab-portal', 'tab-canva', 'tab-scanner', 'tab-table', 'tab-tracker'];
+      const tabs = ['tab-instant', 'tab-saturation', 'tab-mobile', 'tab-portal', 'tab-canva', 'tab-scanner', 'tab-table', 'tab-tracker', 'tab-reports'];
       tabs.forEach(t => {
         const el = document.getElementById(t);
         const btn = document.getElementById('btn-' + t);
@@ -2072,6 +2379,9 @@
       }
       if (tabId === 'tab-canva' && !canvaLoaded) {
         loadCanvaFlyers();
+      }
+      if (tabId === 'tab-reports') {
+        loadReportData();
       }
       if (tabId === 'tab-tracker') {
         loadSearchHistory();
@@ -5052,6 +5362,326 @@
       setInterval(loadAutopilotConfig, 20000);
       setInterval(loadAutoBatchStatus, 30000);
     });
-  </script>
+  
+    // ==================== MULTI-PERIOD REPORT & ANALYTICS ENGINE JS ====================
+    let activeReportTimeframe = '1d';
+    let currentReportData = null;
+    let allReportLeads = [];
+
+    function setReportTimeframe(tf) {
+      activeReportTimeframe = tf;
+      // Update UI button highlights
+      document.querySelectorAll('.report-tf-btn').forEach(b => {
+        b.className = 'report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap';
+      });
+      const activeBtn = document.getElementById('tf-btn-' + tf);
+      if (activeBtn) {
+        activeBtn.className = 'report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-indigo-600 text-white shadow-sm cursor-pointer whitespace-nowrap';
+      }
+      if (tf !== 'custom') {
+        const customRow = document.getElementById('customDateRangeRow');
+        if (customRow) customRow.classList.add('hidden');
+      }
+      loadReportData();
+    }
+
+    function toggleCustomDateRow() {
+      const customRow = document.getElementById('customDateRangeRow');
+      if (customRow) {
+        customRow.classList.toggle('hidden');
+        if (!customRow.classList.contains('hidden')) {
+          activeReportTimeframe = 'custom';
+          document.querySelectorAll('.report-tf-btn').forEach(b => {
+            b.className = 'report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 cursor-pointer whitespace-nowrap';
+          });
+          const btn = document.getElementById('tf-btn-custom');
+          if (btn) btn.className = 'report-tf-btn spring-press px-3 py-1.5 rounded-xl text-xs font-black transition-all bg-indigo-600 text-white shadow-sm cursor-pointer whitespace-nowrap';
+        }
+      }
+    }
+
+    function applyCustomDateRange() {
+      const start = document.getElementById('reportStartDate').value;
+      const end = document.getElementById('reportEndDate').value;
+      if (!start) {
+        showToast('कृपया शुरुआत की तारीख चुनें', 'warning');
+        return;
+      }
+      activeReportTimeframe = 'custom';
+      loadReportData();
+    }
+
+    async function loadReportData() {
+      const city = document.getElementById('reportCityFilter')?.value || 'all';
+      const category = document.getElementById('reportCategoryFilter')?.value || 'all';
+      const status = document.getElementById('reportStatusFilter')?.value || 'all';
+      const start = document.getElementById('reportStartDate')?.value || '';
+      const end = document.getElementById('reportEndDate')?.value || '';
+
+      const queryParams = new URLSearchParams({
+        timeframe: activeReportTimeframe,
+        city: city,
+        category: category,
+        status: status
+      });
+      if (activeReportTimeframe === 'custom') {
+        if (start) queryParams.append('start_date', start);
+        if (end) queryParams.append('end_date', end);
+      }
+
+      try {
+        const res = await fetch('/api/reports/query?' + queryParams.toString());
+        const json = await res.json();
+        if (json.success && json.report) {
+          currentReportData = json.report;
+          allReportLeads = json.report.leads || [];
+          renderReportView(json.report);
+        } else {
+          showToast('रिपोर्ट लोड करने में त्रुटि: ' + (json.error || 'अज्ञात'), 'error');
+        }
+      } catch (err) {
+        console.error('Report fetch error:', err);
+      }
+    }
+
+    function renderReportView(report) {
+      // 1. Active Period Badge
+      const badge = document.getElementById('reportActivePeriodText');
+      if (badge) badge.innerText = report.timeframe_label || activeReportTimeframe;
+
+      // 2. KPIs
+      const kpis = report.kpis || {};
+      document.getElementById('kpiTotalLeads').innerText = kpis.total_leads || 0;
+      document.getElementById('kpiLiveLeads').innerText = kpis.submitted_leads || 0;
+      document.getElementById('kpiLiveRate').innerText = (kpis.submission_rate || 0) + '%';
+      document.getElementById('kpiPendingLeads').innerText = kpis.unsubmitted_leads || 0;
+      document.getElementById('kpiVerifiedContacts').innerText = kpis.verified_contacts || 0;
+      document.getElementById('kpiContactRate').innerText = (kpis.contact_rate || 0) + '%';
+      document.getElementById('kpiPhotosCount').innerText = kpis.photos_available || 0;
+      document.getElementById('kpiPhotoRate').innerText = (kpis.photos_rate || 0) + '%';
+      document.getElementById('kpiBatchesCount').innerText = kpis.batches_count || 0;
+
+      // 3. Top Badges
+      const topCityEl = document.getElementById('reportTopCityBadge');
+      if (topCityEl) topCityEl.innerText = 'टॉप शहर: ' + (kpis.top_city || 'N/A');
+      const topCatEl = document.getElementById('reportTopCategoryBadge');
+      if (topCatEl) topCatEl.innerText = 'टॉप श्रेणी: ' + (kpis.top_category || 'N/A');
+
+      // 4. City Breakdown Bars
+      const cityContainer = document.getElementById('reportCityBarsContainer');
+      if (cityContainer) {
+        if (!report.city_breakdown || report.city_breakdown.length === 0) {
+          cityContainer.innerHTML = '<div class="text-xs text-slate-400 py-3 text-center">कोई शहर डेटा नहीं</div>';
+        } else {
+          cityContainer.innerHTML = report.city_breakdown.slice(0, 5).map(cb => `
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>${cb.city}</span>
+                <span class="font-mono">${cb.count} लीड्स (${cb.percent}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: ${Math.min(100, cb.percent)}%"></div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 5. Category Breakdown Bars
+      const catContainer = document.getElementById('reportCategoryBarsContainer');
+      if (catContainer) {
+        if (!report.category_breakdown || report.category_breakdown.length === 0) {
+          catContainer.innerHTML = '<div class="text-xs text-slate-400 py-3 text-center">कोई श्रेणी डेटा नहीं</div>';
+        } else {
+          catContainer.innerHTML = report.category_breakdown.slice(0, 5).map(cat => `
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>${cat.category}</span>
+                <span class="font-mono text-purple-700">${cat.count} (${cat.percent}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style="width: ${Math.min(100, cat.percent)}%"></div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 6. Daily Timeline
+      const timelineContainer = document.getElementById('reportTimelineContainer');
+      if (timelineContainer) {
+        if (!report.daily_timeline || report.daily_timeline.length === 0) {
+          timelineContainer.innerHTML = '<div class="col-span-full text-xs text-slate-400 py-3 text-center">कोई दैनिक गतिविधि नहीं</div>';
+        } else {
+          timelineContainer.innerHTML = report.daily_timeline.slice(0, 7).map(d => `
+            <div class="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-sm text-center flex flex-col justify-between">
+              <div class="text-[11px] font-bold text-slate-500">${d.date}</div>
+              <div class="text-xl font-extrabold text-slate-900 font-mono my-1">${d.total}</div>
+              <div class="text-[10px] font-bold text-emerald-600 bg-emerald-50 rounded-lg py-0.5 border border-emerald-100">
+                ${d.submitted} लाइव
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 7. Render Table
+      renderReportTable(allReportLeads);
+    }
+
+    function renderReportTable(leads) {
+      const tbody = document.getElementById('reportTableBody');
+      const countBadge = document.getElementById('reportTableCountBadge');
+      if (countBadge) countBadge.innerText = `${leads.length} लीड्स`;
+
+      if (!tbody) return;
+      if (leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400 font-medium">इस फ़िल्टर में कोई लीड नहीं मिली</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = leads.map((l, i) => {
+        const isLive = (l.submission_status || '').toLowerCase().includes('submitted') || (l.submission_status || '').toLowerCase().includes('live');
+        const phone = l.phone && l.phone !== 'Not Listed' ? l.phone : '';
+        const cleanPhone = phone.replace(/\D/g, '');
+        const waPhone = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : '';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-2.5 px-3 font-mono text-slate-400 text-center">${i + 1}</td>
+            <td class="py-2.5 px-3 font-bold text-slate-900">
+              <div class="flex items-center gap-1.5">
+                <span>${l.name || 'N/A'}</span>
+                ${l.maps_url ? `<a href="${l.maps_url}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-[11px]" title="Google Maps">🗺️</a>` : ''}
+                ${l.website ? `<a href="${l.website}" target="_blank" class="text-blue-600 hover:text-blue-800 text-[11px]" title="Website">🌐</a>` : ''}
+              </div>
+              <div class="text-[10px] font-normal text-slate-500 truncate max-w-xs">${l.address || ''}</div>
+            </td>
+            <td class="py-2.5 px-3 font-semibold text-teal-700">${l.category || 'Business'}</td>
+            <td class="py-2.5 px-3 text-slate-700 font-medium">${l.city || ''}</td>
+            <td class="py-2.5 px-3">
+              ${waPhone ? `
+                <a href="https://wa.me/91${waPhone}" target="_blank" class="inline-flex items-center gap-1 font-mono font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 text-[11px]">
+                  <span>💬 ${waPhone}</span>
+                </a>
+              ` : `<span class="text-slate-400 text-[11px]">उपलब्ध नहीं</span>`}
+            </td>
+            <td class="py-2.5 px-3 text-center">
+              ${isLive ? `
+                <a href="${l.j4j_profile_url || '#'}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300">
+                  <span>🟢 लाइव (${l.j4j_business_id || 'ID OK'})</span>
+                </a>
+              ` : `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                  <span>🟡 तैयार (Ready)</span>
+                </span>
+              `}
+            </td>
+            <td class="py-2.5 px-3 text-center">
+              <div class="flex items-center justify-center gap-1">
+                ${l.storefront_photo ? `<a href="${l.storefront_photo}" target="_blank" class="p-1 rounded bg-slate-100 hover:bg-slate-200" title="Storefront HD">📸</a>` : ''}
+                ${l.showcase_photo ? `<a href="${l.showcase_photo}" target="_blank" class="p-1 rounded bg-slate-100 hover:bg-slate-200" title="Showroom HD">🏬</a>` : ''}
+                ${l.website_logo ? `<a href="${l.website_logo}" target="_blank" class="p-1 rounded bg-slate-100 hover:bg-slate-200" title="Logo">🏷️</a>` : ''}
+                ${(!l.storefront_photo && !l.showcase_photo) ? `<span class="text-slate-300 text-[10px]">-</span>` : ''}
+              </div>
+            </td>
+            <td class="py-2.5 px-3 text-center font-mono text-[11px] text-slate-500">
+              ${l.scraped_at_str ? l.scraped_at_str.slice(0, 16) : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterReportTable() {
+      const q = (document.getElementById('reportTableSearchInput')?.value || '').toLowerCase().trim();
+      if (!q) {
+        renderReportTable(allReportLeads);
+        return;
+      }
+      const filtered = allReportLeads.filter(l => {
+        return (l.name || '').toLowerCase().includes(q) ||
+               (l.city || '').toLowerCase().includes(q) ||
+               (l.phone || '').includes(q) ||
+               (l.category || '').toLowerCase().includes(q);
+      });
+      renderReportTable(filtered);
+    }
+
+    function downloadActiveReportExcel() {
+      const city = document.getElementById('reportCityFilter')?.value || 'all';
+      const category = document.getElementById('reportCategoryFilter')?.value || 'all';
+      const status = document.getElementById('reportStatusFilter')?.value || 'all';
+      const start = document.getElementById('reportStartDate')?.value || '';
+      const end = document.getElementById('reportEndDate')?.value || '';
+
+      const queryParams = new URLSearchParams({
+        timeframe: activeReportTimeframe,
+        city: city,
+        category: category,
+        status: status
+      });
+      if (activeReportTimeframe === 'custom') {
+        if (start) queryParams.append('start_date', start);
+        if (end) queryParams.append('end_date', end);
+      }
+      showToast('📥 3-शीट एक्सेल रिपोर्ट तैयार हो रही है...', 'info');
+      window.open('/api/reports/download/excel?' + queryParams.toString(), '_blank');
+    }
+
+    function downloadActiveReportCSV() {
+      const city = document.getElementById('reportCityFilter')?.value || 'all';
+      const category = document.getElementById('reportCategoryFilter')?.value || 'all';
+      const status = document.getElementById('reportStatusFilter')?.value || 'all';
+      const start = document.getElementById('reportStartDate')?.value || '';
+      const end = document.getElementById('reportEndDate')?.value || '';
+
+      const queryParams = new URLSearchParams({
+        timeframe: activeReportTimeframe,
+        city: city,
+        category: category,
+        status: status
+      });
+      if (activeReportTimeframe === 'custom') {
+        if (start) queryParams.append('start_date', start);
+        if (end) queryParams.append('end_date', end);
+      }
+      showToast('📥 WhatsApp CRM CSV फ़ाइल डाउनलोड हो रही है...', 'info');
+      window.open('/api/reports/download/csv?' + queryParams.toString(), '_blank');
+    }
+
+    async function syncReportToGoogleSheets() {
+      const city = document.getElementById('reportCityFilter')?.value || 'all';
+      const category = document.getElementById('reportCategoryFilter')?.value || 'all';
+      const status = document.getElementById('reportStatusFilter')?.value || 'all';
+      const start = document.getElementById('reportStartDate')?.value || '';
+      const end = document.getElementById('reportEndDate')?.value || '';
+
+      showToast('📊 Google Sheet में सिंक प्रारंभ हो रहा है...', 'info');
+      try {
+        const res = await fetch('/api/reports/sync-sheets', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            timeframe: activeReportTimeframe,
+            city: city,
+            category: category,
+            status: status,
+            start_date: start,
+            end_date: end
+          })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`✓ सफलतापूर्वक ${json.synced_leads} लीड्स Google Sheet में सिंक हो गईं!`, 'success');
+        } else {
+          showToast('सिंक विफल: ' + (json.error || 'त्रुटि'), 'error');
+        }
+      } catch (err) {
+        showToast('सिंक नेटवर्क त्रुटि', 'error');
+      }
+    }
+
+</script>
 </body>
 </html>

@@ -6,6 +6,7 @@ task dispatching, and 1-click Excel file downloads.
 
 import os
 import sys
+import re
 import uuid
 import json
 import asyncio
@@ -18,7 +19,7 @@ if sys.platform == "win32":
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import FastAPI, BackgroundTasks, Request
-from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -866,6 +867,129 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
 
     background_tasks.add_task(runner)
     return {"task_id": task_id, "status": "started", "batch_size": req.count}
+
+# ==================== MULTI-PERIOD REPORT & ANALYTICS ENGINE ====================
+@app.get("/api/reports/query")
+async def api_reports_query(
+    timeframe: str = "all",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    city: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None
+):
+    """
+    Returns filtered multi-period report with executive KPI metrics,
+    breakdowns, batch execution log, and filtered leads.
+    """
+    from backend.report_engine import generate_leads_report
+    try:
+        report = generate_leads_report(
+            timeframe=timeframe,
+            start_date=start_date,
+            end_date=end_date,
+            city=city,
+            category=category,
+            status_filter=status
+        )
+        return {"success": True, "report": report}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/reports/download/excel")
+async def api_reports_download_excel(
+    timeframe: str = "all",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    city: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None
+):
+    """
+    Generates and downloads styled 3-Sheet Excel report for the requested timeframe.
+    """
+    from backend.report_engine import generate_leads_report, build_report_excel
+    report = generate_leads_report(
+        timeframe=timeframe,
+        start_date=start_date,
+        end_date=end_date,
+        city=city,
+        category=category,
+        status_filter=status
+    )
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    clean_tf = re.sub(r'[^a-zA-Z0-9]', '_', timeframe)
+    filename = f"JainBiz_Report_{clean_tf}_{timestamp}.xlsx"
+    export_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "exports")
+    os.makedirs(export_dir, exist_ok=True)
+    out_path = os.path.join(export_dir, filename)
+    
+    build_report_excel(report, out_path)
+    return FileResponse(
+        out_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=filename
+    )
+
+@app.get("/api/reports/download/csv")
+async def api_reports_download_csv(
+    timeframe: str = "all",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    city: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None
+):
+    """
+    Generates and downloads clean UTF-8 CSV report for CRM / WhatsApp campaigns.
+    """
+    from backend.report_engine import generate_leads_report, build_report_csv
+    report = generate_leads_report(
+        timeframe=timeframe,
+        start_date=start_date,
+        end_date=end_date,
+        city=city,
+        category=category,
+        status_filter=status
+    )
+    csv_content = build_report_csv(report)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    clean_tf = re.sub(r'[^a-zA-Z0-9]', '_', timeframe)
+    filename = f"JainBiz_Leads_{clean_tf}_{timestamp}.csv"
+    
+    return Response(
+        content=csv_content.encode("utf-8-sig"),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+@app.post("/api/reports/sync-sheets")
+async def api_reports_sync_sheets(req: Optional[Dict[str, Any]] = None):
+    """
+    Syncs the active report data directly to Google Sheets in real-time.
+    """
+    from backend.report_engine import generate_leads_report, build_report_excel
+    from backend.google_sheets_sync import sync_excel_to_google_sheet
+    
+    params = req or {}
+    report = generate_leads_report(
+        timeframe=params.get("timeframe", "all"),
+        start_date=params.get("start_date"),
+        end_date=params.get("end_date"),
+        city=params.get("city"),
+        category=params.get("category"),
+        status_filter=params.get("status")
+    )
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    temp_excel = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "exports", f"temp_sync_report_{timestamp}.xlsx")
+    build_report_excel(report, temp_excel)
+    
+    success = await sync_excel_to_google_sheet(temp_excel)
+    return {
+        "success": success,
+        "sheet_url": "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing",
+        "synced_leads": len(report.get("leads", []))
+    }
 
 if __name__ == "__main__":
     import uvicorn
