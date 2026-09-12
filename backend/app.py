@@ -738,6 +738,63 @@ async def api_matrix_5layer_queries(city: Optional[str] = "Indore", area: Option
     from backend.matrix import generate_5layer_queries
     return generate_5layer_queries(city=city or "Indore", area=area or "", limit=150)
 
+# ==================== 1-CLICK MASTER AUTO-BATCH (100-150 ENTRIES) ====================
+class AutoBatchRunRequest(BaseModel):
+    count: int = 150
+    city: Optional[str] = None
+    category: Optional[str] = None
+
+@app.get("/api/auto-batch/status")
+async def api_auto_batch_status(city: Optional[str] = None):
+    """Returns roadmap status and unsubmitted lead counts for 1-Click Auto-Batch Card."""
+    from backend.auto_batch_engine import get_auto_batch_status
+    return get_auto_batch_status(city)
+
+@app.post("/api/auto-batch/run-next")
+async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: BackgroundTasks):
+    """
+    1-Click Master Auto-Batch Endpoint:
+    Harvests and submits the next 100-150 entries in full autonomous mode.
+    Dispatches real-time SSE progress events to /api/stream-progress/{task_id}.
+    """
+    from backend.auto_batch_engine import execute_master_auto_batch
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {
+        "status": "running",
+        "batch_size": req.count,
+        "city": req.city,
+        "category": req.category
+    }
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            res = await execute_master_auto_batch(
+                target_count=req.count,
+                city=req.city,
+                category=req.category,
+                progress_callback=dispatch_event
+            )
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": str(e)
+            })
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started", "batch_size": req.count}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

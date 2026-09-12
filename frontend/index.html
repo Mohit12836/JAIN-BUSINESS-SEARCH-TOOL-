@@ -207,6 +207,142 @@
     <!-- ==================== TAB 0: ⚡ DEDICATED SUPERFAST BATCH HUB (ZERO-DELAY • NO TIMER) ==================== -->
     <div id="tab-instant" class="space-y-6">
 
+      <!-- ==================== 🚀 1-CLICK MASTER AUTO-BATCH HERO CARD (100-150 ENTRIES) ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-indigo-500/60 bg-gradient-to-br from-white via-indigo-50/40 to-purple-50/50 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <!-- Glowing Ambient Accents -->
+        <div class="absolute -top-24 -right-24 w-60 h-60 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-60 h-60 bg-fuchsia-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Header Banner -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-indigo-100 pb-5">
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-600/30">
+              <span>🚀 1-क्लिक मास्टर ऑटो-बैच</span>
+              <span>•</span>
+              <span>नेक्स्ट 100-150 एंट्रीज़ ऑटो-रन</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+            </div>
+            <h2 class="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+              अगले 100–150 जैन व्यापारियों को 1-क्लिक में लाइव करें
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+              एक ही क्लिक में अगला अनसेचुरेटेड बाज़ार चुनें ➔ Google Maps से 100% जैन बिज़नेस (Score ≥ 85) निकालें ➔ 
+              Canva Pro HD लोगो (1080x1080) व बैनर (1200x500) बनाएं ➔ 26 कॉलम मास्टर एक्सेल व Google Sheet में 0 खाली सेल सिंक करें ➔ 
+              <b>jainforjain.com पर दोनों फ़ोटो सहित लाइव सबमिट करें!</b>
+            </p>
+          </div>
+
+          <!-- Live Roadmap Target Status Pill -->
+          <div class="flex-shrink-0 bg-white/90 backdrop-blur-md p-3.5 rounded-2xl border border-indigo-200/80 shadow-md space-y-1">
+            <div class="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+              सक्रिय रोडमैप टारगेट
+            </div>
+            <div class="text-sm font-black text-slate-900" id="autoBatchActiveArea">
+              Indore • Rajwada
+            </div>
+            <div class="text-[11px] text-slate-500 font-semibold" id="autoBatchNextArea">
+              अगला बाज़ार: Marothia Bazar ➔
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Metrics Row (4 Metrics) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-white/80 p-3.5 rounded-2xl border border-slate-200/80 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-slate-500 uppercase">एक्सेल में कुल लीड्स</div>
+            <div class="text-lg font-black text-slate-900 mt-0.5" id="metricTotalExcel">37</div>
+          </div>
+          <div class="bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-amber-700 uppercase">अनसबमिटेड तैयार ⏳</div>
+            <div class="text-lg font-black text-amber-900 mt-0.5" id="metricUnsubmitted">8</div>
+          </div>
+          <div class="bg-emerald-50/80 p-3.5 rounded-2xl border border-emerald-200 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-emerald-700 uppercase">पोर्टल पर लाइव सबमिट ✅</div>
+            <div class="text-lg font-black text-emerald-900 mt-0.5" id="metricSubmitted">29</div>
+          </div>
+          <div class="bg-indigo-50/80 p-3.5 rounded-2xl border border-indigo-200 text-center shadow-sm">
+            <div class="text-[10px] font-bold text-indigo-700 uppercase">समानांतर वर्कर शील्ड</div>
+            <div class="text-xs font-black text-indigo-900 mt-1">2 वर्कर (Zero-Collision)</div>
+          </div>
+        </div>
+
+        <!-- Quantity Selector (100 vs 150) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+              <span>🎯 बैच साइज चुनें:</span>
+            </label>
+            <span class="text-[11px] text-indigo-600 font-bold bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+              रोडमैप अपने-आप आगे बढ़ेगा
+            </span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div id="cardBatch100" onclick="setAutoBatchCount(100)" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm">
+              <div>
+                <div class="text-xs sm:text-sm font-black text-slate-900">100 एंट्रीज़</div>
+                <div class="text-[10px] text-slate-500 font-medium">फास्ट सैचुरेशन बैच</div>
+              </div>
+              <div id="checkBatch100" class="w-4 h-4 rounded-full border-2 border-slate-300"></div>
+            </div>
+            <div id="cardBatch150" onclick="setAutoBatchCount(150)" class="p-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/80 cursor-pointer transition-all flex items-center justify-between shadow-md ring-2 ring-indigo-300/40">
+              <div>
+                <div class="text-xs sm:text-sm font-black text-indigo-950 flex items-center gap-1.5">
+                  <span>150 एंट्रीज़</span>
+                  <span class="bg-indigo-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-md">रिकमेंडेड ⭐</span>
+                </div>
+                <div class="text-[10px] text-indigo-700 font-medium">संपूर्ण एरिया कवरेज</div>
+              </div>
+              <div id="checkBatch150" class="w-4 h-4 rounded-full bg-indigo-600 border-2 border-indigo-600 flex items-center justify-center text-white text-[9px]">✓</div>
+            </div>
+            <div id="cardBatch50" onclick="setAutoBatchCount(50)" class="p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm col-span-2 sm:col-span-1">
+              <div>
+                <div class="text-xs sm:text-sm font-black text-slate-900">50 एंट्रीज़</div>
+                <div class="text-[10px] text-slate-500 font-medium">क्विक टेस्टिंग रन</div>
+              </div>
+              <div id="checkBatch50" class="w-4 h-4 rounded-full border-2 border-slate-300"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big 1-Click Action Button -->
+        <button id="btnRunMasterAutoBatch" onclick="runMasterAutoBatch()" class="spring-press w-full py-4 sm:py-5 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-black text-sm sm:text-base md:text-lg shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-3 cursor-pointer border border-white/20">
+          <span class="text-xl sm:text-2xl" id="iconMasterAutoBatch">🚀</span>
+          <span id="textMasterAutoBatch">1-क्लिक ऑटो-रन: अगले 150 एंट्रीज़ पोर्टल पर लाइव करें</span>
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+        </button>
+
+        <!-- All Connections Solid Verification Strip ("सारे कनेक्शन सही हैं") -->
+        <div class="pt-2 border-t border-indigo-100 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-600">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Google Maps Scraper (Score ≥ 85)
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Canva Pro HD 1080x1080 + 1200x500
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+              26-Col Master Excel (0 खाली सेल)
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Google Sheet Live Sync
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              jainforjain.com (2-Worker Safe Shield)
+            </span>
+          </div>
+          <div class="text-indigo-600 font-bold">
+            ऑटो-एडवांस रोडमैप सक्रिय ⚡
+          </div>
+        </div>
+      </div>
+
       <!-- Live Status Metrics Banner for Instant Tab -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-fuchsia-500 bg-fuchsia-50/30">
@@ -2234,6 +2370,208 @@
       });
     }
 
+    // ==================== 🚀 1-CLICK MASTER AUTO-BATCH LOGIC (100-150 ENTRIES) ====================
+    let selectedAutoBatchCount = 150;
+
+    function setAutoBatchCount(count) {
+      selectedAutoBatchCount = count;
+      [50, 100, 150].forEach(c => {
+        const card = document.getElementById(`cardBatch${c}`);
+        const check = document.getElementById(`checkBatch${c}`);
+        if (card && check) {
+          if (c === count) {
+            card.className = 'p-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-50/80 cursor-pointer transition-all flex items-center justify-between shadow-md ring-2 ring-indigo-300/40';
+            check.className = 'w-4 h-4 rounded-full bg-indigo-600 border-2 border-indigo-600 flex items-center justify-center text-white text-[9px] font-black';
+            check.innerText = '✓';
+          } else {
+            card.className = 'p-3.5 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:border-indigo-400 flex items-center justify-between shadow-sm';
+            check.className = 'w-4 h-4 rounded-full border-2 border-slate-300';
+            check.innerText = '';
+          }
+        }
+      });
+      const btnText = document.getElementById('textMasterAutoBatch');
+      if (btnText) {
+        btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${count} एंट्रीज़ पोर्टल पर लाइव करें`;
+      }
+    }
+
+    async function loadAutoBatchStatus() {
+      try {
+        const res = await fetch('/api/auto-batch/status');
+        const data = await res.json();
+        if (data) {
+          const activeEl = document.getElementById('autoBatchActiveArea');
+          if (activeEl) activeEl.innerText = `${data.city} • ${data.current_area}`;
+          const nextEl = document.getElementById('autoBatchNextArea');
+          if (nextEl) nextEl.innerText = `अगला बाज़ार: ${data.next_area} ➔`;
+          
+          const totEl = document.getElementById('metricTotalExcel');
+          if (totEl) totEl.innerText = data.excel_total_leads || 0;
+          const unsubEl = document.getElementById('metricUnsubmitted');
+          if (unsubEl) unsubEl.innerText = data.excel_unsubmitted || 0;
+          const subEl = document.getElementById('metricSubmitted');
+          if (subEl) subEl.innerText = data.excel_submitted || 0;
+        }
+      } catch (e) {
+        console.warn('Auto batch status notice:', e);
+      }
+    }
+
+    async function runMasterAutoBatch() {
+      const btn = document.getElementById('btnRunMasterAutoBatch');
+      const btnText = document.getElementById('textMasterAutoBatch');
+      const btnIcon = document.getElementById('iconMasterAutoBatch');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      stopConsoleTimer();
+      const timerEl = document.getElementById('consoleTimer');
+      if (timerEl) timerEl.innerText = '⚡ 0s डिले (2-वर्कर सेफ शील्ड)';
+      
+      const pBar = document.getElementById('consoleProgressBar');
+      if (pBar) pBar.style.width = '8%';
+      const stageBadge = document.getElementById('consoleStageBadge');
+      if (stageBadge) stageBadge.innerText = 'AUTO_BATCH_INIT';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '🚀',
+        stage: 'INIT',
+        message: `🚀 1-क्लिक मास्टर ऑटो-बैच प्रारंभ | लक्ष्य: अगले ${selectedAutoBatchCount} एंट्रीज़ | Scraper ➔ Canva ➔ Excel ➔ Google Sheets ➔ Portal Entry`,
+        percent: 8
+      });
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        if (btnText) btnText.innerText = `⚡ ऑटो-बैच प्रोसेसिंग जारी (अगले ${selectedAutoBatchCount} एंट्रीज़)...`;
+        if (btnIcon) btnIcon.innerText = '⏳';
+      }
+
+      showToast(`🚀 मास्टर ऑटो-बैच शुरू: अगले ${selectedAutoBatchCount} एंट्रीज़ प्रोसेस हो रहे हैं`, 'info');
+
+      try {
+        const resp = await fetch('/api/auto-batch/run-next', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            count: selectedAutoBatchCount
+          })
+        });
+
+        const data = await resp.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टास्क प्रारंभ नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: payload.badge || '⚡',
+              stage: payload.stage || 'AUTO_BATCH',
+              message: payload.message,
+              percent: payload.percent || 30
+            });
+            if (payload.percent && pBar) {
+              pBar.style.width = payload.percent + '%';
+            }
+            if (payload.stage && stageBadge) {
+              stageBadge.innerText = payload.stage;
+            }
+          }
+          else if (payload.type === 'progress') {
+            if (pBar) pBar.style.width = payload.percent + '%';
+          }
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            if (timerEl) timerEl.innerText = '⚡ संपन्न (100%)';
+            if (pBar) pBar.style.width = '100%';
+            if (stageBadge) stageBadge.innerText = 'COMPLETED';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'DONE',
+              message: payload.message || `मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ jainforjain.com व Google Sheet में लाइव!`,
+              percent: 100
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
+              if (btnIcon) btnIcon.innerText = '🚀';
+            }
+
+            showToast(`🏆 मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ फ़ोटो सहित लाइव!`, 'success');
+            loadAutoBatchStatus();
+            loadStatus(false);
+            loadMasterLeads();
+            loadSearchHistory();
+          }
+          else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            if (stageBadge) stageBadge.innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'त्रुटि: ' + payload.message
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
+              if (btnIcon) btnIcon.innerText = '🔄';
+            }
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
+            if (btnIcon) btnIcon.innerText = '🚀';
+          }
+        };
+
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
+          if (btnIcon) btnIcon.innerText = '🔄';
+        }
+        showToast('नेटवर्क त्रुटि: ' + err.message, 'error');
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'कॉल विफल: ' + err.message
+        });
+      }
+    }
+
     // ==================== DEDICATED ZERO-DELAY INSTANT BATCH LOGIC ====================
     let selectedInstantSourceMode = 'ready_only';
     let selectedInstantCount = 14;
@@ -4202,12 +4540,14 @@
 
     // Auto-load status on page open
     window.addEventListener('DOMContentLoaded', () => {
+      loadAutoBatchStatus();
       loadStatus(false);
       loadMasterLeads();
       loadSearchHistory();
       loadAutopilotConfig();
       loadSaturationRoadmap();
       setInterval(loadAutopilotConfig, 20000);
+      setInterval(loadAutoBatchStatus, 30000);
     });
   </script>
 </body>

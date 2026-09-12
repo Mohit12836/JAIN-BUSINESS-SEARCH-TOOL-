@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional, Callable
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.config import get_master_excel_path
+from backend.config import get_master_excel_path, MAX_PORTAL_CONCURRENCY
 from backend.matrix import build_query_batch
 from backend.database import record_search_batch, get_search_history, save_scraped_lead
 from backend.canva_storefront_generator import generate_batch_assets
@@ -273,9 +273,9 @@ async def execute_full_autonomous_cycle(
                 leads_to_submit = leads_to_submit[:batch_size]
 
                 if upload_mode == "instant" and len(leads_to_submit) > 1:
-                    # ⚡ 3-WORKER PARALLEL TURBO MODE
-                    concurrency = min(3, len(leads_to_submit))
-                    emit_log(f"⚡ सुपरफास्ट मोड: {concurrency} समानांतर (Parallel) वर्कर प्रारंभ किए जा रहे हैं...", stage="TURBO", badge="⚡")
+                    # ⚡ SAFE 2-WORKER PARALLEL TURBO MODE (Prevents Livewire collisions)
+                    concurrency = min(MAX_PORTAL_CONCURRENCY, len(leads_to_submit))
+                    emit_log(f"⚡ सुपरफास्ट मोड: {concurrency} समानांतर (Parallel) सुरक्षित वर्कर प्रारंभ किए जा रहे हैं...", stage="TURBO", badge="⚡")
                     q = asyncio.Queue()
                     for l in leads_to_submit:
                         q.put_nowait(l)
@@ -351,9 +351,9 @@ async def execute_full_autonomous_cycle(
                             if any(w in err_str.lower() for w in ["limit", "package", "maximum listing", "quota"]):
                                 quota_reached = True
                                 emit_log("⚠️ पोर्टल कोटा अलर्ट!", stage="QUOTA", badge="⚠️")
-                            break
-                        else:
-                            emit_log(f"⚠️ सबमिशन सूचना [{lead_name}]: {err_str[:80]}", stage="WARN", badge="⚠️")
+                                break
+                            else:
+                                emit_log(f"⚠️ सबमिशन सूचना [{lead_name}]: {err_str[:80]}", stage="WARN", badge="⚠️")
 
             await browser.close()
     except Exception as pe:
