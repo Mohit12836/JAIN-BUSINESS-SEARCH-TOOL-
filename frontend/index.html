@@ -2473,7 +2473,99 @@
         if (eventSource) eventSource.close();
         eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
 
+        let pollTimer = null;
+        let isDone = false;
+
+        function finishSuccess(result) {
+          if (isDone) return;
+          isDone = true;
+          if (eventSource) eventSource.close();
+          if (pollTimer) clearInterval(pollTimer);
+          stopConsoleTimer();
+
+          if (timerEl) timerEl.innerText = '⚡ संपन्न (100%)';
+          if (pBar) pBar.style.width = '100%';
+          if (stageBadge) stageBadge.innerText = 'COMPLETED';
+
+          appendConsoleLog({
+            time: new Date().toLocaleTimeString(),
+            badge: '🏆',
+            stage: 'DONE',
+            message: `मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ jainforjain.com व Google Sheet में लाइव!`,
+            percent: 100
+          });
+
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
+            if (btnIcon) btnIcon.innerText = '🚀';
+          }
+
+          showToast(`🏆 मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ फ़ोटो सहित लाइव!`, 'success');
+          loadAutoBatchStatus();
+          loadStatus(false);
+          loadMasterLeads();
+          loadSearchHistory();
+        }
+
+        function finishError(msg) {
+          if (isDone) return;
+          isDone = true;
+          if (eventSource) eventSource.close();
+          if (pollTimer) clearInterval(pollTimer);
+          stopConsoleTimer();
+
+          if (stageBadge) stageBadge.innerText = 'ERROR';
+          appendConsoleLog({
+            time: new Date().toLocaleTimeString(),
+            badge: '❌',
+            stage: 'ERROR',
+            message: 'त्रुटि: ' + msg
+          });
+
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
+            if (btnIcon) btnIcon.innerText = '🔄';
+          }
+
+          showToast('त्रुटि: ' + msg, 'error');
+        }
+
+        function startPollingFallback() {
+          if (pollTimer || isDone) return;
+          pollTimer = setInterval(async () => {
+            if (isDone) {
+              clearInterval(pollTimer);
+              return;
+            }
+            try {
+              const pRes = await fetch(`/api/tasks/${currentTaskId}`);
+              const pData = await pRes.json();
+              if (pData && pData.events && pData.events.length > 0) {
+                const latest = pData.events[pData.events.length - 1];
+                if (latest && latest.percent && pBar) {
+                  pBar.style.width = latest.percent + '%';
+                }
+                if (latest && latest.stage && stageBadge) {
+                  stageBadge.innerText = latest.stage;
+                }
+              }
+              if (pData.status === 'completed') {
+                finishSuccess(pData.result);
+              } else if (pData.status === 'failed') {
+                finishError(pData.message || 'टास्क विफल रहा');
+              }
+            } catch (e) {
+              console.warn('Poll error:', e);
+            }
+          }, 2500);
+        }
+
         eventSource.onmessage = function(event) {
+          if (isDone) return;
           const payload = JSON.parse(event.data);
 
           if (payload.type === 'log') {
@@ -2495,64 +2587,17 @@
             if (pBar) pBar.style.width = payload.percent + '%';
           }
           else if (payload.type === 'complete') {
-            eventSource.close();
-            stopConsoleTimer();
-            if (timerEl) timerEl.innerText = '⚡ संपन्न (100%)';
-            if (pBar) pBar.style.width = '100%';
-            if (stageBadge) stageBadge.innerText = 'COMPLETED';
-
-            appendConsoleLog({
-              time: new Date().toLocaleTimeString(),
-              badge: '🏆',
-              stage: 'DONE',
-              message: payload.message || `मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ jainforjain.com व Google Sheet में लाइव!`,
-              percent: 100
-            });
-
-            if (btn) {
-              btn.disabled = false;
-              btn.classList.remove('opacity-60');
-              if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
-              if (btnIcon) btnIcon.innerText = '🚀';
-            }
-
-            showToast(`🏆 मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ फ़ोटो सहित लाइव!`, 'success');
-            loadAutoBatchStatus();
-            loadStatus(false);
-            loadMasterLeads();
-            loadSearchHistory();
+            finishSuccess(payload.result);
           }
           else if (payload.type === 'error') {
-            eventSource.close();
-            stopConsoleTimer();
-            if (stageBadge) stageBadge.innerText = 'ERROR';
-            appendConsoleLog({
-              time: new Date().toLocaleTimeString(),
-              badge: '❌',
-              stage: 'ERROR',
-              message: 'त्रुटि: ' + payload.message
-            });
-
-            if (btn) {
-              btn.disabled = false;
-              btn.classList.remove('opacity-60');
-              if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
-              if (btnIcon) btnIcon.innerText = '🔄';
-            }
-
-            showToast('त्रुटि: ' + payload.message, 'error');
+            finishError(payload.message || 'टास्क त्रुटि');
           }
         };
 
         eventSource.onerror = function() {
-          eventSource.close();
-          stopConsoleTimer();
-          if (btn) {
-            btn.disabled = false;
-            btn.classList.remove('opacity-60');
-            if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
-            if (btnIcon) btnIcon.innerText = '🚀';
-          }
+          // Never cancel button on network jitter: seamlessly switch to polling!
+          console.warn('SSE stream notice, switching to active background polling...');
+          startPollingFallback();
         };
 
       } catch (err) {

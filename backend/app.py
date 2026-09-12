@@ -187,7 +187,7 @@ async def start_pipeline_10x(req: Pipeline10xRequest, background_tasks: Backgrou
 
 @app.get("/api/stream-progress/{task_id}")
 async def stream_progress(task_id: str, request: Request):
-    """Server-Sent Events (SSE) stream for live scan progress."""
+    """Server-Sent Events (SSE) stream for live scan progress with replay and heartbeats."""
     queue = asyncio.Queue()
     
     if task_id not in TASK_LISTENERS:
@@ -196,19 +196,32 @@ async def stream_progress(task_id: str, request: Request):
 
     async def event_generator():
         try:
+            # 1. Replay historical events so client never misses the start
+            historical = TASKS.get(task_id, {}).get("events", [])
+            for past_ev in historical:
+                yield f"data: {json.dumps(past_ev)}\n\n"
+
+            # 2. Check if already finished before connection
+            task_status = TASKS.get(task_id, {}).get("status")
+            if task_status == "completed":
+                yield f"data: {json.dumps({'type': 'complete', 'message': 'Task completed', 'result': TASKS.get(task_id, {}).get('result')})}\n\n"
+                return
+            elif task_status == "failed":
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Task failed'})}\n\n"
+                return
+
             while True:
                 if await request.is_disconnected():
                     break
                 
                 try:
-                    # Wait up to 25s for next event or heartbeat
-                    data = await asyncio.wait_for(queue.get(), timeout=25.0)
+                    # Rapid 4s heartbeat keeps Nginx/Hostinger proxy connections active
+                    data = await asyncio.wait_for(queue.get(), timeout=4.0)
                     yield f"data: {json.dumps(data)}\n\n"
                     
                     if data.get("type") in ["complete", "error"]:
                         break
                 except asyncio.TimeoutError:
-                    # Heartbeat ping to keep SSE connection active
                     yield ": ping\n\n"
         finally:
             if task_id in TASK_LISTENERS and queue in TASK_LISTENERS[task_id]:
@@ -218,11 +231,24 @@ async def stream_progress(task_id: str, request: Request):
         event_generator(),
         media_type="text/event-stream",
         headers={
-            "Cache-Control": "no-cache",
+            "Cache-Control": "no-cache, no-transform",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no"
         }
     )
+
+@app.get("/api/tasks/{task_id}")
+async def api_get_task_status(task_id: str):
+    """Fallback polling endpoint for tasks."""
+    task = TASKS.get(task_id)
+    if not task:
+        return {"status": "not_found", "task_id": task_id}
+    return {
+        "status": task.get("status", "running"),
+        "task_id": task_id,
+        "events": task.get("events", [])[-25:],
+        "result": task.get("result")
+    }
 
 @app.get("/api/current-status")
 async def get_current_status():
@@ -763,11 +789,14 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
         "status": "running",
         "batch_size": req.count,
         "city": req.city,
-        "category": req.category
+        "category": req.category,
+        "events": []
     }
     TASK_LISTENERS[task_id] = []
 
     def dispatch_event(event_data: Dict[str, Any]):
+        if task_id in TASKS:
+            TASKS[task_id].setdefault("events", []).append(event_data)
         listeners = TASK_LISTENERS.get(task_id, [])
         for q in listeners:
             try:

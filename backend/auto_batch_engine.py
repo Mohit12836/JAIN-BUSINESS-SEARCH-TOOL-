@@ -183,7 +183,8 @@ async def execute_master_auto_batch(
                 target_count=needed_fresh,
                 entity_type="all",
                 excel_path=excel_path,
-                auto_sync_sheets=False
+                auto_sync_sheets=False,
+                progress_callback=progress_callback
             )
             
             if fresh_mined:

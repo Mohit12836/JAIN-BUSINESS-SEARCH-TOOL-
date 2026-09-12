@@ -253,7 +253,8 @@ async def crawl_area_deep(
     target_count: int = 50,
     entity_type: str = "commercial",
     excel_path: Optional[str] = None,
-    auto_sync_sheets: bool = True
+    auto_sync_sheets: bool = True,
+    progress_callback: Optional[Any] = None
 ) -> List[Dict[str, Any]]:
     """Crawls a specific micro-area exhaustively without leaving a single business or entity behind."""
     if not excel_path:
@@ -295,6 +296,18 @@ async def crawl_area_deep(
                 
             query_collected = 0
             print(f"Searching: '{q}'...")
+            if progress_callback:
+                try:
+                    pct = min(15 + int((len(collected_records) / max(target_count, 1)) * 35), 50)
+                    progress_callback({
+                        "type": "log",
+                        "stage": "CRAWLING",
+                        "badge": "🔍",
+                        "message": f"Maps सर्च: '{q}' (एकत्रित: {len(collected_records)}/{target_count})...",
+                        "percent": pct
+                    })
+                except Exception:
+                    pass
             search_url = f"https://www.google.com/maps/search/{urllib.parse.quote(q)}"
             
             try:
@@ -436,6 +449,18 @@ async def crawl_area_deep(
                         collected_records.append(rec)
                         query_collected += 1
                         print(f"  ✅ [JAIN VERIFIED {len(collected_records)}/{target_count}] {title} ({owner_name}) | Tier: {classification['tier']}")
+                        if progress_callback:
+                            try:
+                                pct = min(20 + int((len(collected_records) / max(target_count, 1)) * 30), 50)
+                                progress_callback({
+                                    "type": "log",
+                                    "stage": "JAIN_VERIFIED",
+                                    "badge": "✅",
+                                    "message": f"✅ [{len(collected_records)}/{target_count}] जैन सत्यापित: {title} ({owner_name})",
+                                    "percent": pct
+                                })
+                            except Exception:
+                                pass
                         
                     except Exception as err:
                         print(f"  Error on place '{title}': {err}")
