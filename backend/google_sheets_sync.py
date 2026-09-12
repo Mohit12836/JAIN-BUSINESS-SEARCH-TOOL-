@@ -32,7 +32,7 @@ DEFAULT_EXCEL = get_master_excel_path()
 DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
 DEFAULT_SCREENSHOT = os.path.join(os.path.expanduser("~"), "Desktop", "Google_Sheet_Synced_Preview.png") if os.path.exists(os.path.join(os.path.expanduser("~"), "Desktop")) else "Google_Sheet_Synced_Preview.png"
 
-def prepare_tsv_content(excel_path: str) -> str:
+def prepare_tsv_content(excel_path: str, sheet_name: str = None) -> str:
     """
     Reads the Excel file and builds a clean TSV string formatted safely for Google Sheets.
     Strips leading '+' on phone numbers to avoid Google Sheets formula evaluation errors.
@@ -41,7 +41,10 @@ def prepare_tsv_content(excel_path: str) -> str:
         raise FileNotFoundError(f"Excel file not found at: {excel_path}")
 
     wb = openpyxl.load_workbook(excel_path, data_only=True)
-    ws = wb.active
+    if sheet_name and sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+    else:
+        ws = wb.active
 
     tsv_lines = []
     for row in ws.iter_rows(values_only=True):
@@ -65,6 +68,11 @@ def prepare_tsv_content(excel_path: str) -> str:
         tsv_lines.append("\t".join(row_cells))
 
     return "\n".join(tsv_lines)
+
+def prepare_tracker_tsv_content(excel_path: str) -> str:
+    """Extracts TSV content specifically from the Search & Coverage Tracker sheet."""
+    return prepare_tsv_content(excel_path, sheet_name="Search & Coverage Tracker")
+
 
 async def sync_excel_to_google_sheet(
     excel_path: str = DEFAULT_EXCEL,
@@ -121,6 +129,49 @@ async def sync_excel_to_google_sheet(
             print("⚡ Pasting data into Google Sheet (Ctrl+V)...")
             await page.keyboard.press("Control+v")
             await page.wait_for_timeout(4500)
+
+            # Also attempt to synchronize Tab 2: Search & Coverage Tracker
+            try:
+                tracker_tsv = prepare_tracker_tsv_content(excel_path)
+                if tracker_tsv and len(tracker_tsv.splitlines()) > 1:
+                    print("📋 Checking for Sheet 2 / Tracker tab...")
+                    tab_selectors = [
+                        'div.docs-sheet-tab-name:has-text("Tracker")',
+                        'div.docs-sheet-tab-name:has-text("खोज")',
+                        'div.docs-sheet-tab-name:has-text("Sheet2")',
+                        'div.docs-sheet-tab-name:has-text("Sheet 2")'
+                    ]
+                    tracker_tab = None
+                    for sel in tab_selectors:
+                        try:
+                            loc = page.locator(sel)
+                            if await loc.count() > 0:
+                                tracker_tab = loc.first
+                                break
+                        except Exception:
+                            pass
+                    
+                    if tracker_tab:
+                        print("✓ Found existing Tracker tab in Google Sheet. Switching...")
+                        await tracker_tab.click()
+                        await page.wait_for_timeout(1500)
+                    else:
+                        add_btn = page.locator('div[aria-label="Add Sheet"], div[data-tooltip="Add Sheet"], div.docs-sheet-add-button')
+                        if await add_btn.count() > 0:
+                            print("✓ Creating new Tracker tab in Google Sheet...")
+                            await add_btn.first.click()
+                            await page.wait_for_timeout(2000)
+
+                    # Focus canvas and paste tracker data
+                    await page.click('div.grid-container, div[role="grid"], div.waffle-canvas')
+                    await page.keyboard.press("Control+Home")
+                    await page.wait_for_timeout(400)
+                    await page.evaluate("(text) => navigator.clipboard.writeText(text)", tracker_tsv)
+                    await page.keyboard.press("Control+v")
+                    await page.wait_for_timeout(3500)
+                    print("✅ Search & Coverage Tracker tab synchronized in Google Sheet!")
+            except Exception as tr_err:
+                print(f"Note on Tracker tab sync: {tr_err}")
 
             # Save proof screenshot
             await page.screenshot(path=screenshot_path)

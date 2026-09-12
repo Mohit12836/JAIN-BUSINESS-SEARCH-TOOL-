@@ -103,7 +103,15 @@
     <!-- Navigation Pill Tabs (Framer Motion Inspired) -->
     <div class="flex items-center justify-between overflow-x-auto pb-1 gap-2">
       <div class="inline-flex p-1.5 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-sm gap-1">
-        <button onclick="switchTab('tab-mobile')" id="btn-tab-mobile" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm cursor-pointer">
+        <button onclick="switchTab('tab-instant')" id="btn-tab-instant" class="spring-press px-4 py-2 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-fuchsia-600/30 cursor-pointer flex items-center gap-1.5 ring-2 ring-fuchsia-400/40">
+          <span>⚡ सुपरफास्ट (एक साथ • 0s डिले)</span>
+          <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+        </button>
+        <button onclick="switchTab('tab-saturation')" id="btn-tab-saturation" class="spring-press px-4 py-2 rounded-xl text-xs font-black transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-900 border border-amber-200 cursor-pointer flex items-center gap-1.5">
+          <span>🎯 एरिया सैचुरेशन (Area Engine)</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+        </button>
+        <button onclick="switchTab('tab-mobile')" id="btn-tab-mobile" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
           📱 मोबाइल 1-क्लिक हब
         </button>
         <button onclick="switchTab('tab-portal')" id="btn-tab-portal" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
@@ -118,6 +126,10 @@
         </button>
         <button onclick="switchTab('tab-table')" id="btn-tab-table" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
           📊 26-कॉलम डेटा टेबल
+        </button>
+        <button onclick="switchTab('tab-tracker')" id="btn-tab-tracker" class="spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5">
+          <span>📋 खोज व कवरेज ट्रैकर</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         </button>
       </div>
 
@@ -192,8 +204,140 @@
       </div>
     </div>
 
+    <!-- ==================== TAB 0: ⚡ DEDICATED SUPERFAST BATCH HUB (ZERO-DELAY • NO TIMER) ==================== -->
+    <div id="tab-instant" class="space-y-6">
+
+      <!-- Live Status Metrics Banner for Instant Tab -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-fuchsia-500 bg-fuchsia-50/30">
+          <div class="text-[10px] font-bold text-fuchsia-700 uppercase tracking-wider">सक्रिय शहर व ज़ोन</div>
+          <div class="text-base font-extrabold text-slate-900 mt-0.5">Indore (इंदौर)</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-amber-500 bg-amber-50/40">
+          <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">तैयार अनसबमिटेड लीड्स ⏳</div>
+          <div id="statInstantReady" class="text-base font-extrabold text-amber-800 mt-0.5">14</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-emerald-500 bg-emerald-50/40">
+          <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">पोर्टल पर लाइव ✅</div>
+          <div id="statInstantSubmitted" class="text-base font-extrabold text-emerald-800 mt-0.5">5</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-cyan-500 bg-cyan-50/40">
+          <div class="text-[10px] font-bold text-cyan-700 uppercase tracking-wider">⏱️ टाइमर स्थिति</div>
+          <div class="text-xs font-black text-cyan-900 mt-1">🚫 0s डिले (पूरी तरह बंद)</div>
+        </div>
+      </div>
+
+      <!-- Main Superfast Master Card -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-8 border-2 border-fuchsia-500/50 bg-gradient-to-br from-white via-fuchsia-50/30 to-indigo-50/40 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <!-- Top Badge & Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-fuchsia-100 pb-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-fuchsia-600/30 mb-2">
+              <span>⚡ 100% ज़ीरो-टाइमर मोड</span>
+              <span>•</span>
+              <span>0s Delay • No Waiting</span>
+              <span>•</span>
+              <span>सब कुछ एक साथ</span>
+            </div>
+            <h1 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+              ⚡ सुपरफास्ट ऑल-इन-वन हब: बिना किसी टाइमर के एक साथ प्रोसेस करो
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">
+              डाटा निकालना → <b>Canva Pro 1080x1080 लोगो व 1200x500 बैनर</b> समानांतर बनाना → <b>26 कॉलम मास्टर एक्सेल व Google Sheet</b> में 0 खाली सेल के साथ सेव करना → सीधे <b>jainforjain.com पर लॉगिन करके साइनबोर्ड फ़ोटो व लोगो अपलोड करते हुए बिना रुके तुरंत सबमिट</b> करना!
+            </p>
+          </div>
+          <div class="self-start sm:self-center flex-shrink-0">
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-300 font-extrabold text-xs shadow-sm">
+              <span class="w-2.5 h-2.5 rounded-full bg-fuchsia-600 animate-ping"></span>
+              <span>True Zero-Delay Flow</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Mode Selector: Ready Leads vs Fresh Crawl -->
+        <div class="space-y-3">
+          <label class="text-xs font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>🎯 चरण 1: आप क्या प्रोसेस करना चाहते हैं? (मोड चुनें)</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Mode 1: Ready Leads -->
+            <div id="cardModeReady" onclick="setInstantSourceMode('ready_only')" class="p-4 sm:p-5 rounded-2xl border-2 border-fuchsia-500 bg-fuchsia-50/60 cursor-pointer transition-all shadow-md relative group hover:border-fuchsia-600">
+              <div class="flex items-start gap-3">
+                <input type="radio" id="radioModeReady" name="instantModeRadio" checked class="mt-1 w-4 h-4 text-fuchsia-600 cursor-pointer">
+                <div class="space-y-1">
+                  <div class="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <span>⚡ तैयार 14 अनसबमिटेड लीड्स तुरंत डालो</span>
+                    <span class="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-300">सुपरफास्ट ⭐</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600 leading-relaxed">
+                    Google Maps पर दोबारा समय गंवाने की ज़रूरत नहीं! मास्टर शीट में पहले से तैयार 14 लीड्स के <b>Canva Pro लोगो/बैनर तुरंत पैरेलल बनेंगे</b> और jainforjain.com पर <b>फ़ोटो सहित 0s डिले पर एक साथ अपलोड</b> हो जाएंगे।
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode 2: Fresh Crawl -->
+            <div id="cardModeFresh" onclick="setInstantSourceMode('full_auto')" class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm relative group hover:border-fuchsia-400">
+              <div class="flex items-start gap-3">
+                <input type="radio" id="radioModeFresh" name="instantModeRadio" class="mt-1 w-4 h-4 text-fuchsia-600 cursor-pointer">
+                <div class="space-y-1">
+                  <div class="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <span>🚀 नए क्षेत्र से नई लीड्स निकालो व डालो</span>
+                    <span class="bg-indigo-100 text-indigo-900 text-[10px] font-black px-2 py-0.5 rounded-md border border-indigo-300">नया एरिया</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600 leading-relaxed">
+                    अगले अन-कवर बाज़ार (राजवाड़ा, पलासिया आदि) में जाकर नई लीड्स खोजेगा, लोगो/बैनर बनाएगा, एक्सेल व गूगल शीट सिंक करेगा और पोर्टल पर बिना रुके तुरंत सबमिट करेगा।
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls: Count Pills & Category -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-1">
+          <div class="sm:col-span-6">
+            <label class="text-xs text-slate-800 font-extrabold mb-1.5 block">🏬 बिज़नेस श्रेणी (Category)</label>
+            <input id="instantCategoryInput" type="text" value="Jewellers & All Commercial" class="w-full glass-input rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800" placeholder="Category...">
+          </div>
+
+          <div class="sm:col-span-6">
+            <label class="text-xs text-slate-800 font-extrabold mb-1.5 block">⚡ कितनी लीड्स प्रोसेस करनी हैं?</label>
+            <div class="grid grid-cols-5 gap-1.5">
+              <button type="button" onclick="setInstantCount(5, this)" class="pill-instant-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">5</button>
+              <button type="button" onclick="setInstantCount(10, this)" class="pill-instant-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">10 ⭐</button>
+              <button type="button" onclick="setInstantCount(14, this)" class="pill-instant-count spring-press py-2 rounded-xl text-xs font-black bg-fuchsia-600 text-white shadow-sm cursor-pointer text-center">14 (सभी 🔥)</button>
+              <button type="button" onclick="setInstantCount(20, this)" class="pill-instant-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">20</button>
+              <button type="button" onclick="setInstantCount(50, this)" class="pill-instant-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">50 🚀</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big Massive Action CTA -->
+        <div class="pt-2 space-y-3">
+          <button id="btnInstantDedicated" onclick="runInstantDedicatedBatch()" class="spring-press w-full py-4 sm:py-5 px-6 rounded-2xl text-white font-black text-sm sm:text-lg bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 shadow-2xl shadow-fuchsia-600/40 hover:shadow-fuchsia-600/60 flex items-center justify-center gap-3 cursor-pointer ring-4 ring-fuchsia-300/40 transition-all">
+            <span class="text-2xl sm:text-3xl" id="iconInstantDedicated">⚡</span>
+            <span id="textInstantDedicated">⚡ तैयार 14 लीड्स को अभी एक साथ पोर्टल पर डालो (फ़ोटो सहित • 0s डिले)</span>
+          </button>
+
+          <!-- Reassurance Guarantee Callout -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-600 font-black">✓ गारंटी:</span>
+              <span>इस बटन में कोई भी 60s या रुकने वाला टाइमर <b>नहीं है</b>। सभी ग्राफिक्स <b>asyncio.gather</b> से समानांतर बनेंगे और 0s डिले पर पोर्टल पर फ़ोटो सहित अपलोड होंगे।</span>
+            </div>
+            <span class="font-mono font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded text-[11px] hidden sm:inline-block">
+              0s Delay Verified
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- ==================== TAB 1: 3-STEP 1-CLICK MASTER AUTONOMOUS CONTROL CENTER ==================== -->
-    <div id="tab-mobile" class="space-y-6">
+    <div id="tab-mobile" class="hidden space-y-6">
 
       <!-- Live Status Metrics Banner -->
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -216,6 +360,241 @@
         <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-amber-500 bg-amber-50/40 col-span-2 sm:col-span-1">
           <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">तैयार लीड्स ⏳</div>
           <div id="statReady" class="text-base font-extrabold text-amber-800 mt-0.5">14</div>
+        </div>
+      </div>
+
+      <!-- ==================== CONTINUOUS SATURATION CARD: 🎯 अगला बैच निकालो (50/100/200) ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-amber-500/40 bg-gradient-to-br from-white via-amber-50/30 to-orange-50/30 shadow-xl space-y-4 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-sm mb-1.5">
+              <span>🎯 ऑटो-कवरेज इंजन</span>
+              <span>•</span>
+              <span>किसी को मत छोड़ो (Zero-Skip Policy)</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              अगला बैच निकालो (50, 100 या 200 लीड्स) • बिना रुके नया क्षेत्र कवर करो
+            </h2>
+            <p class="text-xs text-slate-600 mt-0.5">
+              हर क्लिक पर सिस्टम पुराने कवर्ड एरिया (सराफा, राजवाड़ा आदि) को छोड़कर <b>अगले अन-कवर बाज़ार</b> में जाएगा, <b>26 के 26 कॉलम 100% भरेगा</b>, <b>Canva Pro लोगो व बैनर</b> बनाएगा और सीधे <b>Google Sheet के 'खोज व कवरेज ट्रैकर'</b> में अपडेट करेगा।
+            </p>
+          </div>
+          <button onclick="switchTab('tab-tracker')" class="spring-press px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 self-start sm:self-center flex-shrink-0 flex items-center gap-1.5 cursor-pointer">
+            <span>📋 ट्रैकर शीट देखें</span>
+            <span>→</span>
+          </button>
+        </div>
+
+        <!-- Micro-Market & Saturation Tracker HUD -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-amber-950/5 border border-amber-200/80 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">📍</span>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">सक्रिय शहर व ज़ोन</div>
+              <div id="hudActiveCityArea" class="font-extrabold text-slate-800 text-xs">Indore • Sarafa Bazar & Rajwada</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">⏭️</span>
+            <div>
+              <div class="text-[10px] text-amber-700 font-bold uppercase tracking-wide">अगला कतारबद्ध बाज़ार (Next Area)</div>
+              <div id="hudNextTargetArea" class="font-extrabold text-amber-900 text-xs">Chhappan Dukan & New Palasia</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">🛡️</span>
+            <div>
+              <div class="text-[10px] text-emerald-700 font-bold uppercase tracking-wide">गुणवत्ता गारंटी</div>
+              <div class="font-extrabold text-emerald-800 text-xs">0 खाली कॉलम • 0 AI क्रेडिट खर्च</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls: Category & Batch Size (50, 100, 200) -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+          <div class="sm:col-span-6">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">🏬 व्यापार श्रेणी (Category Scope)</label>
+            <input id="nextBatchCategory" type="text" value="Jewellers & All Commercial" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800" placeholder="उदा: Jewellers, Textiles, Sweets, Dharmshala...">
+          </div>
+
+          <div class="sm:col-span-6">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">⚡ बैच साइज़ चुनें (Select Batch Size)</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" onclick="setNextBatchSize(50, this)" class="pill-next-batch spring-press py-2.5 rounded-xl text-xs font-extrabold bg-amber-600 text-white shadow-sm cursor-pointer text-center">
+                50 लीड्स ⭐
+              </button>
+              <button type="button" onclick="setNextBatchSize(100, this)" class="pill-next-batch spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-amber-50 cursor-pointer text-center">
+                100 लीड्स
+              </button>
+              <button type="button" onclick="setNextBatchSize(200, this)" class="pill-next-batch spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-amber-50 cursor-pointer text-center">
+                200 लीड्स 🚀
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big Next Batch Trigger Button -->
+        <div class="pt-2">
+          <button id="btnRunNextBatch" onclick="runNextBatchExtract()" class="spring-press w-full py-4 px-6 rounded-2xl text-white font-extrabold text-sm sm:text-base bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 shadow-xl shadow-orange-600/30 flex items-center justify-center gap-3 cursor-pointer">
+            <span class="text-lg" id="iconRunNextBatch">▶️</span>
+            <span id="textRunNextBatch">▶️ अगला बैच निकालो (<span id="nextBatchCountDisplay">50</span> लीड्स) • कोई मत छोड़ो & Canva Pro एसेट्स ऑटो-जेनरेट</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== TURBO FAST ZERO-DELAY CARD ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-fuchsia-500/40 bg-gradient-to-br from-white via-fuchsia-50/25 to-indigo-50/30 shadow-xl space-y-4 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white shadow-sm mb-1.5">
+              <span>⚡ 0s डिले टर्बो इंजन</span>
+              <span>•</span>
+              <span>बिना टाइमर के तुरंत सब कुछ</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              ⚡ 1-क्लिक टर्बो सुपरफास्ट: डाटा निकालो → लोगो-बैनर बनाओ → शीट भरो → पोर्टल पर फ़ोटो सहित तुरंत डालो
+            </h2>
+            <p class="text-xs text-slate-600 mt-0.5">
+              बिना किसी टाइमर या वेटिंग के: Google Maps से डाटा निकालेगा, Canva Pro 1080x1080 लोगो व 1200x500 बैनर बनाएगा, 26 कॉलम 100% भरेगा और सीधे <b>jainforjain.com पर लॉगिन करके साइनबोर्ड फ़ोटो व लोगो अपलोड करते हुए बिना रुके तुरंत सबमिट</b> करेगा।
+            </p>
+          </div>
+          <span class="text-xs font-bold text-fuchsia-800 bg-fuchsia-100/90 px-3.5 py-1.5 rounded-xl border border-fuchsia-300 self-start sm:self-center flex-shrink-0 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-fuchsia-500 animate-ping"></span>
+            <span>Zero-Delay Fast Flow</span>
+          </span>
+        </div>
+
+        <!-- Controls: Count Pills & Category -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+          <div class="sm:col-span-7">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">🏬 व्यापार श्रेणी व क्षेत्र (Scope)</label>
+            <input id="turboCategoryInput" type="text" value="Jewellers & All Commercial" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800" placeholder="Category...">
+          </div>
+
+          <div class="sm:col-span-5">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">⚡ कितनी लीड्स तुरंत सबमिट करनी हैं?</label>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button type="button" onclick="setTurboCount(5, this)" class="pill-turbo spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">5</button>
+              <button type="button" onclick="setTurboCount(10, this)" class="pill-turbo spring-press py-2.5 rounded-xl text-xs font-extrabold bg-fuchsia-600 text-white shadow-sm cursor-pointer text-center">10 ⭐</button>
+              <button type="button" onclick="setTurboCount(20, this)" class="pill-turbo spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">20</button>
+              <button type="button" onclick="setTurboCount(50, this)" class="pill-turbo spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center">50 🚀</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big Turbo Action Button -->
+        <div class="pt-2">
+          <button id="btnRunTurbo" onclick="runTurboFastPipeline()" class="spring-press w-full py-4 px-6 rounded-2xl text-white font-extrabold text-sm sm:text-base bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 shadow-xl shadow-fuchsia-600/30 flex items-center justify-center gap-3 cursor-pointer">
+            <span class="text-lg" id="iconRunTurbo">⚡</span>
+            <span id="textRunTurbo">⚡ टर्बो सुपरफास्ट रन शुरू करो (<span id="turboCountDisplay">10</span> लीड्स • बिना टाइमर के तुरंत सबमिट & फ़ोटो अपलोड)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== 24/7 AUTOPILOT SCHEDULER CARD ==================== -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-7 border-2 border-emerald-500/40 bg-gradient-to-br from-white via-emerald-50/30 to-teal-50/30 shadow-xl space-y-4 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm mb-1.5">
+              <span>⏰ 24/7 ऑटोनोमस शेड्यूलर</span>
+              <span>•</span>
+              <span>सेट करके भूल जाओ (Set & Forget)</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              रोज़ाना अपने आप डाटा निकालो, शीट में डालो और साइट पर अपलोड करो
+            </h2>
+            <p class="text-xs text-slate-600 mt-0.5">
+              एक बार समय और सेटिंग तय कर दीजिए — आपको रोज़ बोलने की ज़रूरत नहीं! सर्वर बैकग्राउंड में 24/7 खुद समय ट्रैक करके नए एरिया से डाटा निकालेगा, Canva Pro लोगो-बैनर बनाएगा और आपके चुने स्टाइल से साइट पर अपलोड कर देगा।
+            </p>
+          </div>
+
+          <!-- Master Autopilot Toggle Switch Button -->
+          <div class="flex items-center gap-3 self-start sm:self-center flex-shrink-0">
+            <button id="btnToggleAutopilot" onclick="toggleAutopilotState()" class="spring-press flex items-center gap-2.5 px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md cursor-pointer transition-all bg-slate-200 text-slate-700 hover:bg-slate-300">
+              <span id="autopilotToggleDot" class="w-3 h-3 rounded-full bg-slate-400"></span>
+              <span id="autopilotToggleText">ऑटोपायलट: बंद (OFF)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Autopilot Real-time Status HUD -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 p-3.5 rounded-2xl bg-emerald-950/5 border border-emerald-200/80 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">⏱️</span>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">अगला ऑटो-रन (Next Run)</div>
+              <div id="hudAutopilotNextRun" class="font-extrabold text-emerald-950 text-xs">शेड्यूल सेट करें...</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">📊</span>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">पिछला रन (Last Run)</div>
+              <div id="hudAutopilotLastRun" class="font-extrabold text-slate-800 text-xs">अभी तक नहीं चला</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">🔁</span>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">कुल ऑटो रन (Total Runs)</div>
+              <div id="hudAutopilotTotalRuns" class="font-extrabold text-indigo-900 text-xs">0 बार</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">🛡️</span>
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">सिस्टम स्थिति</div>
+              <div id="hudAutopilotDaemonStatus" class="font-extrabold text-emerald-700 text-xs">24/7 बैकएंड डेमन तैयार ✅</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration Settings: Time, Frequency, Batch Size, Upload Pacing -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+          <!-- Daily Time Picker -->
+          <div class="sm:col-span-3">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">⏰ रोज़ाना का समय (Daily Time)</label>
+            <input id="cfgAutopilotTime" type="time" value="10:00" class="w-full glass-input rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 cursor-pointer">
+          </div>
+
+          <!-- Frequency -->
+          <div class="sm:col-span-3">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">🔄 आवृत्ति (Frequency)</label>
+            <select id="cfgAutopilotFreq" class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+              <option value="24" selected>📅 हर 24 घंटे (रोज़ाना 1 बार)</option>
+              <option value="12">⏱️ हर 12 घंटे (दिन में 2 बार)</option>
+              <option value="6">⚡ हर 6 घंटे (दिन में 4 बार)</option>
+            </select>
+          </div>
+
+          <!-- Batch Size -->
+          <div class="sm:col-span-3">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">🎯 रोज़ाना बैच साइज़</label>
+            <select id="cfgAutopilotBatchSize" class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+              <option value="50" selected>50 लीड्स (अनुशंसित ⭐)</option>
+              <option value="100">100 लीड्स (बड़ा बाज़ार)</option>
+              <option value="200">200 लीड्स (मेगा सैचुरेशन 🚀)</option>
+            </select>
+          </div>
+
+          <!-- Upload Pacing Style -->
+          <div class="sm:col-span-3">
+            <label class="text-[11px] text-slate-700 font-bold mb-1 block">🚀 अपलोड स्टाइल (Upload Style)</label>
+            <select id="cfgAutopilotUploadMode" class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+              <option value="instant" selected>🚀 तुरंत एक साथ (0s डिले)</option>
+              <option value="throttled">⏱️ रुक-रुक कर (60s अंतराल)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons: Save Schedule & Run Test Now -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+          <button id="btnSaveAutopilot" onclick="saveAutopilotSettings()" class="spring-press flex-1 w-full py-3.5 px-5 rounded-2xl text-white font-extrabold text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer">
+            <span>💾 शेड्यूलर सेटिंग्स सेव करो</span>
+          </button>
+          <button id="btnRunAutopilotNow" onclick="runAutopilotNow()" class="spring-press w-full sm:w-auto py-3.5 px-6 rounded-2xl text-slate-800 font-extrabold text-xs sm:text-sm bg-white hover:bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+            <span>▶️ अभी टेस्ट रन करें (Test Run Now)</span>
+          </button>
         </div>
       </div>
 
@@ -540,6 +919,260 @@
           </table>
         </div>
       </section>
+
+    </div>
+
+    <!-- ==================== TAB 1: 🎯 HYPERLOCAL AREA SATURATION & JAIN PURITY ENGINE ==================== -->
+    <div id="tab-saturation" class="hidden space-y-6">
+
+      <!-- Purity & Saturation Status Banner -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-amber-500 bg-amber-50/40">
+          <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">वर्तमान एक्टिव एरिया 📍</div>
+          <div id="satHudCurrentArea" class="text-base font-extrabold text-slate-900 mt-0.5 truncate">Johari Bazar, Jaipur</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-indigo-500 bg-indigo-50/40">
+          <div class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">अगला क्रमिक एरिया ⏭️</div>
+          <div id="satHudNextArea" class="text-base font-extrabold text-indigo-900 mt-0.5 truncate">Bapu Bazar, Jaipur</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-emerald-500 bg-emerald-50/40">
+          <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">एरिया रोडमैप प्रोग्रेस 🗺️</div>
+          <div id="satHudProgressText" class="text-base font-extrabold text-emerald-800 mt-0.5">1 / 21 (5%)</div>
+        </div>
+        <div class="glass-panel rounded-2xl p-3.5 text-center border-l-4 border-l-rose-500 bg-rose-50/40">
+          <div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">100% Strict जैन फ़िल्टर 🛡️</div>
+          <div class="text-xs font-black text-rose-900 mt-1">Zero Non-Jain Tolerance</div>
+        </div>
+      </div>
+
+      <!-- Main Engine Master Card -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-8 border-2 border-amber-500/50 bg-gradient-to-br from-white via-amber-50/30 to-orange-50/40 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white shadow-md shadow-orange-500/30 mb-2">
+              <span>🎯 100% एरिया सैचुरेशन इंजन</span>
+              <span>•</span>
+              <span>किसी जैन को नहीं छोड़ना</span>
+              <span>•</span>
+              <span>बिना जैन वाले को नहीं लेना</span>
+            </div>
+            <h2 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+              🎯 हाइपरलोकल एरिया सैचुरेशन: एक-एक एरिया के सभी जैन प्रतिष्ठान, मंदिर व ट्रस्ट
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">
+              निर्धारित एरिया के <b>10 प्रमुख सेक्टर्स</b> (मंदिर, ट्रस्ट, धर्मशाला, भोजनालय, संघ, ज्वैलर्स, कपड़ा, सीए/डॉक्टर, हार्डवेयर/रियल एस्टेट, व पवित्र ट्रेडमार्क) को स्कैन करके <b>केवल और केवल 100% वेरिफाइड जैन</b> लीड्स निकालता है।
+            </p>
+          </div>
+          <div class="self-start sm:self-center flex-shrink-0">
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs shadow-sm">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-600 animate-ping"></span>
+              <span>Strict Jain Filter Active</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Strict Jain Purity Rules Banner -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-rose-50 via-amber-50 to-emerald-50 border border-amber-200 text-xs space-y-2">
+          <div class="font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="text-base">🛡️</span>
+            <span>ज़ीरो नॉन-जैन टॉलरेंस (Zero False Positives Purity Standard):</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700 leading-relaxed text-[11px]">
+            <div class="flex items-start gap-1.5">
+              <span class="text-rose-600 font-bold">✕</span>
+              <span><b>बिना जैन वाले को 100% ब्लॉक:</b> गैर-जैन उपनाम (Sharma, Verma, Gupta, Khan, Singh आदि), गैर-जैन धार्मिक नाम (Krishna, Shiva, Hanuman, Balaji, Radha) व मांसाहार/शराब तुरंत स्कोर = 0 पर रिजेक्ट।</span>
+            </div>
+            <div class="flex items-start gap-1.5">
+              <span class="text-emerald-600 font-bold">✓</span>
+              <span><b>किसी जैन को नहीं छोड़ना:</b> 100% वेरिफाइड जैन (मंदिर, देरासर, तीर्थ, धर्मशाला, भोजनालय, ट्रस्ट, संघ, नवकार/नाकोड़ा/अरिहंत पवित्र ट्रेडमार्क व प्रमाणित जैन उपनाम) स्कोर ≥ 85 पर ही शामिल।</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode Selector: Auto-Pilot Sequential vs Manual Area Selection -->
+        <div class="space-y-3">
+          <label class="text-xs font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>⚙️ कंट्रोल मोड चुनें (ऑटोमैटिक डिफाइन या मैन्युअल बटन):</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Mode 1: Fully Autonomous Autopilot -->
+            <div id="satCardModeAuto" onclick="setSaturationMode('auto')" class="p-4 sm:p-5 rounded-2xl border-2 border-orange-500 bg-orange-50/60 cursor-pointer transition-all shadow-md relative group hover:border-orange-600">
+              <div class="flex items-start gap-3">
+                <input type="radio" id="satRadioAuto" name="satModeRadio" checked class="mt-1 w-4 h-4 text-orange-600 cursor-pointer">
+                <div class="space-y-1">
+                  <div class="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <span>🚀 फुली ऑटोमेशन (Area-by-Area Autopilot)</span>
+                    <span class="bg-orange-200 text-orange-950 text-[10px] font-black px-2 py-0.5 rounded-md border border-orange-300">ऑटोमैटिक ⭐</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600 leading-relaxed">
+                    बॉट <b>खुद अपने आप तय करेगा</b> कि अगला एरिया कौन सा है। वर्तमान एरिया खत्म होते ही स्वचालित रूप से अगले बाज़ार पर जाएगा, बिना रुके पूरी सिटी को कवर करेगा।
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode 2: Manual Area Mode -->
+            <div id="satCardModeManual" onclick="setSaturationMode('manual')" class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm relative group hover:border-orange-400">
+              <div class="flex items-start gap-3">
+                <input type="radio" id="satRadioManual" name="satModeRadio" class="mt-1 w-4 h-4 text-orange-600 cursor-pointer">
+                <div class="space-y-1">
+                  <div class="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <span>🎯 मैन्युअल एरिया मोड (Manual Trigger Button)</span>
+                    <span class="bg-indigo-100 text-indigo-900 text-[10px] font-black px-2 py-0.5 rounded-md border border-indigo-300">मैन्युअल कंट्रोल</span>
+                  </div>
+                  <p class="text-[11px] text-slate-600 leading-relaxed">
+                    आप खुद शहर व एरिया/गली चुन सकते हैं। केवल उस एरिया के लिए स्कैन चलेगा और आप जब चाहें एक्टिव एरिया बदल सकते हैं।
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- City & Area Controls -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-1">
+          <!-- City Selector -->
+          <div class="sm:col-span-4">
+            <label class="text-xs text-slate-800 font-extrabold mb-1.5 block">🏙️ शहर चुनें (Target City)</label>
+            <select id="satCitySelect" onchange="onSaturationCityChange()" class="w-full glass-input rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+              <option value="Jaipur" selected>Jaipur (जयपुर - 21 एरिया)</option>
+              <option value="Indore">Indore (इंदौर - 16 एरिया)</option>
+              <option value="Ahmedabad">Ahmedabad (अहमदाबाद - 15 एरिया)</option>
+              <option value="Surat">Surat (सूरत - 10 एरिया)</option>
+              <option value="Mumbai">Mumbai (मुंबई - 11 एरिया)</option>
+              <option value="Udaipur">Udaipur (उदयपुर - 7 एरिया)</option>
+              <option value="Jodhpur">Jodhpur (जोधपुर - 6 एरिया)</option>
+              <option value="Kota">Kota (कोटा - 5 एरिया)</option>
+            </select>
+          </div>
+
+          <!-- Area Selector / Custom Area -->
+          <div class="sm:col-span-5">
+            <label class="text-xs text-slate-800 font-extrabold mb-1.5 block">📍 लक्षित एरिया / बाज़ार (Micro-Market)</label>
+            <div class="flex gap-2">
+              <select id="satAreaSelect" onchange="onSaturationAreaSelect()" class="flex-1 glass-input rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 cursor-pointer">
+                <!-- Pre-populated dynamically -->
+              </select>
+              <button onclick="setManualActiveArea()" type="button" title="इस एरिया को एक्टिव सेट करें" class="spring-press px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer">
+                📌 सेट करो
+              </button>
+            </div>
+            <!-- Optional custom text input -->
+            <input type="text" id="satCustomAreaInput" placeholder="या कस्टम गली/मोहल्ला लिखें..." class="w-full glass-input rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 mt-1.5 hidden">
+          </div>
+
+          <!-- Target Lead Count -->
+          <div class="sm:col-span-3">
+            <label class="text-xs text-slate-800 font-extrabold mb-1.5 block">🎯 लक्ष्य लीड्स (प्रति एरिया)</label>
+            <div class="grid grid-cols-5 gap-1">
+              <button type="button" onclick="setSatCount(50, this)" class="sat-count-btn spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 cursor-pointer text-center">50</button>
+              <button type="button" onclick="setSatCount(100, this)" class="sat-count-btn spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 cursor-pointer text-center">100</button>
+              <button type="button" onclick="setSatCount(150, this)" class="sat-count-btn spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 cursor-pointer text-center">150</button>
+              <button type="button" onclick="setSatCount(200, this)" class="sat-count-btn spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 cursor-pointer text-center">200</button>
+              <button type="button" onclick="setSatCount(250, this)" class="sat-count-btn spring-press py-2 rounded-xl text-xs font-black bg-orange-600 text-white shadow-sm cursor-pointer text-center" title="100% फुल सैचुरेशन - सभी निकालो">♾️ All</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Entity Scope Filters -->
+        <div class="space-y-2">
+          <label class="text-xs text-slate-800 font-extrabold block">🏢 एंटिटी स्कोप (Entity Scope):</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <button type="button" onclick="setSatEntityType('all', this)" class="sat-entity-btn spring-press p-2.5 rounded-xl font-extrabold bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-sm text-center cursor-pointer">
+              🌟 All जैन (मंदिर + ट्रस्ट + सभी 10 व्यापार)
+            </button>
+            <button type="button" onclick="setSatEntityType('mandir', this)" class="sat-entity-btn spring-press p-2.5 rounded-xl font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 text-center cursor-pointer">
+              🛕 केवल जैन मंदिर व देरासर
+            </button>
+            <button type="button" onclick="setSatEntityType('trust', this)" class="sat-entity-btn spring-press p-2.5 rounded-xl font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 text-center cursor-pointer">
+              🏨 केवल ट्रस्ट, धर्मशाला व भोजनालय
+            </button>
+            <button type="button" onclick="setSatEntityType('commercial', this)" class="sat-entity-btn spring-press p-2.5 rounded-xl font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 text-center cursor-pointer">
+              🏬 केवल जैन व्यापारी व व्यवसाय
+            </button>
+          </div>
+        </div>
+
+        <!-- Master Execution Action Button -->
+        <div class="pt-2">
+          <button id="btnRunSaturation" onclick="triggerSaturationScan()" class="spring-press w-full py-4 px-6 rounded-2xl text-white font-extrabold text-sm sm:text-base bg-gradient-to-r from-orange-600 via-amber-600 to-rose-600 shadow-xl shadow-orange-600/30 flex items-center justify-center gap-3 cursor-pointer">
+            <span class="text-xl" id="iconRunSaturation">🚀</span>
+            <span id="textRunSaturation">🚀 एरिया सैचुरेशन शुरू करो (Johari Bazar • 50 जैन लीड्स • 100% जैन गारंटी)</span>
+          </button>
+        </div>
+
+        <!-- City Roadmap Visualizer Accordion -->
+        <div class="pt-2">
+          <details id="detailsCityRoadmap" class="group rounded-2xl bg-white/90 border border-amber-200/90 p-4 transition-all">
+            <summary class="flex items-center justify-between cursor-pointer font-extrabold text-xs text-slate-900 select-none">
+              <span class="flex items-center gap-2">
+                <span>🗺️ शहर का संपूर्ण एरिया रोडमैप देखें (City Micro-Zones Roadmap)</span>
+                <span id="satRoadmapCountBadge" class="text-[10px] bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md font-bold">21 एरिया</span>
+              </span>
+              <span class="text-orange-600 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div class="pt-4 space-y-3">
+              <div class="text-[11px] text-slate-500">
+                ऑटोपायलट मोड में बॉट एक-एक करके नीचे दिए गए सभी क्षेत्रों को सैचुरेट करेगा:
+              </div>
+              <div id="satRoadmapPillsContainer" class="flex flex-wrap gap-2">
+                <!-- Filled dynamically with area chips -->
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- 5-Layer Master Query Explorer Accordion -->
+        <div class="pt-2">
+          <details id="details5LayerQueries" class="group rounded-2xl bg-white/90 border border-indigo-200/90 p-4 transition-all" ontoggle="if(this.open) load5LayerQueries()">
+            <summary class="flex items-center justify-between cursor-pointer font-extrabold text-xs text-slate-900 select-none">
+              <span class="flex items-center gap-2">
+                <span>🔍 5-लेयर मास्टर सर्च सिस्टम (100+ Ready Google Queries & Dorks)</span>
+                <span id="badge5LayerCount" class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-md font-bold">170+ क्वेरीज</span>
+              </span>
+              <span class="text-indigo-600 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div class="pt-4 space-y-4">
+              <p class="text-[11px] text-slate-600 leading-relaxed">
+                यह <b>5-लेयर आर्किटेक्चर</b> आपके चुने हुए शहर (<span id="span5LayerCity" class="font-bold text-slate-900">Indore</span>) और एरिया (<span id="span5LayerArea" class="font-bold text-slate-900">Sarafa Bazar</span>) के लिए 100+ हाई-ROI सर्च कॉम्बिनेशन्स लाइव जनरेट करता है:
+              </p>
+
+              <!-- Layer Filters -->
+              <div class="flex flex-wrap gap-1.5 text-xs">
+                <button type="button" onclick="filter5LayerTab('all', this)" class="btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-bold bg-indigo-600 text-white shadow-sm cursor-pointer">
+                  🌟 All (<span id="countFilterAll">0</span>)
+                </button>
+                <button type="button" onclick="filter5LayerTab('layer_1_religion', this)" class="btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">
+                  1️⃣ धर्म व संप्रदाय
+                </button>
+                <button type="button" onclick="filter5LayerTab('layer_2_community', this)" class="btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">
+                  2️⃣ उपनाम व समुदाय
+                </button>
+                <button type="button" onclick="filter5LayerTab('layer_3_sacred_tirthankar', this)" class="btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">
+                  3️⃣ 24 तीर्थंकर व ट्रेडमार्क
+                </button>
+                <button type="button" onclick="filter5LayerTab('layer_4_trust_institution', this)" class="btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">
+                  4️⃣ ट्रस्ट व पदाधिकारी
+                </button>
+                <button type="button" onclick="filter5LayerTab('layer_5_google_dorks', this)" class="btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer">
+                  ⚡ Google Dorks (LinkedIn/Justdial)
+                </button>
+                <button type="button" onclick="copyAll5LayerQueries()" class="spring-press ml-auto px-3.5 py-1.5 rounded-xl font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 cursor-pointer">
+                  📋 सभी 100+ क्वेरीज कॉपी करें
+                </button>
+              </div>
+
+              <!-- Queries List Container -->
+              <div id="list5LayerQueries" class="max-h-80 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-slate-50/50 p-2.5">
+                <div class="py-8 text-center text-slate-400 text-xs font-medium">क्वेरीज लोड हो रही हैं...</div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+      </div>
 
     </div>
 
@@ -995,6 +1628,115 @@
 
   </div>
 
+  <!-- ==================== TAB 5: 📋 SEARCH & COVERAGE TRACKER ==================== -->
+  <div id="tab-tracker" class="hidden space-y-6">
+    <section class="glass-panel rounded-3xl p-6 sm:p-8 space-y-6">
+      <!-- Tracker Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white shadow-sm mb-1.5">
+            <span>📋 शीट 2</span>
+            <span>•</span>
+            <span>Search & Coverage Tracker</span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+            खोज व क्षेत्र कवरेज ट्रैकर (Search & Micro-Market Saturation History)
+          </h2>
+          <p class="text-xs text-slate-600 mt-1">
+            यहाँ संपूर्ण ऑडिट लॉग सुरक्षित है: पहले कौन सा एरिया सर्च किया, कितनी लीड्स निकलीं, कितना क्षेत्र कवर हो गया और आगे क्या करना बाकी है।
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing" target="_blank" class="spring-press inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20">
+            <span>📊 Google Sheet में शीट 2 देखें</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          </a>
+          <button onclick="loadSearchHistory()" class="spring-press px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shadow-sm cursor-pointer flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>रिफ्रेश ट्रैकर</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Summary Stat Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div class="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/80">
+          <div class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">कुल पूर्ण बैच (Batches)</div>
+          <div id="statTrackerBatches" class="text-2xl font-extrabold text-indigo-950 mt-1">1</div>
+          <div class="text-[11px] text-indigo-600 mt-0.5 font-medium">100% ऑडिटेड डेटा</div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80">
+          <div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">कुल संचयी लीड्स (Cumulative)</div>
+          <div id="statTrackerLeads" class="text-2xl font-extrabold text-emerald-950 mt-1">20</div>
+          <div class="text-[11px] text-emerald-600 mt-0.5 font-medium">0 खाली कॉलम</div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-purple-50/70 border border-purple-200/80">
+          <div class="text-[10px] font-bold text-purple-700 uppercase tracking-wider">सक्रिय शहर व कवर्ड क्षेत्र</div>
+          <div id="statTrackerCity" class="text-sm font-extrabold text-purple-950 mt-1 truncate">Indore (इंदौर)</div>
+          <div id="statTrackerCovered" class="text-[11px] text-purple-600 mt-0.5 font-medium truncate">Sarafa Bazar & Rajwada</div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+          <div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">अगला लक्षित क्षेत्र (Next Area)</div>
+          <div id="statTrackerNext" class="text-sm font-extrabold text-amber-950 mt-1 truncate">Chhappan Dukan & New Palasia</div>
+          <div class="text-[11px] text-amber-700 mt-0.5 font-medium">कतारबद्ध (In Queue) ⏭️</div>
+        </div>
+      </div>
+
+      <!-- Quick Batch Trigger directly inside Tracker Tab -->
+      <div class="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h4 class="text-xs sm:text-sm font-bold text-amber-950">अगला बैच अभी प्रोसेस करें (Next Batch Trigger):</h4>
+          <p class="text-[11px] text-amber-800">50, 100 या 200 लीड्स निकालें, कोई एरिया स्किप नहीं होगा।</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="triggerNextBatchFromTracker(50)" class="spring-press px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white cursor-pointer hover:bg-amber-700 shadow-sm">50 लीड्स ▶️</button>
+          <button onclick="triggerNextBatchFromTracker(100)" class="spring-press px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white cursor-pointer hover:bg-amber-700 shadow-sm">100 लीड्स ▶️</button>
+          <button onclick="triggerNextBatchFromTracker(200)" class="spring-press px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white cursor-pointer hover:bg-amber-700 shadow-sm">200 लीड्स ▶️</button>
+        </div>
+      </div>
+
+      <!-- Tracker Table -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-indigo-950 text-white font-semibold border-b border-indigo-900 uppercase tracking-wider text-[10px]">
+            <tr>
+              <th class="py-3 px-3">बैच # (Batch ID)</th>
+              <th class="py-3 px-3">दिनांक व समय</th>
+              <th class="py-3 px-3">सर्च श्रेणी (Category)</th>
+              <th class="py-3 px-3">शहर व क्षेत्र (Micro-Market)</th>
+              <th class="py-3 px-3 text-center">लक्ष्य साइज़</th>
+              <th class="py-3 px-3 text-center">निकाली गई लीड्स</th>
+              <th class="py-3 px-3 text-center">संचयी कुल (Total)</th>
+              <th class="py-3 px-3 text-center">कवरेज स्थिति</th>
+              <th class="py-3 px-3">अगला लक्षित क्षेत्र (Next Target)</th>
+              <th class="py-3 px-3 text-center">सिंक स्थिति</th>
+            </tr>
+          </thead>
+          <tbody id="trackerTableBody" class="divide-y divide-slate-100 font-medium">
+            <tr>
+              <td colspan="10" class="py-8 text-center text-slate-400 font-medium">
+                खोज व कवरेज ट्रैकर डेटा लोड हो रहा है...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footnote -->
+      <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 pt-1 border-t border-slate-100">
+        <span class="flex items-center gap-1.5">
+          <span class="text-emerald-600">●</span>
+          <span>Google Sheet Tab 2 ('Search & Coverage Tracker') और SQLite डेटाबेस से 100% सिंक</span>
+        </span>
+        <span class="font-mono text-slate-500">Continuous Saturation Architecture • Zero AI Cost</span>
+      </div>
+    </section>
+  </div>
+
   <script>
     let currentTaskId = null;
     let eventSource = null;
@@ -1004,7 +1746,7 @@
     let canvaLoaded = false;
 
     function switchTab(tabId) {
-      const tabs = ['tab-mobile', 'tab-portal', 'tab-canva', 'tab-scanner', 'tab-table'];
+      const tabs = ['tab-instant', 'tab-saturation', 'tab-mobile', 'tab-portal', 'tab-canva', 'tab-scanner', 'tab-table', 'tab-tracker'];
       tabs.forEach(t => {
         const el = document.getElementById(t);
         const btn = document.getElementById('btn-' + t);
@@ -1017,17 +1759,1257 @@
         }
         if (btn) {
           if (t === tabId) {
-            btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm cursor-pointer';
+            if (t === 'tab-instant') {
+              btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 text-white shadow-md shadow-fuchsia-600/30 cursor-pointer flex items-center gap-1.5 ring-2 ring-fuchsia-400/40';
+            } else if (t === 'tab-saturation') {
+              btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-black transition-all bg-gradient-to-r from-amber-500 via-orange-600 to-rose-600 text-white shadow-md shadow-orange-500/30 cursor-pointer flex items-center gap-1.5 ring-2 ring-amber-400/40';
+            } else {
+              btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm cursor-pointer flex items-center gap-1.5';
+            }
           } else {
-            btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+            if (t === 'tab-instant') {
+              btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-extrabold transition-all text-fuchsia-700 bg-fuchsia-50 hover:bg-fuchsia-100 hover:text-fuchsia-900 border border-fuchsia-200 cursor-pointer flex items-center gap-1.5';
+            } else if (t === 'tab-saturation') {
+              btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-extrabold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-900 border border-amber-200 cursor-pointer flex items-center gap-1.5';
+            } else {
+              btn.className = 'spring-press px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5';
+            }
           }
         }
       });
+      if (tabId === 'tab-saturation') {
+        loadSaturationRoadmap();
+      }
       if (tabId === 'tab-table' && !masterLeadsLoaded) {
         loadMasterLeads();
       }
       if (tabId === 'tab-canva' && !canvaLoaded) {
         loadCanvaFlyers();
+      }
+      if (tabId === 'tab-tracker') {
+        loadSearchHistory();
+      }
+    }
+
+    // ==================== HYPERLOCAL AREA SATURATION SCRIPTING ====================
+    let selectedSatMode = 'auto';
+    let selectedSatCount = 50;
+    let selectedSatEntityType = 'all';
+    let currentRoadmapData = null;
+
+    async function loadSaturationRoadmap(cityOverride) {
+      try {
+        const city = cityOverride || (document.getElementById('satCitySelect') ? document.getElementById('satCitySelect').value : 'Jaipur');
+        const resp = await fetch(`/api/saturation/roadmap?city=${encodeURIComponent(city)}`);
+        const data = await resp.json();
+        currentRoadmapData = data;
+
+        const hudCur = document.getElementById('satHudCurrentArea');
+        const hudNext = document.getElementById('satHudNextArea');
+        const hudProg = document.getElementById('satHudProgressText');
+        if (hudCur) hudCur.innerText = `${data.current_area}, ${data.city}`;
+        if (hudNext) hudNext.innerText = `${data.next_area}, ${data.city}`;
+        if (hudProg) hudProg.innerText = `${data.current_area_idx + 1} / ${data.total_areas} (${Math.round(((data.current_area_idx + 1) / data.total_areas) * 100)}%)`;
+
+        const areaSelect = document.getElementById('satAreaSelect');
+        if (areaSelect && data.areas) {
+          areaSelect.innerHTML = '';
+          data.areas.forEach((a, idx) => {
+            const opt = document.createElement('option');
+            opt.value = a;
+            const isDone = (data.completed_areas || []).includes(`${data.city} - ${a}`);
+            opt.innerText = `${idx + 1}. ${a}` + (isDone ? ' (✓ पूर्ण)' : '');
+            if (a === data.current_area) opt.selected = true;
+            areaSelect.appendChild(opt);
+          });
+          const customOpt = document.createElement('option');
+          customOpt.value = '__custom__';
+          customOpt.innerText = '✍️ कस्टम एरिया / बाज़ार लिखें...';
+          areaSelect.appendChild(customOpt);
+        }
+
+        updateSatButtonText();
+        renderRoadmapChips(data);
+      } catch (err) {
+        console.error('Failed to load saturation roadmap:', err);
+      }
+    }
+
+    function renderRoadmapChips(data) {
+      const container = document.getElementById('satRoadmapPillsContainer');
+      const badge = document.getElementById('satRoadmapCountBadge');
+      if (badge) badge.innerText = `${data.total_areas} एरिया`;
+      if (!container || !data.areas) return;
+
+      container.innerHTML = '';
+      data.areas.forEach((a, idx) => {
+        const isCurrent = a === data.current_area;
+        const isCompleted = (data.completed_areas || []).includes(`${data.city} - ${a}`);
+        const chip = document.createElement('div');
+        if (isCurrent) {
+          chip.className = 'px-3 py-1.5 rounded-xl text-xs font-black bg-orange-600 text-white shadow-md ring-2 ring-orange-400 flex items-center gap-1.5 cursor-pointer';
+          chip.innerHTML = `<span>⚡ ${idx + 1}. ${a}</span><span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>`;
+        } else if (isCompleted) {
+          chip.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5 cursor-pointer';
+          chip.innerHTML = `<span>✓ ${idx + 1}. ${a}</span>`;
+        } else {
+          chip.className = 'px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 flex items-center gap-1.5 cursor-pointer';
+          chip.innerHTML = `<span>${idx + 1}. ${a}</span>`;
+        }
+        chip.onclick = () => {
+          document.getElementById('satAreaSelect').value = a;
+          setManualActiveArea();
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function onSaturationCityChange() {
+      const city = document.getElementById('satCitySelect').value;
+      loadSaturationRoadmap(city);
+    }
+
+    function onSaturationAreaSelect() {
+      const areaSelect = document.getElementById('satAreaSelect');
+      const customInput = document.getElementById('satCustomAreaInput');
+      if (areaSelect.value === '__custom__') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+      updateSatButtonText();
+    }
+
+    function setSaturationMode(mode) {
+      selectedSatMode = mode;
+      const cardAuto = document.getElementById('satCardModeAuto');
+      const cardManual = document.getElementById('satCardModeManual');
+      const radioAuto = document.getElementById('satRadioAuto');
+      const radioManual = document.getElementById('satRadioManual');
+
+      if (mode === 'auto') {
+        if (cardAuto) cardAuto.className = 'p-4 sm:p-5 rounded-2xl border-2 border-orange-500 bg-orange-50/60 cursor-pointer transition-all shadow-md relative group hover:border-orange-600';
+        if (cardManual) cardManual.className = 'p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm relative group hover:border-orange-400';
+        if (radioAuto) radioAuto.checked = true;
+        if (radioManual) radioManual.checked = false;
+      } else {
+        if (cardAuto) cardAuto.className = 'p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm relative group hover:border-orange-400';
+        if (cardManual) cardManual.className = 'p-4 sm:p-5 rounded-2xl border-2 border-orange-500 bg-orange-50/60 cursor-pointer transition-all shadow-md relative group hover:border-orange-600';
+        if (radioAuto) radioAuto.checked = false;
+        if (radioManual) radioManual.checked = true;
+      }
+      updateSatButtonText();
+    }
+
+    function setSatCount(count, el) {
+      selectedSatCount = count;
+      document.querySelectorAll('.sat-count-btn').forEach(b => {
+        b.className = 'sat-count-btn spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 cursor-pointer text-center';
+      });
+      if (el) {
+        el.className = 'sat-count-btn spring-press py-2 rounded-xl text-xs font-black bg-orange-600 text-white shadow-sm cursor-pointer text-center';
+      }
+      updateSatButtonText();
+    }
+
+    function setSatEntityType(type, el) {
+      selectedSatEntityType = type;
+      document.querySelectorAll('.sat-entity-btn').forEach(b => {
+        b.className = 'sat-entity-btn spring-press p-2.5 rounded-xl font-bold bg-white text-slate-700 border border-slate-200 hover:bg-orange-50 text-center cursor-pointer';
+      });
+      if (el) {
+        el.className = 'sat-entity-btn spring-press p-2.5 rounded-xl font-extrabold bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-sm text-center cursor-pointer';
+      }
+      updateSatButtonText();
+    }
+
+    function updateSatButtonText() {
+      const btnText = document.getElementById('textRunSaturation');
+      if (!btnText) return;
+      const city = document.getElementById('satCitySelect') ? document.getElementById('satCitySelect').value : 'Jaipur';
+      const areaSelect = document.getElementById('satAreaSelect');
+      const customInput = document.getElementById('satCustomAreaInput');
+      const area = (areaSelect && areaSelect.value === '__custom__' && customInput && customInput.value.trim()) 
+        ? customInput.value.trim() 
+        : (areaSelect ? areaSelect.value : 'Current Area');
+
+      if (selectedSatMode === 'auto') {
+        btnText.innerText = `🚀 ऑटोपायलट एरिया सैचुरेशन शुरू करो (${city} • क्रमिक रोडमैप • ${selectedSatCount} लीड्स • 100% जैन गारंटी)`;
+      } else {
+        btnText.innerText = `🎯 [मैन्युअल रन] ${area}, ${city} को अभी 100% सैचुरेट करो (${selectedSatCount} लीड्स)`;
+      }
+    }
+
+    async function setManualActiveArea() {
+      const city = document.getElementById('satCitySelect').value;
+      const areaSelect = document.getElementById('satAreaSelect');
+      const customInput = document.getElementById('satCustomAreaInput');
+      const area = (areaSelect.value === '__custom__' && customInput.value.trim()) 
+        ? customInput.value.trim() 
+        : areaSelect.value;
+
+      if (!area || area === '__custom__') {
+        showToast('कृपया एक वैध एरिया चुनें या दर्ज करें', 'warning');
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/saturation/set-area', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, area })
+        });
+        const data = await resp.json();
+        showToast(`✓ एक्टिव एरिया सेट: ${area} (${city})`, 'success');
+        await loadSaturationRoadmap(city);
+      } catch (err) {
+        showToast(`एरिया सेट करने में त्रुटि: ${err.message}`, 'error');
+      }
+    }
+
+    async function triggerSaturationScan() {
+      const city = document.getElementById('satCitySelect').value;
+      const areaSelect = document.getElementById('satAreaSelect');
+      const customInput = document.getElementById('satCustomAreaInput');
+      const area = (areaSelect.value === '__custom__' && customInput.value.trim()) 
+        ? customInput.value.trim() 
+        : (areaSelect ? areaSelect.value : '');
+
+      const btn = document.getElementById('btnRunSaturation');
+      const btnText = document.getElementById('textRunSaturation');
+      const btnIcon = document.getElementById('iconRunSaturation');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      stopConsoleTimer();
+      const timerEl = document.getElementById('consoleTimer');
+      if (timerEl) timerEl.innerText = '🛡️ Strict जैन मोड';
+      
+      const pBar = document.getElementById('consoleProgressBar');
+      if (pBar) pBar.style.width = '5%';
+      const stageBadge = document.getElementById('consoleStageBadge');
+      if (stageBadge) stageBadge.innerText = 'SATURATION_SCAN';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '🎯',
+        stage: 'SATURATION_START',
+        message: `🎯 एरिया सैचुरेशन प्रारंभ: [${city} - ${area || 'Auto Roadmap'}] | मोड: ${selectedSatMode.toUpperCase()} | लक्ष्य: ${selectedSatCount} लीड्स | 🛡️ Strict Filter: Zero Non-Jain Tolerance`,
+        percent: 5
+      });
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        if (btnText) btnText.innerText = `⏳ एरिया सैचुरेशन चालू है: 10 वेक्टर्स स्कैनिंग...`;
+        if (btnIcon) btnIcon.innerText = '⏳';
+      }
+
+      showToast(`🎯 ${city} - ${area || 'रोडमैप'} में 10-वेक्टर एरिया सैचुरेशन शुरू...`, 'info');
+
+      try {
+        const resp = await fetch('/api/saturation/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            city: city,
+            area: area,
+            mode: selectedSatMode,
+            count: selectedSatCount,
+            entity_type: selectedSatEntityType
+          })
+        });
+
+        const data = await resp.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टास्क शुरू नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: payload.badge || '🎯',
+              stage: payload.stage || 'SATURATION',
+              message: payload.message,
+              percent: payload.percent || 30
+            });
+            if (payload.percent && pBar) {
+              pBar.style.width = payload.percent + '%';
+            }
+          }
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            if (pBar) pBar.style.width = '100%';
+            if (stageBadge) stageBadge.innerText = 'SATURATION_DONE';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'DONE',
+              message: `🏆 एरिया सैचुरेशन सफल! कुल ${payload.mined || selectedSatCount} वेरिफाइड जैन लीड्स दर्ज। अगला लक्षित एरिया: ${payload.next_area || '-'}`,
+              percent: 100
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              updateSatButtonText();
+              if (btnIcon) btnIcon.innerText = '🚀';
+            }
+
+            showToast(`🏆 एरिया सैचुरेशन संपन्न! Google Sheet व Excel में सेव।`, 'success');
+            loadSaturationRoadmap(city);
+            loadStatus(false);
+            loadMasterLeads();
+          }
+          else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            if (stageBadge) stageBadge.innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'त्रुटि: ' + payload.message
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              updateSatButtonText();
+              if (btnIcon) btnIcon.innerText = '🔄';
+            }
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            updateSatButtonText();
+            if (btnIcon) btnIcon.innerText = '🚀';
+          }
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'सैचुरेशन अपवाद: ' + err.message
+        });
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          updateSatButtonText();
+          if (btnIcon) btnIcon.innerText = '🚀';
+        }
+        showToast('त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    // ==================== 5-LAYER MASTER QUERY EXPLORER LOGIC ====================
+    let cache5LayerData = null;
+    let active5LayerFilter = 'all';
+
+    async function load5LayerQueries() {
+      const city = document.getElementById('satCitySelect') ? document.getElementById('satCitySelect').value : 'Indore';
+      const areaSelect = document.getElementById('satAreaSelect');
+      const customInput = document.getElementById('satCustomAreaInput');
+      const area = (areaSelect && areaSelect.value === '__custom__' && customInput && customInput.value.trim()) 
+        ? customInput.value.trim() 
+        : (areaSelect && areaSelect.value !== '__custom__' ? areaSelect.value : '');
+
+      const spanCity = document.getElementById('span5LayerCity');
+      const spanArea = document.getElementById('span5LayerArea');
+      if (spanCity) spanCity.innerText = city;
+      if (spanArea) spanArea.innerText = area || 'City Center';
+
+      try {
+        const resp = await fetch(`/api/matrix/5layer-queries?city=${encodeURIComponent(city)}&area=${encodeURIComponent(area)}`);
+        const data = await resp.json();
+        cache5LayerData = data;
+        
+        const countBadge = document.getElementById('badge5LayerCount');
+        if (countBadge) countBadge.innerText = `${data.total_queries} क्वेरीज`;
+        const countAll = document.getElementById('countFilterAll');
+        if (countAll) countAll.innerText = data.total_queries;
+
+        render5LayerList();
+      } catch (err) {
+        console.error('Failed to load 5-layer queries:', err);
+      }
+    }
+
+    function filter5LayerTab(layerKey, btnEl) {
+      active5LayerFilter = layerKey;
+      document.querySelectorAll('.btn-layer-filter').forEach(b => {
+        b.className = 'btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer';
+      });
+      if (btnEl) {
+        btnEl.className = 'btn-layer-filter spring-press px-3 py-1.5 rounded-xl font-bold bg-indigo-600 text-white shadow-sm cursor-pointer';
+      }
+      render5LayerList();
+    }
+
+    function render5LayerList() {
+      const list = document.getElementById('list5LayerQueries');
+      if (!list || !cache5LayerData) return;
+
+      const items = active5LayerFilter === 'all' 
+        ? cache5LayerData.all_queries 
+        : (cache5LayerData.all_queries.filter(q => q.layer === active5LayerFilter));
+
+      if (items.length === 0) {
+        list.innerHTML = '<div class="py-6 text-center text-slate-400 text-xs">कोई क्वेरी नहीं मिली।</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      items.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-2.5 rounded-lg hover:bg-white transition-all text-xs';
+        
+        let layerLabel = '🌟 L1';
+        let badgeColor = 'bg-slate-100 text-slate-700';
+        if (item.layer === 'layer_1_religion') { layerLabel = '1️⃣ धर्म/पंथ'; badgeColor = 'bg-purple-100 text-purple-800'; }
+        else if (item.layer === 'layer_2_community') { layerLabel = '2️⃣ समाज/उपनाम'; badgeColor = 'bg-blue-100 text-blue-800'; }
+        else if (item.layer === 'layer_3_sacred_tirthankar') { layerLabel = '3️⃣ तीर्थंकर/ट्रेडमार्क'; badgeColor = 'bg-amber-100 text-amber-800'; }
+        else if (item.layer === 'layer_4_trust_institution') { layerLabel = '4️⃣ ट्रस्ट/संस्था'; badgeColor = 'bg-emerald-100 text-emerald-800'; }
+        else if (item.layer === 'layer_5_google_dorks') { layerLabel = '⚡ Dork'; badgeColor = 'bg-rose-100 text-rose-800'; }
+
+        row.innerHTML = `
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <span class="font-mono text-[10px] text-slate-400 w-6">${idx + 1}.</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${badgeColor} flex-shrink-0">${layerLabel}</span>
+            <span class="font-bold text-slate-900 truncate select-all">${item.query}</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0 self-end sm:self-center">
+            <button onclick="copyToClipboard('${item.query.replace(/'/g, "\\'")}')" class="spring-press px-2.5 py-1 rounded-md text-[11px] font-bold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer">
+              📋 कॉपी
+            </button>
+            <a href="${item.google_url}" target="_blank" class="spring-press px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 flex items-center gap-1">
+              <span>🔍 Google</span>
+              <span>↗</span>
+            </a>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✓ क्वेरी क्लिपबोर्ड में कॉपी हो गई!', 'success');
+      }).catch(() => {
+        showToast('कॉपी करने में असमर्थ', 'error');
+      });
+    }
+
+    function copyAll5LayerQueries() {
+      if (!cache5LayerData || !cache5LayerData.all_queries) return;
+      const allText = cache5LayerData.all_queries.map((q, i) => `${i + 1}. ${q.query}`).join('\n');
+      navigator.clipboard.writeText(allText).then(() => {
+        showToast(`✓ सभी ${cache5LayerData.total_queries} क्वेरीज क्लिपबोर्ड में कॉपी हो गईं!`, 'success');
+      }).catch(() => {
+        showToast('कॉपी करने में असमर्थ', 'error');
+      });
+    }
+
+    // ==================== DEDICATED ZERO-DELAY INSTANT BATCH LOGIC ====================
+    let selectedInstantSourceMode = 'ready_only';
+    let selectedInstantCount = 14;
+
+    function setInstantSourceMode(mode) {
+      selectedInstantSourceMode = mode;
+      const cardReady = document.getElementById('cardModeReady');
+      const cardFresh = document.getElementById('cardModeFresh');
+      const radioReady = document.getElementById('radioModeReady');
+      const radioFresh = document.getElementById('radioModeFresh');
+      const btnText = document.getElementById('textInstantDedicated');
+      
+      if (mode === 'ready_only') {
+        if (cardReady) cardReady.className = 'p-4 sm:p-5 rounded-2xl border-2 border-fuchsia-500 bg-fuchsia-50/60 cursor-pointer transition-all shadow-md relative group hover:border-fuchsia-600';
+        if (cardFresh) cardFresh.className = 'p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm relative group hover:border-fuchsia-400';
+        if (radioReady) radioReady.checked = true;
+        if (radioFresh) radioFresh.checked = false;
+        if (btnText) btnText.innerText = `⚡ तैयार 14 लीड्स को अभी एक साथ पोर्टल पर डालो (फ़ोटो सहित • 0s डिले)`;
+      } else {
+        if (cardReady) cardReady.className = 'p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer transition-all shadow-sm relative group hover:border-fuchsia-400';
+        if (cardFresh) cardFresh.className = 'p-4 sm:p-5 rounded-2xl border-2 border-fuchsia-500 bg-fuchsia-50/60 cursor-pointer transition-all shadow-md relative group hover:border-fuchsia-600';
+        if (radioReady) radioReady.checked = false;
+        if (radioFresh) radioFresh.checked = true;
+        if (btnText) btnText.innerText = `⚡ नए क्षेत्र से ${selectedInstantCount} लीड्स निकालो व तुरंत पोर्टल पर डालो (0s डिले)`;
+      }
+    }
+
+    function setInstantCount(count, el) {
+      selectedInstantCount = count;
+      document.querySelectorAll('.pill-instant-count').forEach(b => {
+        b.className = 'pill-instant-count spring-press py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center';
+      });
+      if (el) {
+        el.className = 'pill-instant-count spring-press py-2 rounded-xl text-xs font-black bg-fuchsia-600 text-white shadow-sm cursor-pointer text-center';
+      }
+      const btnText = document.getElementById('textInstantDedicated');
+      if (selectedInstantSourceMode === 'full_auto') {
+        if (btnText) btnText.innerText = `⚡ नए क्षेत्र से ${count} लीड्स निकालो व तुरंत पोर्टल पर डालो (0s डिले)`;
+      } else {
+        if (btnText) btnText.innerText = `⚡ तैयार ${count} लीड्स को अभी एक साथ पोर्टल पर डालो (फ़ोटो सहित • 0s डिले)`;
+      }
+    }
+
+    async function runInstantDedicatedBatch() {
+      const category = (document.getElementById('instantCategoryInput') ? document.getElementById('instantCategoryInput').value.trim() : '') || 'Jewellers & All Commercial';
+      const city = 'Indore';
+      const batchSize = selectedInstantCount || 14;
+      const sourceMode = selectedInstantSourceMode || 'ready_only';
+
+      const btn = document.getElementById('btnInstantDedicated');
+      const btnText = document.getElementById('textInstantDedicated');
+      const btnIcon = document.getElementById('iconInstantDedicated');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      // CRITICAL: NEVER START TICKING STOPWATCH TIMER FOR INSTANT BATCH!
+      stopConsoleTimer();
+      const timerEl = document.getElementById('consoleTimer');
+      if (timerEl) timerEl.innerText = '⚡ 0s डिले (नो टाइमर)';
+      
+      const pBar = document.getElementById('consoleProgressBar');
+      if (pBar) pBar.style.width = '10%';
+      const stageBadge = document.getElementById('consoleStageBadge');
+      if (stageBadge) stageBadge.innerText = 'INSTANT_BATCH';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '⚡',
+        stage: 'INIT',
+        message: `⚡ सुपरफास्ट ऑल-इन-वन प्रारंभ | मोड: ${sourceMode === 'ready_only' ? 'तैयार लीड्स तुरंत' : 'नया क्षेत्र माइनिंग'} | लक्ष्य: ${batchSize} लीड्स | ⏱️ टाइमर: पूरी तरह बंद (0s Delay • No Waiting)`,
+        percent: 10
+      });
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        if (btnText) btnText.innerText = `⚡ सुपरफास्ट प्रोसेसिंग जारी (बिना रुके सब एक साथ)...`;
+        if (btnIcon) btnIcon.innerText = '⏳';
+      }
+
+      showToast(`⚡ सुपरफास्ट रन शुरू: 0s डिले पर एक साथ प्रोसेस हो रहा है`, 'info');
+
+      try {
+        const resp = await fetch('/api/turbo-full-pipeline', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            batch_size: batchSize,
+            category: category,
+            city: city,
+            source_mode: sourceMode
+          })
+        });
+
+        const data = await resp.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टास्क शुरू नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: payload.badge || '⚡',
+              stage: payload.stage || 'INSTANT',
+              message: payload.message,
+              percent: payload.percent || 25
+            });
+            if (payload.percent && pBar) {
+              pBar.style.width = payload.percent + '%';
+            }
+          }
+          else if (payload.type === 'progress') {
+            if (pBar) pBar.style.width = payload.percent + '%';
+          }
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            if (timerEl) timerEl.innerText = '⚡ 0s डिले (सफल)';
+            if (pBar) pBar.style.width = '100%';
+            if (stageBadge) stageBadge.innerText = 'COMPLETED';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'DONE',
+              message: payload.message || `सुपरफास्ट बैच पूर्ण! सभी लीड्स पोर्टल व Google Sheet में फ़ोटो सहित दर्ज हो गईं!`,
+              percent: 100
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              setInstantSourceMode(selectedInstantSourceMode);
+              if (btnIcon) btnIcon.innerText = '⚡';
+            }
+
+            showToast(`🏆 सुपरफास्ट बैच पूर्ण! jainforjain.com पर फ़ोटो सहित लाइव!`, 'success');
+            loadStatus(false);
+            loadMasterLeads();
+            loadSearchHistory();
+          }
+          else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            if (stageBadge) stageBadge.innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'त्रुटि: ' + payload.message
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              setInstantSourceMode(selectedInstantSourceMode);
+              if (btnIcon) btnIcon.innerText = '🔄';
+            }
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            setInstantSourceMode(selectedInstantSourceMode);
+            if (btnIcon) btnIcon.innerText = '⚡';
+          }
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'सुपरफास्ट रन अपवाद: ' + err.message
+        });
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          setInstantSourceMode(selectedInstantSourceMode);
+          if (btnIcon) btnIcon.innerText = '⚡';
+        }
+        showToast('त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    // ==================== TURBO FAST & 24/7 AUTOPILOT SCRIPTING ====================
+    let selectedTurboCount = 10;
+
+    function setTurboCount(count, el) {
+      selectedTurboCount = count;
+      const display = document.getElementById('turboCountDisplay');
+      if (display) display.innerText = count;
+
+      document.querySelectorAll('.pill-turbo').forEach(b => {
+        b.className = 'pill-turbo spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-fuchsia-50 cursor-pointer text-center';
+      });
+      if (el) {
+        el.className = 'pill-turbo spring-press py-2.5 rounded-xl text-xs font-extrabold bg-fuchsia-600 text-white shadow-sm cursor-pointer text-center';
+      }
+    }
+
+    async function runTurboFastPipeline() {
+      const category = (document.getElementById('turboCategoryInput') ? document.getElementById('turboCategoryInput').value.trim() : '') || 'Jewellers & All Commercial';
+      const city = (document.getElementById('step1City') ? document.getElementById('step1City').value : 'Indore');
+      const batchSize = selectedTurboCount || 10;
+
+      const btn = document.getElementById('btnRunTurbo');
+      const btnText = document.getElementById('textRunTurbo');
+      const btnIcon = document.getElementById('iconRunTurbo');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      consoleSec.classList.remove('hidden');
+      consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      stopConsoleTimer();
+      const timerEl = document.getElementById('consoleTimer');
+      if (timerEl) timerEl.innerText = '⚡ 0s डिले (टाइमर बंद)';
+      document.getElementById('consoleProgressBar').style.width = '5%';
+      document.getElementById('consoleStageBadge').innerText = 'TURBO_FAST';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '⚡',
+        stage: 'TURBO_INIT',
+        message: `⚡ टर्बो सुपरफास्ट रन प्रारंभ: ${city} • लक्ष्य: ${batchSize} लीड्स • बिना किसी टाइमर के तुरंत सबमिट & फ़ोटो अपलोड...`,
+        percent: 5
+      });
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        if (btnText) btnText.innerText = `⚡ टर्बो चालू है: ${batchSize} लीड्स माइनिंग + Canva Pro + पोर्टल सबमिट...`;
+        if (btnIcon) btnIcon.innerText = '⏳';
+      }
+
+      showToast(`⚡ टर्बो सुपरफास्ट रन: ${batchSize} लीड्स तुरंत प्रोसेस हो रही हैं...`, 'info');
+
+      try {
+        const resp = await fetch('/api/turbo-full-pipeline', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            batch_size: batchSize,
+            category: category,
+            city: city
+          })
+        });
+
+        const data = await resp.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टर्बो टास्क शुरू नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: payload.badge || '⚡',
+              stage: payload.stage || 'TURBO',
+              message: payload.message,
+              percent: payload.percent || 25
+            });
+            if (payload.percent) {
+              document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+            }
+          }
+          else if (payload.type === 'progress') {
+            document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+          }
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleProgressBar').style.width = '100%';
+            document.getElementById('consoleStageBadge').innerText = 'TURBO_COMPLETED';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'DONE',
+              message: payload.message || `टर्बो टास्क संपन्न! सभी लीड्स तुरंत पोर्टल व Google Sheet में दर्ज हो गईं!`,
+              percent: 100
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              if (btnText) btnText.innerText = `⚡ टर्बो सुपरफास्ट रन शुरू करो (${batchSize} लीड्स • बिना टाइमर के तुरंत सबमिट & फ़ोटो अपलोड)`;
+              if (btnIcon) btnIcon.innerText = '⚡';
+            }
+
+            showToast(`🏆 टर्बो टास्क पूर्ण! सभी लीड्स jainforjain.com पर फ़ोटो सहित लाइव!`, 'success');
+            loadStatus(false);
+            loadMasterLeads();
+            loadSearchHistory();
+          }
+          else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleStageBadge').innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'टर्बो त्रुटि: ' + payload.message
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              if (btnText) btnText.innerText = `पुनः प्रयास करें (टर्बो फास्ट)`;
+              if (btnIcon) btnIcon.innerText = '🔄';
+            }
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = `⚡ टर्बो सुपरफास्ट रन शुरू करो (${batchSize} लीड्स)`;
+            if (btnIcon) btnIcon.innerText = '⚡';
+          }
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'टर्बो रन अपवाद: ' + err.message
+        });
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          if (btnText) btnText.innerText = `⚡ टर्बो सुपरफास्ट रन शुरू करो (${batchSize} लीड्स)`;
+          if (btnIcon) btnIcon.innerText = '⚡';
+        }
+        showToast('त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    async function loadAutopilotConfig() {
+      try {
+        const resp = await fetch('/api/autopilot/config');
+        const cfg = await resp.json();
+
+        const btnToggle = document.getElementById('btnToggleAutopilot');
+        const dotToggle = document.getElementById('autopilotToggleDot');
+        const textToggle = document.getElementById('autopilotToggleText');
+
+        if (cfg.is_active) {
+          if (btnToggle) btnToggle.className = 'spring-press flex items-center gap-2.5 px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md cursor-pointer transition-all bg-emerald-600 text-white hover:bg-emerald-700 ring-4 ring-emerald-400/20';
+          if (dotToggle) dotToggle.className = 'w-3 h-3 rounded-full bg-emerald-300 animate-pulse';
+          if (textToggle) textToggle.innerText = '🟢 ऑटोपायलट: चालू (24/7 सक्रिय)';
+        } else {
+          if (btnToggle) btnToggle.className = 'spring-press flex items-center gap-2.5 px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md cursor-pointer transition-all bg-slate-200 text-slate-700 hover:bg-slate-300';
+          if (dotToggle) dotToggle.className = 'w-3 h-3 rounded-full bg-slate-400';
+          if (textToggle) textToggle.innerText = '⚪ ऑटोपायलट: बंद (OFF)';
+        }
+
+        const hudNext = document.getElementById('hudAutopilotNextRun');
+        if (hudNext) {
+          hudNext.innerText = cfg.is_active ? (cfg.next_run_timestamp || 'शेड्यूल किया जा रहा है...') : 'ऑटोपायलट बंद है (स्विच ON करें)';
+        }
+
+        const hudLast = document.getElementById('hudAutopilotLastRun');
+        if (hudLast) {
+          hudLast.innerText = cfg.last_run_timestamp ? `${cfg.last_run_timestamp} (सफल)` : 'अभी तक नहीं चला';
+        }
+
+        const hudTotal = document.getElementById('hudAutopilotTotalRuns');
+        if (hudTotal) {
+          hudTotal.innerText = `${cfg.total_runs || 0} बार`;
+        }
+
+        const inTime = document.getElementById('cfgAutopilotTime');
+        if (inTime && document.activeElement !== inTime && cfg.daily_time) inTime.value = cfg.daily_time;
+
+        const inFreq = document.getElementById('cfgAutopilotFreq');
+        if (inFreq && document.activeElement !== inFreq && cfg.frequency_hours) inFreq.value = cfg.frequency_hours;
+
+        const inBatch = document.getElementById('cfgAutopilotBatchSize');
+        if (inBatch && document.activeElement !== inBatch && cfg.batch_size) inBatch.value = cfg.batch_size;
+
+        const inMode = document.getElementById('cfgAutopilotUploadMode');
+        if (inMode && document.activeElement !== inMode && cfg.upload_mode) inMode.value = cfg.upload_mode;
+
+      } catch (err) {
+        console.error("Failed to load autopilot config:", err);
+      }
+    }
+
+    async function toggleAutopilotState() {
+      try {
+        const resp = await fetch('/api/autopilot/toggle', { method: 'POST' });
+        const data = await resp.json();
+        await loadAutopilotConfig();
+        if (data.config && data.config.is_active) {
+          showToast(`🟢 24/7 ऑटोपायलट चालू हो गया! अगला रन: ${data.config.next_run_timestamp}`, 'success');
+        } else {
+          showToast('⚪ 24/7 ऑटोपायलट बंद (OFF) कर दिया गया।', 'info');
+        }
+      } catch (err) {
+        showToast('ऑटोपायलट टॉगल त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    async function saveAutopilotSettings() {
+      const daily_time = document.getElementById('cfgAutopilotTime').value;
+      const frequency_hours = parseInt(document.getElementById('cfgAutopilotFreq').value, 10);
+      const batch_size = parseInt(document.getElementById('cfgAutopilotBatchSize').value, 10);
+      const upload_mode = document.getElementById('cfgAutopilotUploadMode').value;
+      const delay_seconds = upload_mode === 'instant' ? 0 : 60;
+
+      try {
+        const resp = await fetch('/api/autopilot/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            daily_time,
+            frequency_hours,
+            batch_size,
+            upload_mode,
+            delay_seconds
+          })
+        });
+        const data = await resp.json();
+        await loadAutopilotConfig();
+        showToast('💾 24/7 शेड्यूलर सेटिंग्स सफलतापूर्वक सुरक्षित हो गईं!', 'success');
+      } catch (err) {
+        showToast('सेव करने में त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    async function runAutopilotNow() {
+      const consoleSec = document.getElementById('liveConsoleSection');
+      consoleSec.classList.remove('hidden');
+      consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      startConsoleTimer();
+      document.getElementById('consoleProgressBar').style.width = '5%';
+      document.getElementById('consoleStageBadge').innerText = 'AUTOPILOT_TEST';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '⏰',
+        stage: 'AUTOPILOT_TEST',
+        message: '24/7 ऑटोपायलट टेस्ट रन प्रारंभ: नया क्षेत्र माइनिंग + Canva Pro + शीट सिंक + पोर्टल एंट्री...',
+        percent: 5
+      });
+
+      showToast('⏰ ऑटोपायलट टेस्ट रन शुरू किया गया...', 'info');
+
+      try {
+        const resp = await fetch('/api/autopilot/run-now', { method: 'POST' });
+        const data = await resp.json();
+
+        if (data.task_id) {
+          currentTaskId = data.task_id;
+          if (eventSource) eventSource.close();
+          eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+          eventSource.onmessage = function(event) {
+            const payload = JSON.parse(event.data);
+            if (payload.type === 'log') {
+              appendConsoleLog({
+                time: new Date().toLocaleTimeString(),
+                badge: payload.badge || '⏰',
+                stage: payload.stage || 'AUTOPILOT',
+                message: payload.message,
+                percent: payload.percent || 20
+              });
+              if (payload.percent) {
+                document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+              }
+            } else if (payload.type === 'complete') {
+              eventSource.close();
+              stopConsoleTimer();
+              document.getElementById('consoleProgressBar').style.width = '100%';
+              document.getElementById('consoleStageBadge').innerText = 'COMPLETED';
+              showToast('🏆 ऑटोपायलट टेस्ट रन सफलतापूर्वक संपन्न!', 'success');
+              loadStatus(false);
+              loadMasterLeads();
+              loadSearchHistory();
+              loadAutopilotConfig();
+            } else if (payload.type === 'error') {
+              eventSource.close();
+              stopConsoleTimer();
+              showToast('त्रुटि: ' + payload.message, 'error');
+            }
+          };
+        }
+      } catch (err) {
+        showToast('टेस्ट रन में त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    let selectedNextBatchSize = 50;
+
+    function setNextBatchSize(size, el) {
+      selectedNextBatchSize = size;
+      const countDisplay = document.getElementById('nextBatchCountDisplay');
+      if (countDisplay) countDisplay.innerText = size;
+
+      document.querySelectorAll('.pill-next-batch').forEach(b => {
+        b.className = 'pill-next-batch spring-press py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-amber-50 cursor-pointer text-center';
+      });
+      if (el) {
+        el.className = 'pill-next-batch spring-press py-2.5 rounded-xl text-xs font-extrabold bg-amber-600 text-white shadow-sm cursor-pointer text-center';
+      }
+    }
+
+    function triggerNextBatchFromTracker(size) {
+      setNextBatchSize(size, null);
+      switchTab('tab-mobile');
+      setTimeout(() => {
+        runNextBatchExtract();
+      }, 300);
+    }
+
+    async function runNextBatchExtract() {
+      const category = (document.getElementById('nextBatchCategory') ? document.getElementById('nextBatchCategory').value.trim() : '') || 'Jewellers & All Commercial';
+      const city = (document.getElementById('step1City') ? document.getElementById('step1City').value : 'Indore');
+      const batchSize = selectedNextBatchSize || 50;
+
+      const btn = document.getElementById('btnRunNextBatch');
+      const btnText = document.getElementById('textRunNextBatch');
+      const btnIcon = document.getElementById('iconRunNextBatch');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      consoleSec.classList.remove('hidden');
+      consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      startConsoleTimer();
+      document.getElementById('consoleProgressBar').style.width = '5%';
+      document.getElementById('consoleStageBadge').innerText = 'SATURATION';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '🎯',
+        stage: 'NEXT-BATCH',
+        message: `अगला बैच प्रारंभ: ${city} • लक्ष्य: ${batchSize} जैन बिज़नेस • श्रेणी: ${category}...`,
+        percent: 5
+      });
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        if (btnText) btnText.innerText = `प्रोसेसिंग जारी: ${batchSize} लीड्स + Canva Pro एसेट्स + शीट ऑटो-सिंक...`;
+        if (btnIcon) btnIcon.innerText = '⏳';
+      }
+
+      showToast(`🎯 अगला बैच प्रारंभ: ${batchSize} लीड्स खोजी जा रही हैं...`, 'info');
+
+      try {
+        const resp = await fetch('/api/extract-next-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            batch_size: batchSize,
+            category: category,
+            city: city
+          })
+        });
+
+        const data = await resp.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टास्क शुरू नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = function(event) {
+          const payload = JSON.parse(event.data);
+
+          if (payload.type === 'log') {
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '📍',
+              stage: 'CRAWL',
+              message: payload.message,
+              percent: payload.percent || 20
+            });
+            if (payload.percent) {
+              document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+            }
+          }
+          else if (payload.type === 'progress') {
+            document.getElementById('consoleProgressBar').style.width = payload.percent + '%';
+          }
+          else if (payload.type === 'complete') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleProgressBar').style.width = '100%';
+            document.getElementById('consoleStageBadge').innerText = 'COMPLETED';
+
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '🏆',
+              stage: 'DONE',
+              message: payload.message || `बैच पूर्ण! कुल ${payload.leads_mined || batchSize} नई लीड्स Google Sheet में सिंक हो गईं!`,
+              percent: 100
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              if (btnText) btnText.innerText = `▶️ अगला बैच निकालो (${batchSize} लीड्स) • कोई मत छोड़ो & Canva Pro एसेट्स`;
+              if (btnIcon) btnIcon.innerText = '▶️';
+            }
+
+            if (payload.next_area) {
+              const hudNext = document.getElementById('hudNextTargetArea');
+              if (hudNext) hudNext.innerText = payload.next_area;
+            }
+
+            showToast(`🏆 बैच पूर्ण! ${payload.leads_mined || batchSize} लीड्स व Canva Pro एसेट्स Google Sheet में लाइव!`, 'success');
+            loadStatus(false);
+            loadMasterLeads();
+            loadSearchHistory();
+          }
+          else if (payload.type === 'error') {
+            eventSource.close();
+            stopConsoleTimer();
+            document.getElementById('consoleStageBadge').innerText = 'ERROR';
+            appendConsoleLog({
+              time: new Date().toLocaleTimeString(),
+              badge: '❌',
+              stage: 'ERROR',
+              message: 'त्रुटि: ' + payload.message
+            });
+
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-60');
+              if (btnText) btnText.innerText = `पुनः प्रयास करें (अगला बैच)`;
+              if (btnIcon) btnIcon.innerText = '🔄';
+            }
+
+            showToast('त्रुटि: ' + payload.message, 'error');
+          }
+        };
+
+        eventSource.onerror = function() {
+          eventSource.close();
+          stopConsoleTimer();
+          if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            if (btnText) btnText.innerText = `▶️ अगला बैच निकालो (${batchSize} लीड्स)`;
+            if (btnIcon) btnIcon.innerText = '▶️';
+          }
+        };
+
+      } catch (err) {
+        stopConsoleTimer();
+        appendConsoleLog({
+          time: new Date().toLocaleTimeString(),
+          badge: '❌',
+          stage: 'ERROR',
+          message: 'बैच शुरू करने में त्रुटि: ' + err.message
+        });
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-60');
+          if (btnText) btnText.innerText = `▶️ अगला बैच निकालो (${batchSize} लीड्स)`;
+          if (btnIcon) btnIcon.innerText = '▶️';
+        }
+        showToast('त्रुटि: ' + err.message, 'error');
+      }
+    }
+
+    async function loadSearchHistory() {
+      const tbody = document.getElementById('trackerTableBody');
+      if (!tbody) return;
+
+      try {
+        const resp = await fetch('/api/search-history');
+        const data = await resp.json();
+        const history = data.history || [];
+
+        if (history.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400 font-medium">अभी तक कोई सर्च बैच रिकॉर्ड नहीं हुआ है। ऊपर 'अगला बैच निकालो' बटन दबाएं।</td></tr>`;
+          return;
+        }
+
+        const totalBatches = history.length;
+        const lastBatch = history[history.length - 1];
+        const totalCumLeads = lastBatch.cumulative_total || history.reduce((acc, h) => acc + (h.extracted_count || 0), 0);
+
+        if (document.getElementById('statTrackerBatches')) document.getElementById('statTrackerBatches').innerText = totalBatches;
+        if (document.getElementById('statTrackerLeads')) document.getElementById('statTrackerLeads').innerText = totalCumLeads;
+        if (document.getElementById('statTrackerCity')) document.getElementById('statTrackerCity').innerText = `${lastBatch.city || 'Indore'} (इंदौर)`;
+        if (document.getElementById('statTrackerCovered')) document.getElementById('statTrackerCovered').innerText = lastBatch.area_name || 'Sarafa Bazar & Rajwada';
+        if (document.getElementById('statTrackerNext')) document.getElementById('statTrackerNext').innerText = lastBatch.next_area || 'Chhappan Dukan & New Palasia';
+
+        const hudNext = document.getElementById('hudNextTargetArea');
+        if (hudNext && lastBatch.next_area) hudNext.innerText = lastBatch.next_area;
+        const hudCityArea = document.getElementById('hudActiveCityArea');
+        if (hudCityArea) hudCityArea.innerText = `${lastBatch.city || 'Indore'} • ${lastBatch.area_name || 'Sarafa Bazar'}`;
+
+        tbody.innerHTML = '';
+        history.forEach((h, idx) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-indigo-50/40 transition-colors border-b border-slate-100 text-xs';
+
+          tr.innerHTML = `
+            <td class="py-3 px-3 font-mono font-bold text-indigo-700">
+              <span class="bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">${h.batch_id || ('BATCH-' + (idx + 1))}</span>
+            </td>
+            <td class="py-3 px-3 font-mono text-[11px] text-slate-600">${h.timestamp || '-'}</td>
+            <td class="py-3 px-3 font-semibold text-slate-800">${h.category || 'Jewellers & Commercial'}</td>
+            <td class="py-3 px-3 font-bold text-slate-900">
+              <span class="inline-flex items-center gap-1.5">
+                <span>📍</span>
+                <span>${h.city || 'Indore'} - ${h.area_name || 'Sarafa Bazar'}</span>
+              </span>
+            </td>
+            <td class="py-3 px-3 text-center font-bold text-slate-700">${h.batch_size || 50}</td>
+            <td class="py-3 px-3 text-center font-extrabold text-emerald-700 bg-emerald-50/50">${h.extracted_count || 0}</td>
+            <td class="py-3 px-3 text-center font-black text-indigo-900 bg-indigo-50/50">${h.cumulative_total || '-'}</td>
+            <td class="py-3 px-3 text-center">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <span>●</span>
+                <span>${h.status || '100% Saturated'}</span>
+              </span>
+            </td>
+            <td class="py-3 px-3 font-bold text-amber-800 bg-amber-50/40">
+              <div class="flex items-center gap-1">
+                <span>⏭️</span>
+                <span>${h.next_area || 'Next Micro-Market'}</span>
+              </div>
+            </td>
+            <td class="py-3 px-3 text-center">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span>☁️ Synced</span>
+              </span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error("Failed to load search history:", err);
+        tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-rose-500 font-medium">इतिहास लोड करने में त्रुटि: ${err.message}</td></tr>`;
       }
     }
 
@@ -2065,6 +4047,8 @@
         if (document.getElementById('statTotal')) document.getElementById('statTotal').innerText = data.total_leads || 0;
         if (document.getElementById('statSubmitted')) document.getElementById('statSubmitted').innerText = data.submitted_leads || 0;
         if (document.getElementById('statReady')) document.getElementById('statReady').innerText = data.ready_leads || 0;
+        if (document.getElementById('statInstantReady')) document.getElementById('statInstantReady').innerText = data.ready_leads || 0;
+        if (document.getElementById('statInstantSubmitted')) document.getElementById('statInstantSubmitted').innerText = data.submitted_leads || 0;
         
         const areas = ["Rajwada", "Sarafa Bazar", "Marothia Bazar", "Sitlamata Bazar", "MT Cloth Market", "Siya Ganj"];
         const curArea = areas[data.area_idx] || "Rajwada";
@@ -2220,6 +4204,10 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadStatus(false);
       loadMasterLeads();
+      loadSearchHistory();
+      loadAutopilotConfig();
+      loadSaturationRoadmap();
+      setInterval(loadAutopilotConfig, 20000);
     });
   </script>
 </body>

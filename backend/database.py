@@ -30,6 +30,22 @@ def init_db():
     """)
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_phone ON scraped_leads (phone)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_name_norm ON scraped_leads (name_norm)")
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS search_batches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            batch_id TEXT UNIQUE,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            category TEXT,
+            city TEXT,
+            area_name TEXT,
+            batch_size INTEGER,
+            extracted_count INTEGER,
+            cumulative_total INTEGER,
+            status TEXT DEFAULT 'Completed',
+            next_area TEXT,
+            sync_status TEXT DEFAULT 'Synced'
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -102,3 +118,55 @@ def get_history_count() -> int:
     count = cursor.fetchone()[0]
     conn.close()
     return count
+
+def record_search_batch(
+    batch_id: str,
+    category: str,
+    city: str,
+    area_name: str,
+    batch_size: int,
+    extracted_count: int,
+    next_area: str,
+    status: str = "Completed",
+    sync_status: str = "Synced"
+) -> int:
+    """Records a completed search batch for full historical tracking."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM scraped_leads")
+    cum_total = cursor.fetchone()[0]
+    
+    cursor.execute("""
+        INSERT OR REPLACE INTO search_batches 
+        (batch_id, category, city, area_name, batch_size, extracted_count, cumulative_total, status, next_area, sync_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        batch_id,
+        category,
+        city,
+        area_name,
+        batch_size,
+        extracted_count,
+        cum_total,
+        status,
+        next_area,
+        sync_status
+    ))
+    conn.commit()
+    conn.close()
+    return cum_total
+
+def get_search_history() -> list:
+    """Returns all recorded search batches ordered chronologically."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM search_batches ORDER BY id ASC")
+    rows = cursor.fetchall()
+    history = [dict(row) for row in rows]
+    conn.close()
+    return history
+

@@ -1,0 +1,15 @@
+{
+  "is_active": true,
+  "daily_time": "10:30",
+  "frequency_hours": 24,
+  "batch_size": 50,
+  "city": "Indore",
+  "category": "Jewellers & All Commercial",
+  "upload_mode": "instant",
+  "delay_seconds": 0,
+  "last_run_timestamp": null,
+  "last_run_result": null,
+  "next_run_timestamp": "2026-09-13 10:30:00",
+  "total_runs": 0,
+  "running_state": "idle"
+}

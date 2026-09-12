@@ -9,7 +9,10 @@ import sys
 import uuid
 import json
 import asyncio
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -44,6 +47,21 @@ class ScanRequest(BaseModel):
     include_surnames: bool = True
     include_photos: bool = True
     max_firms: int = 100
+
+@app.get("/health")
+@app.get("/api/ping")
+async def health_check():
+    """Lightweight 24/7 liveness check for UptimeRobot / Cron-job.org and hybrid status."""
+    from backend.config import is_cloud_environment
+    from backend.saturation_engine import load_progress
+    prog = load_progress()
+    return {
+        "status": "healthy",
+        "environment": "Online Cloud (Render/VPS 24/7)" if is_cloud_environment() else "Offline Local PC",
+        "current_city": prog.get("current_city", "Jaipur"),
+        "completed_areas_count": len(prog.get("completed_areas", [])),
+        "total_mined_leads": prog.get("total_mined", 0)
+    }
 
 @app.post("/api/sync-google-sheets")
 async def api_sync_google_sheets():
@@ -395,123 +413,334 @@ async def start_portal_entry(req: EntryRequest, background_tasks: BackgroundTask
         "limit": req.limit
     }
 
-# ==================== CANVA CONNECTOR & MARKETING SUITE ====================
-from backend.canva_connector import CanvaConnector
-canva_conn = CanvaConnector()
-
-@app.get("/api/canva/templates")
-async def get_canva_templates():
-    """Returns available Canva marketing templates for Indian & Jain businesses."""
-    return {
-        "templates": [
-            {"id": "visiting_card", "title": "Digital Visiting Card (vCard)", "size": "1050x600", "desc": "व्यक्तिगत व व्यावसायिक विजिटिंग कार्ड"},
-            {"id": "whatsapp_flyer", "title": "WhatsApp Story / Flyer", "size": "1080x1920", "desc": "फुल-स्क्रीन स्टेटस व स्टोरी पोस्टर"},
-            {"id": "festival_greeting", "title": "Festival Greeting Card", "size": "1080x1080", "desc": "पर्युषण, महावीर जयंती, नववर्ष बधाई"},
-            {"id": "social_banner", "title": "Social Header Banner", "size": "1200x400", "desc": "फेसबुक व वेबसाइट बैनर"},
-        ]
-    }
-
-@app.get("/api/canva/flyer/{filename}")
-async def serve_canva_flyer(filename: str):
-    """Serves generated Canva marketing flyer image."""
-    flyer_path = os.path.join(canva_conn.output_dir, filename)
-    if os.path.exists(flyer_path):
-        return FileResponse(flyer_path, media_type="image/png")
-    return {"error": "Flyer not found"}
-
-@app.get("/api/canva/all-flyers")
-async def get_all_canva_flyers():
-    """Returns all generated Canva flyers with metadata and deep Canva links."""
-    defaults = [
-        {"id": "252", "name": "श्री पार्श्वनाथ दिगंबर जैन मंदिर", "cat": "धार्मिक एवं सांस्कृतिक केंद्र", "loc": "राजवाड़ा, इंदौर", "phone": "+91 94250 55555"},
-        {"id": "253", "name": "कांच मंदिर (Glass Temple)", "cat": "ऐतिहासिक धरोहर एवं धार्मिक स्थल", "loc": "इतवारिया बाज़ार, इंदौर", "phone": "+91 98260 12345"},
-        {"id": "254", "name": "श्री दिगंबर जैन मारवाड़ी बड़ा मंदिर", "cat": "धार्मिक एवं सामाजिक केंद्र", "loc": "छत्रीबाग, इंदौर", "phone": "+91 98260 34567"},
-        {"id": "255", "name": "दादा बाड़ी जैन धर्मशाला", "cat": "तीर्थयात्री सेवा एवं धर्मशाला", "loc": "साउथ तुकोगंज, इंदौर", "phone": "+91 98260 45678"},
-        {"id": "256", "name": "लाल मंदिर (Lal Mandir)", "cat": "धार्मिक एवं ऐतिहासिक धरोहर", "loc": "मल्हारगंज, इंदौर", "phone": "+91 98260 56789"}
-    ]
-    
-    items = []
-    for d in defaults:
-        fn = f"flyer_{d['id']}.png"
-        fp = os.path.join(canva_conn.output_dir, fn)
-        clinks = canva_conn.get_canva_template_links(d["name"], d["cat"])
-        items.append({
-            "listing_id": d["id"],
-            "business_name": d["name"],
-            "category": d["cat"],
-            "location": d["loc"],
-            "phone": d["phone"],
-            "filename": fn,
-            "url": f"/api/canva/flyer/{fn}" if os.path.exists(fp) else None,
-            "canva_links": clinks
-        })
-    return {"flyers": items}
-
-class GenerateFlyerRequest(BaseModel):
-    listing_id: str
-    business_name: str
-    category: str = "Business"
-    location: str = "Indore"
-    phone: str = ""
-    tagline: str = "जैन समुदाय का प्रतिष्ठित एवं प्रमाणित प्रतिष्ठान"
-
-@app.post("/api/canva/generate-flyer")
-async def generate_canva_flyer_api(req: GenerateFlyerRequest):
-    """Generates an HD Canva marketing flyer on demand for any business."""
-    photos_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "indore_photos")
-    photo_path = os.path.join(photos_dir, f"{req.listing_id}_photo.jpg")
-    if not os.path.exists(photo_path):
-        photo_path = None
-    
-    res = await canva_conn.generate_branded_marketing_flyer_async(
-        listing_id=req.listing_id,
-        business_name=req.business_name,
-        category=req.category,
-        location=req.location,
-        phone=req.phone,
-        photo_path=photo_path,
-        tagline=req.tagline
-    )
-    return res
-
-# ==================== CANVA STOREFRONT UPLOADER ENGINE ====================
-from backend.canva_storefront_generator import storefront_generator
-
-@app.get("/api/canva/storefront/{filename}")
-async def serve_canva_storefront(filename: str):
-    """Serves generated Canva storefront logo or banner image."""
-    sf_path = os.path.join(storefront_generator.output_dir, filename)
-    if os.path.exists(sf_path):
-        return FileResponse(sf_path, media_type="image/png")
-    return {"error": "Storefront asset not found"}
-
-class StorefrontGenRequest(BaseModel):
-    firm_name: str
-    category: str = "Business"
+# ==================== NEXT BATCH & SEARCH TRACKER ENDPOINTS ====================
+class NextBatchRequest(BaseModel):
+    batch_size: int = 50
+    category: str = ""
     city: str = "Indore"
-    phone: str = ""
-    address: str = ""
 
-@app.post("/api/canva/generate-storefront")
-async def generate_canva_storefront_api(req: StorefrontGenRequest):
-    """Generates 1:1 Logo and 1200x500 Banner for shops with missing or poor photos."""
-    logo_path, banner_path = await storefront_generator.generate_storefront_assets_async(
-        firm_name=req.firm_name,
-        category=req.category,
-        city=req.city,
-        phone=req.phone,
-        address=req.address
-    )
-    logo_fn = os.path.basename(logo_path)
-    banner_fn = os.path.basename(banner_path)
-    return {
-        "success": True,
-        "firm_name": req.firm_name,
-        "logo_url": f"/api/canva/storefront/{logo_fn}",
-        "banner_url": f"/api/canva/storefront/{banner_fn}"
+@app.get("/api/search-history")
+async def api_get_search_history():
+    """Returns all recorded search batches and area coverage history."""
+    from backend.database import get_search_history
+    history = get_search_history()
+    return {"history": history, "total_batches": len(history)}
+
+@app.post("/api/extract-next-batch")
+async def api_extract_next_batch(req: NextBatchRequest, background_tasks: BackgroundTasks):
+    """
+    Extracts next sequential batch (50, 100, 200) without skipping any area ('chhode nhi kisi ko'),
+    generates Canva Pro Logo & Banner (Zero AI Credits), enforces zero empty columns,
+    and updates the Search & Coverage Tracker with Google Sheets auto-sync.
+    """
+    from backend.saturation_engine import extract_next_batch_flow
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {
+        "status": "running",
+        "batch_size": req.batch_size,
+        "city": req.city,
+        "category": req.category
     }
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            res = await extract_next_batch_flow(
+                batch_size=req.batch_size,
+                category=req.category if req.category else None,
+                city=req.city if req.city else None,
+                progress_callback=dispatch_event
+            )
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": str(e)
+            })
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started", "batch_size": req.batch_size}
+
+# ==================== CANVA 10-DESIGN SUITE ENDPOINTS ====================
+@app.get("/canva-suite", response_class=HTMLResponse)
+async def serve_canva_suite():
+    """Serves the 10 commercial Canva logos & storefront banners gallery."""
+    p = os.path.join(os.path.dirname(__file__), "..", "frontend", "canva_suite.html")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse("<h1>Canva Suite Not Found</h1>")
+
+@app.get("/api/canva-asset/{filename}")
+async def serve_canva_asset(filename: str):
+    """Serves generated Canva assets from canva_storefronts or canva_10_designs."""
+    root_data = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+    p1 = os.path.join(root_data, "canva_storefronts", filename)
+    if os.path.exists(p1):
+        return FileResponse(p1, media_type="image/png")
+    p2 = os.path.join(root_data, "canva_10_designs", filename)
+    if os.path.exists(p2):
+        return FileResponse(p2, media_type="image/png")
+# ==================== 24/7 AUTOPILOT & TURBO ENGINE ====================
+from backend.autopilot import (
+    load_autopilot_config,
+    save_autopilot_config,
+    toggle_autopilot,
+    calculate_next_run,
+    execute_full_autonomous_cycle,
+    run_autopilot_background_worker
+)
+
+@app.on_event("startup")
+async def on_startup():
+    """Launches the persistent 24/7 background autopilot daemon."""
+    asyncio.create_task(run_autopilot_background_worker())
+
+class TurboPipelineRequest(BaseModel):
+    batch_size: int = 10
+    city: str = "Indore"
+    category: str = "Jewellers & All Commercial"
+    source_mode: str = "full_auto"  # "full_auto", "ready_only", "fresh_only"
+
+@app.post("/api/turbo-full-pipeline")
+async def api_turbo_full_pipeline(req: TurboPipelineRequest, background_tasks: BackgroundTasks):
+    """
+    Zero-Delay, High-Speed Turbo Pipeline:
+    Immediately extracts leads, generates Canva Pro Logos & Banners in parallel,
+    syncs to 3-sheet Excel & Google Sheets, and submits to jainforjain.com
+    with photo/logo uploads with 0s delay!
+    """
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {
+        "status": "running",
+        "batch_size": req.batch_size,
+        "city": req.city,
+        "category": req.category,
+        "source_mode": req.source_mode
+    }
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            res = await execute_full_autonomous_cycle(
+                batch_size=req.batch_size,
+                city=req.city,
+                category=req.category,
+                upload_mode="instant",
+                delay_seconds=0,
+                source_mode=req.source_mode,
+                progress_callback=dispatch_event
+            )
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": str(e)
+            })
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started", "batch_size": req.batch_size}
+
+class AutopilotSaveRequest(BaseModel):
+    is_active: bool | None = None
+    daily_time: str | None = None
+    frequency_hours: int | None = None
+    batch_size: int | None = None
+    city: str | None = None
+    category: str | None = None
+    upload_mode: str | None = None
+    delay_seconds: int | None = None
+
+@app.get("/api/autopilot/config")
+async def api_get_autopilot_config():
+    """Returns the persistent 24/7 autopilot scheduler configuration and status."""
+    return load_autopilot_config()
+
+@app.post("/api/autopilot/save")
+async def api_save_autopilot_config(req: AutopilotSaveRequest):
+    """Saves updated parameters for the 24/7 autopilot scheduler."""
+    cfg = load_autopilot_config()
+    if req.is_active is not None:
+        cfg["is_active"] = req.is_active
+    if req.daily_time is not None:
+        cfg["daily_time"] = req.daily_time
+    if req.frequency_hours is not None:
+        cfg["frequency_hours"] = req.frequency_hours
+    if req.batch_size is not None:
+        cfg["batch_size"] = req.batch_size
+    if req.city is not None:
+        cfg["city"] = req.city
+    if req.category is not None:
+        cfg["category"] = req.category
+    if req.upload_mode is not None:
+        cfg["upload_mode"] = req.upload_mode
+    if req.delay_seconds is not None:
+        cfg["delay_seconds"] = req.delay_seconds
+
+    if cfg.get("is_active"):
+        cfg["next_run_timestamp"] = calculate_next_run(cfg.get("daily_time", "10:00"), cfg.get("frequency_hours", 24))
+    else:
+        cfg["next_run_timestamp"] = None
+
+    save_autopilot_config(cfg)
+    return {"success": True, "config": cfg}
+
+class AutopilotToggleRequest(BaseModel):
+    active: bool | None = None
+
+@app.post("/api/autopilot/toggle")
+async def api_toggle_autopilot(req: AutopilotToggleRequest | None = None):
+    """Toggles 24/7 autopilot ON/OFF."""
+    active_val = req.active if req else None
+    cfg = toggle_autopilot(active=active_val)
+    return {"success": True, "config": cfg}
+
+@app.post("/api/autopilot/run-now")
+async def api_autopilot_run_now(background_tasks: BackgroundTasks):
+    """Manually triggers the autonomous autopilot cycle immediately."""
+    cfg = load_autopilot_config()
+    
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {"status": "running"}
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            cfg["running_state"] = "running"
+            save_autopilot_config(cfg)
+            res = await execute_full_autonomous_cycle(
+                batch_size=cfg.get("batch_size", 50),
+                city=cfg.get("city", "Indore"),
+                category=cfg.get("category", "Jewellers & All Commercial"),
+                upload_mode=cfg.get("upload_mode", "instant"),
+                delay_seconds=cfg.get("delay_seconds", 0),
+                progress_callback=dispatch_event
+            )
+            c = load_autopilot_config()
+            c["last_run_timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            c["last_run_result"] = res
+            c["total_runs"] = c.get("total_runs", 0) + 1
+            c["running_state"] = "idle"
+            if c.get("is_active"):
+                c["next_run_timestamp"] = calculate_next_run(c.get("daily_time", "10:00"), c.get("frequency_hours", 24))
+            save_autopilot_config(c)
+            TASKS[task_id]["status"] = "completed"
+        except Exception as e:
+            c = load_autopilot_config()
+            c["running_state"] = "idle"
+            save_autopilot_config(c)
+            TASKS[task_id]["status"] = "failed"
+class SaturationScanRequest(BaseModel):
+    city: str = "Jaipur"
+    area: Optional[str] = None
+    mode: str = "auto"  # "manual" or "auto"
+    count: int = 50
+    entity_type: str = "all"  # "all", "mandir", "trust", "commercial"
+
+@app.get("/api/saturation/roadmap")
+async def api_saturation_roadmap(city: Optional[str] = None):
+    """Returns current active area, next sequential area, and completed markets."""
+    from backend.saturation_engine import get_area_roadmap
+    return get_area_roadmap(city)
+
+@app.post("/api/saturation/set-area")
+async def api_saturation_set_area(req: Dict[str, str]):
+    """Manually changes active area pointer."""
+    from backend.saturation_engine import set_active_area
+    city = req.get("city", "Jaipur")
+    area = req.get("area", "")
+    return set_active_area(city, area)
+
+@app.post("/api/saturation/scan")
+async def api_saturation_scan(req: SaturationScanRequest, background_tasks: BackgroundTasks):
+    """Triggers either Manual Area Scan or Autonomous Auto-Advancing Saturation."""
+    from backend.saturation_engine import advance_saturation_cycle, crawl_area_deep, get_area_roadmap
+    
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {"status": "running"}
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            dispatch_event({"type": "stage", "stage": "saturation_active", "city": req.city, "area": req.area, "mode": req.mode})
+            if req.mode == "manual" and req.area:
+                res = await crawl_area_deep(
+                    city=req.city,
+                    area=req.area,
+                    category="All Sectors (Hyperlocal)",
+                    target_count=req.count,
+                    entity_type=req.entity_type
+                )
+                mined_count = len(res)
+            else:
+                mined_count = await advance_saturation_cycle(
+                    target_leads_needed=req.count,
+                    entity_type=req.entity_type,
+                    city_override=req.city,
+                    area_override=req.area
+                )
+            
+            roadmap = get_area_roadmap(req.city)
+            dispatch_event({
+                "type": "complete",
+                "mined": mined_count,
+                "current_area": roadmap["current_area"],
+                "next_area": roadmap["next_area"],
+                "completed_areas": roadmap["completed_areas"]
+            })
+            TASKS[task_id]["status"] = "completed"
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({"type": "error", "message": str(e)})
+
+    background_tasks.add_task(runner)
+    return {"task_id": task_id, "status": "started"}
+
+@app.get("/api/matrix/5layer-queries")
+async def api_matrix_5layer_queries(city: Optional[str] = "Indore", area: Optional[str] = ""):
+    """Returns 5-layer master search queries across all 17 strategic dimensions."""
+    from backend.matrix import generate_5layer_queries
+    return generate_5layer_queries(city=city or "Indore", area=area or "", limit=150)
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
 

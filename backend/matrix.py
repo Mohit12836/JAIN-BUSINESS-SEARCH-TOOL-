@@ -7,40 +7,76 @@ and algorithmic confidence scoring for Jain firm identification.
 from typing import List, Dict, Any
 import re
 
-# Tier 1: Exclusive Jain Auspicious & Tirthankar Trademarks (100% Match)
+# 24 Tirthankars & Major Spelling Variations
+TIRTHANKAR_NAMES = [
+    "Rishabhdev", "Rishabh Nath", "Adinath", "Ajitnath", "Sambhavnath", 
+    "Abhinandannath", "Sumatinath", "Padmaprabha", "Padmaprabhu", "Suparshvanath", 
+    "Suparshva", "Chandraprabha", "Chandraprabhu", "Pushpadant", "Suvidhinath", 
+    "Sheetalnath", "Shreyansnath", "Vasupujya", "Vimalnath", "Anantnath", 
+    "Dharmanath", "Shantinath", "Kunthunath", "Aranath", "Mallinath", 
+    "Munisuvrat", "Naminath", "Neminath", "Arishtanemi", "Parshvanath", 
+    "Parshwanath", "Parasnath", "Mahavir", "Mahaveer", "Vardhaman", "Vardhman"
+]
+
+# Tier 1: Exclusive Jain Auspicious, Trademarks & Sacred Philosophy (100% Match)
 SACRED_KEYWORDS = [
     "Navkar", "Namokar", "Nakoda", "Shri Nakoda", "Arihant", "Arham",
     "Paras", "Parshwa", "Parshvanath", "Parasnath", "Adinath", "Rishabh",
     "Mahavir", "Mahaveer", "Shantinath", "Sumatinath", "Chintamani",
     "Trishla", "Siddhachalam", "Sammet Shikhar", "Girnar", "Munisuvrat",
     "Padmaprabhu", "Suparshva", "Chandraprabhu", "Vasupujya", "Neminath",
-    "Jineshwar", "Jinendra", "Vardhman", "Vardhaman", "Mangalam"
+    "Jineshwar", "Jinendra", "Vardhman", "Vardhaman", "Mangalam",
+    "Ahimsa", "Jeev Daya", "Jiv Daya", "Jeev Raksha", "Jeev Seva", "Anekant",
+    "Syadvad", "Ratnatraya", "Paryushan", "Chaturmas", "Shankheshwar", "Padmavati", "Dada Vadi"
 ]
 
-# Tier 2: Digambar & Shvetambar Surnames (High Match)
+# Tier 2: Digambar & Shvetambar Surnames & Regional Communities
 JAIN_SURNAMES = [
     "Jain", "Shah", "Lodha", "Kothari", "Doshi", "Mehta", "Surana",
-    "Bafna", "Singhi", "Chhajed", "Daga", "Bothra", "Nahata", "Baid",
-    "Maloo", "Sanghvi", "Chopda", "Kasliwal", "Patni", "Sethi",
+    "Bafna", "Bapna", "Singhi", "Chhajed", "Daga", "Bothra", "Nahata", "Baid",
+    "Maloo", "Sanghvi", "Sanghavi", "Chopda", "Chopra", "Kasliwal", "Patni", "Sethi",
     "Gangwal", "Bakliwal", "Badjatya", "Chhabra", "Godha", "Tongya",
-    "Sogani", "Ranka", "Porwal", "Oswal", "Kabra", "Lunawat", "Sancheti"
+    "Sogani", "Ranka", "Porwal", "Porwad", "Oswal", "Oshwal", "Kabra", "Lunawat", "Sancheti",
+    "Saraogi", "Sarawagi", "Sarogi", "Suri", "Dugar", "Choradia", "Choradiya", 
+    "Jhaveri", "Javeri", "Zaveri", "Soni", "Gandhi", "Bhandari", "Kapadia",
+    "Parwar", "Humad", "Bhabra", "Saitwal", "Golapurva", "Golalare", "Nema", 
+    "Bagherwal", "Chaturtha", "Jaiswal", "Shrimal", "Khandelwal"
 ]
 
-# Religious & Institutional Jain Keywords
+# Sect Subdivisions
+SECT_KEYWORDS = [
+    "Digambar", "Digamber", "Shwetambar", "Shwetamber", "Svetambar", 
+    "Sthanakvasi", "Sthanak", "Terapanth", "Terapanthi", "Sadhumargi"
+]
+
+# Religious & Temple Keywords
 MANDIR_KEYWORDS = [
-    "mandir", "derasar", "jinalaya", "chaityalaya", "dadabari",
-    "tirth", "teerth", "temple", "sthanak", "shrine", "upashray"
+    "mandir", "derasar", "jinalaya", "chaityalaya", "dadabari", "dada vadi",
+    "tirth", "teerth", "temple", "sthanak", "shrine", "upashray", "basadi", "chaitya"
 ]
 
+# Trusts, Dharamshalas & Philanthropy Keywords
 TRUST_DHARAMSHALA_KEYWORDS = [
-    "dharamshala", "dharmashala", "bhojanalaya", "bhojanshala",
-    "yatri niwas", "ashram", "trust", "bhavan", "bhawan", "visram gruh",
-    "atithi gruh", "sansthan"
+    "dharamshala", "dharmashala", "bhojanalaya", "bhojanshala", "yatri niwas", 
+    "atithi bhawan", "ashram", "trust", "charitable trust", "religious trust",
+    "public trust", "foundation", "bhavan", "bhawan", "visram gruh", "atithi gruh", 
+    "sansthan", "jeev daya trust", "gaushala trust", "educational trust", "medical trust"
 ]
 
+# Sanghs, Samaj & Community Associations
 SANGH_NGO_KEYWORDS = [
-    "sangh", "mandal", "mahila mandal", "yuva sangathan", "samaj",
-    "sanstha", "pathshala", "foundation", "parishad", "sewa sangh", "vidyapeeth"
+    "sangh", "mandal", "mahila mandal", "yuva mandal", "yuva sangathan", "samaj",
+    "mahasabha", "sabha", "sangathan", "parishad", "federation", "association",
+    "welfare society", "seva samiti", "seva sangh", "sanstha", "pathshala", 
+    "gurukul", "foundation", "social group", "business association", "chamber of commerce"
+]
+
+# Key Decision-Maker Roles for High-ROI Outreach
+DECISION_MAKER_ROLES = [
+    "Owner", "Founder", "Director", "Managing Director", "MD", "CEO", 
+    "Partner", "Proprietor", "Chairman", "President", "Trustee", "Managing Trustee",
+    "Secretary", "Koshadhyaksha", "Treasurer", "Industrialist", "Entrepreneur", 
+    "Promoter", "Trader", "Manufacturer", "Builder", "Developer", "Jeweller"
 ]
 
 # Words to reject from owner extraction
@@ -213,14 +249,60 @@ def extract_owner_name(firm_name: str, raw_text: str = "") -> str:
             
     return "Proprietor (Check Signboard Photo)"
 
+# Non-Jain Deities, Religious Keywords & Caste Surnames (Zero Tolerance Blocklist)
+STRICT_NON_JAIN_BLOCKLIST = [
+    # Non-Jain Deities & Religious Markers
+    "shiva", "shiv", "shankar", "bhole", "mahadev", "hanuman", "bajrang", "balaji", 
+    "ganesh", "ganpati", "vinayak", "krishna", "radha", "gopal", "govind", "shyam", 
+    "khatu shyam", "sai", "sai baba", "durga", "ambe", "vaishno", "kali", "chamunda", 
+    "laxmi", "lakshmi", "vishnu", "brahma", "saraswati", "gurudwara", "church", 
+    "mosque", "masjid", "dargah", "mazar", "islam", "christian", "jesus",
+    # Non-Jain Hindu / Other Caste Surnames with no Jain lineage
+    "sharma", "pandit", "verma", "yadav", "mishra", "pandey", "tiwari", "dubey", 
+    "chaubey", "choudhary", "jat", "gurjar", "rajput", "chauhan", "rathore", 
+    "shekhawat", "singh", "kaur", "khan", "ansari", "sheikh", "qureshi", "ali", 
+    "ahmed", "patel", "gupta", "agarwal", "agrawal", "mittal", "bansal", "goyal", "garg",
+    # Prohibited Goods (Non-Veg, Meat, Alcohol, Tobacco)
+    "chicken", "mutton", "non-veg", "nonveg", "egg", "fish", "meat", "seafood", 
+    "wine", "beer", "bar", "liquor", "theka", "alcohol", "tobacco", "hookah", 
+    "leather", "butcher"
+]
+
+# 10 Exhaustive Hyperlocal Search Vectors per Area ("Kisi Jain Ko Nahi Chhodna")
+HYPERLOCAL_AREA_VECTORS = [
+    {"suffix": "Digambar Jain Mandir Derasar Tirth", "entity_type": "mandir", "label": "Jain Mandirs & Derasars"},
+    {"suffix": "Jain Dharamshala Bhojanalaya Trust Sangh", "entity_type": "trust", "label": "Jain Dharamshalas & Trusts"},
+    {"suffix": "Jain Jewellers Gold Silver Diamond", "entity_type": "commercial", "category": "Jewellers & Gems", "label": "Jain Jewellers"},
+    {"suffix": "Jain Sarees Textiles Garments", "entity_type": "commercial", "category": "Sarees, Textiles & Garments", "label": "Jain Textiles"},
+    {"suffix": "Jain Doctor Clinic Hospital Chemist", "entity_type": "commercial", "category": "Healthcare & Medical", "label": "Jain Healthcare"},
+    {"suffix": "Jain Chartered Accountant CA Tax Consultant Advocate", "entity_type": "commercial", "category": "Professional Services", "label": "Jain CA & Legal"},
+    {"suffix": "Jain Sweets Namkeen Kirana Dry Fruits", "entity_type": "commercial", "category": "Food, Sweets & Namkeen", "label": "Jain Food & Kirana"},
+    {"suffix": "Jain Builders Real Estate Hardware Marble Sanitary", "entity_type": "commercial", "category": "Hardware, Steel & Real Estate", "label": "Jain Real Estate & Hardware"},
+    {"suffix": "Jain Manufacturing Industry Wholesale Trader", "entity_type": "commercial", "category": "Business & Industry", "label": "Jain Industry & Trading"},
+    {"suffix": "Navkar Arihant Nakoda Paras", "entity_type": "commercial", "category": "Commercial Anchor", "label": "Sacred Trademark Firms"}
+]
+
 def classify_firm(firm_name: str, address: str = "", raw_text: str = "") -> Dict[str, Any]:
     """
-    Analyzes firm name and details to evaluate Jain confidence and proof.
-    Supports commercial firms, Jain Mandirs, Trusts, Dharamshalas, and Sanghs.
+    STRICT JAIN INTELLIGENCE CLASSIFIER:
+    Rule 1: Zero Non-Jain Tolerance (Kisi bina Jain wale ko nahi lena).
+    Rule 2: 100% Genuine Jain Entities Only (Mandir, Trust, Explicit Jain, Sacred Trademarks, Verified Surnames).
     """
     name_clean = firm_name.lower()
     text_clean = (name_clean + " " + address.lower() + " " + raw_text.lower())
     
+    # 🚫 ZERO-TOLERANCE NON-JAIN REJECTION CHECK
+    for non_jain_kw in STRICT_NON_JAIN_BLOCKLIST:
+        # Check if non-Jain keyword is a distinct word
+        if re.search(rf"\b{re.escape(non_jain_kw)}\b", name_clean):
+            # Special exception: if explicitly contains "Jain Mandir" or "Digambar Jain" or "Jain Trust"
+            if not ("jain mandir" in name_clean or "digambar jain" in name_clean or "shwetambar jain" in name_clean or "jain trust" in name_clean):
+                return {
+                    "tier": "🔴 Non-Jain (Rejected)",
+                    "score": 0,
+                    "reason": f"Disqualified: Non-Jain Keyword ('{non_jain_kw}')"
+                }
+
     # Check 0: Jain Religious & Community Institutions (Mandir, Trust, Dharamshala, Sangh)
     is_mandir = any(k in name_clean for k in MANDIR_KEYWORDS)
     is_trust = any(k in name_clean for k in TRUST_DHARAMSHALA_KEYWORDS)
@@ -243,7 +325,7 @@ def classify_firm(firm_name: str, address: str = "", raw_text: str = "") -> Dict
             "reason": "Direct Name Match ('Jain')"
         }
         
-    # Check 2: Pure Sacred Trademarks
+    # Check 2: Pure Sacred Trademarks (Navkar, Nakoda, Arihant, etc.)
     for word in SACRED_KEYWORDS:
         if re.search(rf"\b{word.lower()}\b", name_clean):
             return {
@@ -252,26 +334,159 @@ def classify_firm(firm_name: str, address: str = "", raw_text: str = "") -> Dict
                 "reason": f"Pure Sacred Trademark ('{word}')"
             }
             
-    # Check 3: Extended Surnames
-    for surname in JAIN_SURNAMES:
-        if re.search(rf"\b{surname.lower()}\b", name_clean):
+    # Check 3: Distinctive Jain Community Surnames (Kasliwal, Patni, Sogani, Gangwal, Bakliwal, etc.)
+    DISTINCTIVE_JAIN_SURNAMES = [
+        "kasliwal", "patni", "sogani", "gangwal", "bakliwal", "badjatya", 
+        "tongya", "chhabra", "godha", "lunawat", "sancheti", "ranka", 
+        "bafna", "chhajed", "bothra", "nahata", "baid", "maloo", "porwal", "oswal"
+    ]
+    for surname in DISTINCTIVE_JAIN_SURNAMES:
+        if re.search(rf"\b{surname}\b", name_clean):
             return {
-                "tier": "🟡 85% High Match",
-                "score": 85,
-                "reason": f"Surname Match ('{surname}')"
+                "tier": "🟢 100% Verified",
+                "score": 95,
+                "reason": f"Distinctive Jain Lineage ('{surname.title()}')"
             }
-            
-    # Check 4: Sacred word in address/metadata
-    for word in SACRED_KEYWORDS:
-        if re.search(rf"\b{word.lower()}\b", text_clean):
-            return {
-                "tier": "🟡 80% Probable",
-                "score": 80,
-                "reason": f"Religious Landmark / Context ('{word}')"
-            }
-            
+
+    # Check 4: Shared Surnames (Shah, Mehta, Kothari, Doshi) - ONLY if verified with secondary Jain context
+    SHARED_SURNAMES = ["shah", "mehta", "kothari", "doshi", "surana", "chopra"]
+    for surname in SHARED_SURNAMES:
+        if re.search(rf"\b{surname}\b", name_clean):
+            if has_jain_anchor:
+                return {
+                    "tier": "🟡 85% Verified",
+                    "score": 85,
+                    "reason": f"Verified Jain Lineage ('{surname.title()}' with Jain Context)"
+                }
+
+    # If no verifiable Jain identity, REJECT COMPLETELY (Zero false positives)
     return {
-        "tier": "⚪ 70% Lead Match",
-        "score": 70,
-        "reason": "Category Correlation"
+        "tier": "🔴 Non-Jain (Rejected)",
+        "score": 0,
+        "reason": "No Genuine Jain Identity Found"
     }
+
+def generate_5layer_queries(city: str = "Indore", area: str = "", layer: str = "all", limit: int = 150) -> Dict[str, Any]:
+    """
+    Generates 5-Layer Master Search Engine Queries across all 17 strategic dimensions:
+    - Layer 1: Direct Jain Identity & Sects (Digambar, Shwetambar, Sthanakvasi, Terapanth)
+    - Layer 2: Jain Community & Surnames + Business Anchor
+    - Layer 3: 24 Tirthankars & Sacred Concepts (Ahimsa, Jeev Daya, Paryushan)
+    - Layer 4: Trusts, Mandirs, Dharamshalas, Samaj & Key Decision Makers (Trustee, President, Director)
+    - Layer 5: Hyperlocal Google Search Operators & Dorks (JustDial, IndiaMart, LinkedIn, ZaubaCorp, NGOs)
+    """
+    import urllib.parse
+    loc_str = f"{area} {city}".strip() if area else city
+    
+    layer_1 = [
+        f"Jain business {loc_str}",
+        f"Jain businessman {loc_str}",
+        f"Jain company {loc_str}",
+        f"Jain industries {loc_str}",
+        f"Jain enterprises {loc_str}",
+        f"Jain traders {loc_str}",
+        f"Jain trading company {loc_str}",
+        f"Jain manufacturer {loc_str}",
+        f"Jain jewellers {loc_str}",
+        f"Jain sarees {loc_str}",
+        f"Jain builders developers {loc_str}",
+        f"Jain hospital medical {loc_str}",
+        f"Jain school college {loc_str}",
+        f"Digambar Jain {loc_str}",
+        f"Shwetambar Jain {loc_str}",
+        f"Sthanakvasi Jain {loc_str}",
+        f"Terapanthi Jain {loc_str}"
+    ]
+    
+    # Layer 2: High-Value Jain Surnames & Community Lineages
+    priority_surnames = [
+        "Oswal", "Porwal", "Khandelwal", "Saraogi", "Surana", 
+        "Bafna", "Kothari", "Lodha", "Patni", "Jhaveri", 
+        "Kasliwal", "Chhajed", "Bothra", "Doshi", "Sanghvi", 
+        "Dugar", "Zaveri", "Soni Jain", "Parwar", "Humad"
+    ]
+    layer_2 = []
+    for sn in priority_surnames:
+        layer_2.append(f"{sn} business {loc_str}")
+        layer_2.append(f"{sn} industries {loc_str}")
+        layer_2.append(f"{sn} traders {loc_str}")
+        layer_2.append(f"{sn} jewellers {loc_str}")
+    
+    # Layer 3: 24 Tirthankars + Sacred Trademarks
+    key_tirthankars = ["Mahavir", "Mahaveer", "Parshwanath", "Parasnath", "Adinath", "Rishabhdev", "Shantinath", "Neminath", "Sambhavnath", "Munisuvrat"]
+    layer_3 = []
+    for t in key_tirthankars:
+        layer_3.append(f"{t} Jain Mandir {loc_str}")
+        layer_3.append(f"{t} Trust {loc_str}")
+        layer_3.append(f"{t} Jewellers {loc_str}")
+    for sc in ["Navkar", "Nakoda", "Arihant", "Arham", "Ahimsa", "Jeev Daya"]:
+        layer_3.append(f"{sc} {loc_str}")
+        layer_3.append(f"{sc} Jewellers {loc_str}")
+        layer_3.append(f"{sc} Industries {loc_str}")
+
+    # Layer 4: Trusts, Mandirs, Dharamshalas, Samaj & Key Decision Makers
+    layer_4 = [
+        f"Jain Trust {loc_str}",
+        f"Jain Charitable Trust {loc_str}",
+        f"Jain Religious Public Trust {loc_str}",
+        f"Jain Dharamshala {loc_str}",
+        f"Jain Bhojanalaya {loc_str}",
+        f"Jain Yatri Niwas {loc_str}",
+        f"Jain Atithi Bhawan {loc_str}",
+        f"Jain Samaj {loc_str}",
+        f"Jain Mahasabha {loc_str}",
+        f"Jain Sangh {loc_str}",
+        f"Jain Yuva Mandal {loc_str}",
+        f"Jain Mahila Mandal {loc_str}",
+        f"Jain Social Group {loc_str}",
+        f"Jain Chamber of Commerce {loc_str}",
+        f"Jain entrepreneur {loc_str}",
+        f"Jain industrialist {loc_str}",
+        f"Jain founder director {loc_str}",
+        f"Jain trustee president {loc_str}"
+    ]
+
+    # Layer 5: Hyperlocal Google Search Operators & Dorks
+    layer_5 = [
+        f'site:justdial.com "Jain" "{city}"',
+        f'site:justdial.com "Jain Jewellers" "{loc_str}"',
+        f'site:indiamart.com "Jain" "{city}"',
+        f'site:indiamart.com "Jain Traders" "{loc_str}"',
+        f'site:facebook.com "Jain Samaj" "{city}"',
+        f'site:facebook.com "Jain Trust" "{city}"',
+        f'site:instagram.com "Jain" "{city}"',
+        f'site:linkedin.com/in "Jain" "Director" "{city}"',
+        f'site:linkedin.com/in "Jain" "Founder" "{city}"',
+        f'site:linkedin.com/in "Jain" "Managing Director" "{city}"',
+        f'site:linkedin.com/in "Jain" "Trustee" "{city}"',
+        f'site:zaubacorp.com "Jain" "{city}"',
+        f'site:tofler.in "Jain" "{city}"',
+        f'site:thecompanycheck.com "Jain" "{city}"',
+        f'site:ngo.gov.in "Jain Trust" "{city}"'
+    ]
+
+    all_queries = {
+        "layer_1_religion": layer_1,
+        "layer_2_community": layer_2,
+        "layer_3_sacred_tirthankar": layer_3,
+        "layer_4_trust_institution": layer_4,
+        "layer_5_google_dorks": layer_5
+    }
+
+    combined = []
+    for l_key, q_list in all_queries.items():
+        for q in q_list:
+            combined.append({
+                "layer": l_key,
+                "query": q,
+                "google_url": f"https://www.google.com/search?q={urllib.parse.quote_plus(q)}"
+            })
+
+    return {
+        "city": city,
+        "area": area,
+        "total_queries": len(combined),
+        "layers": all_queries,
+        "all_queries": combined[:limit]
+    }
+

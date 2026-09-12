@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canva Pro Suite • 10 Bright Commercial Logos & Storefront Hoardings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Outfit:wght@400;600;700;900&family=Rozha+One&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #FBF9F4;
+      color: #1F2937;
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: clip;
+      padding-bottom: 5rem;
+    }
+    header {
+      padding: clamp(2rem, 3.5vw, 3rem) 1.5rem 1.75rem;
+      text-align: center;
+      background: #FFFFFF;
+      border-bottom: 2px solid #FDE68A;
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.12);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .badge-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1.25rem;
+      border-radius: 9999px;
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      color: #92400E;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    h1 {
+      font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: #881337;
+      margin-bottom: 0.5rem;
+      font-family: 'Outfit', sans-serif;
+    }
+    .subhead {
+      color: #4B5563;
+      font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+      max-width: 760px;
+      margin: 0 auto;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+    .container {
+      width: 100%;
+      max-width: min(100% - 2rem, 1340px);
+      margin: 2.5rem auto 0;
+      padding-inline: clamp(1rem, 2vw, 2rem);
+      display: flex;
+      flex-direction: column;
+      gap: 2.75rem;
+    }
+    .business-card {
+      background: #FFFFFF;
+      border: 2px solid #F3E8D2;
+      border-radius: 20px;
+      padding: clamp(1.25rem, 2.5vw, 2rem);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .business-card:hover {
+      border-color: #D4AF37;
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(212, 175, 55, 0.16);
+    }
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #F3E8D2;
+    }
+    .brand-title {
+      font-size: clamp(1.25rem, 1.8vw, 1.55rem);
+      font-weight: 800;
+      color: #881337;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-cat {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      color: #B45309;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .canva-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.35rem;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #00c4cc 0%, #7d2ae8 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.88rem;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(125, 42, 232, 0.3);
+      transition: all 0.2s ease;
+    }
+    .canva-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(125, 42, 232, 0.45);
+    }
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: clamp(1.25rem, 2.5vw, 2rem);
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .preview-box {
+      background: #FAF7F0;
+      border-radius: 14px;
+      padding: 0.75rem;
+      border: 1px solid #EADBBA;
+      text-align: center;
+    }
+    .preview-box h4 {
+      font-size: 0.85rem;
+      color: #78350F;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+    .preview-box img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      border: 1px solid #E5E7EB;
+    }
+    .spec-tag {
+      font-size: 0.7rem;
+      background: #FFFFFF;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      color: #B45309;
+      border: 1px solid #FCD34D;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge-top">✨ 100% Bright & Festive • Canva Ready-Made Standards</div>
+    <h1>10 Commercial Logos & Storefront Hoardings</h1>
+    <p class="subhead">JainForJain.com पोर्टल के लिए तैयार किए गए 10 प्रतिष्ठित जैन व्यापारों के ब्राइट, शुभ व फेस्टिव HD 1:1 लोगो व 1200×500 स्टोरफ्रंट बैनर (Zero Black, Zero Dark Theme)। हर कार्ड के साथ Canva 1-क्लिक कस्टमाइजेशन लिंक उपलब्ध है।</p>
+  </header>
+
+  <main class="container" id="showcase-root">
+    <!-- Rendered dynamically -->
+  </main>
+
+  <script>
+    const DESIGNS = [
+      {
+        num: "01",
+        id: "01_navkar_jewellers",
+        name: "श्री नवकार ज्वेलर्स (Shree Navkar Jewellers)",
+        cat: "Jewellery & 916 Hallmark Gold",
+        logo: "/api/canva-asset/01_navkar_jewellers_logo_1080x1080.png",
+        banner: "/api/canva-asset/01_navkar_jewellers_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=jewellery+banner+indian"
+      },
+      {
+        num: "02",
+        id: "02_jain_mahaveer_jewellers",
+        name: "जैन महावीर ज्वेलर्स (Jain Mahaveer Jewellers)",
+        cat: "Heritage Jadau, Polki & Diamonds",
+        logo: "/api/canva-asset/02_jain_mahaveer_jewellers_logo_1080x1080.png",
+        banner: "/api/canva-asset/02_jain_mahaveer_jewellers_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=indian+bridal+kundan+jewellery+banner"
+      },
+      {
+        num: "03",
+        id: "03_mahavir_namkeen",
+        name: "महावीर नमकीन एवं मिष्ठान्न (Mahavir Namkeen & Sweets)",
+        cat: "Desi Ghee Sweets & Ratlami Sev",
+        logo: "/api/canva-asset/03_mahavir_namkeen_logo_1080x1080.png",
+        banner: "/api/canva-asset/03_mahavir_namkeen_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=indian+sweets+restaurant+banner"
+      },
+      {
+        num: "04",
+        id: "04_arihant_sarees",
+        name: "अरिहंत साड़ीज एवं वस्त्रालय (Arihant Sarees & Vastralaya)",
+        cat: "Bridal Sarees, Silk & Lehengas",
+        logo: "/api/canva-asset/04_arihant_sarees_logo_1080x1080.png",
+        banner: "/api/canva-asset/04_arihant_sarees_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=saree+boutique+fashion+banner"
+      },
+      {
+        num: "05",
+        id: "05_paras_marble",
+        name: "पारस मार्बल्स एवं ग्रेनाइट्स (Paras Marble & Granites)",
+        cat: "Imported Italian Marble & Granite",
+        logo: "/api/canva-asset/05_paras_marble_logo_1080x1080.png",
+        banner: "/api/canva-asset/05_paras_marble_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=marble+granite+architecture+stone+banner"
+      },
+      {
+        num: "06",
+        id: "06_adinath_builders",
+        name: "आदिनाथ बिल्डर्स एवं डेवलपर्स (Adinath Builders & Developers)",
+        cat: "RERA Luxury Housing & Commercial",
+        logo: "/api/canva-asset/06_adinath_builders_logo_1080x1080.png",
+        banner: "/api/canva-asset/06_adinath_builders_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=luxury+real+estate+banner"
+      },
+      {
+        num: "07",
+        id: "07_arihant_capital",
+        name: "अरिहंत कैपिटल एवं वेल्थ (Arihant Capital & Wealth)",
+        cat: "SEBI Wealth Advisory & Mutual Funds",
+        logo: "/api/canva-asset/07_arihant_capital_logo_1080x1080.png",
+        banner: "/api/canva-asset/07_arihant_capital_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=finance+investment+wealth+advisor+banner"
+      },
+      {
+        num: "08",
+        id: "08_parshwanath_mandir",
+        name: "श्री पार्श्वनाथ दिगंबर जैन बड़ा मंदिर ट्रस्ट",
+        cat: "Sacred Spiritual & Pilgrim Heritage",
+        logo: "/api/canva-asset/08_parshwanath_mandir_logo_1080x1080.png",
+        banner: "/api/canva-asset/08_parshwanath_mandir_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=indian+festival+temple+banner"
+      },
+      {
+        num: "09",
+        id: "09_dada_bari_dharmshala",
+        name: "दादा बाड़ी जैन अतिथि गृह एवं धर्मशाला",
+        cat: "Pilgrim AC Rooms & Shuddh Bhojanshala",
+        logo: "/api/canva-asset/09_dada_bari_dharmshala_logo_1080x1080.png",
+        banner: "/api/canva-asset/09_dada_bari_dharmshala_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=hotel+hospitality+guest+house+banner"
+      },
+      {
+        num: "10",
+        id: "10_nakoda_hardware",
+        name: "नाकोड़ा हार्डवेयर एवं सेनेटरी (Nakoda Hardware)",
+        cat: "Brass Hardware, Sanitary & Tools",
+        logo: "/api/canva-asset/10_nakoda_hardware_logo_1080x1080.png",
+        banner: "/api/canva-asset/10_nakoda_hardware_banner_1200x500.png",
+        canva: "https://www.canva.com/templates/?query=hardware+construction+store+banner"
+      }
+    ];
+
+    const root = document.getElementById("showcase-root");
+    DESIGNS.forEach(d => {
+      const card = document.createElement("section");
+      card.className = "business-card";
+      card.innerHTML = `
+        <div class="card-header">
+          <div>
+            <span class="brand-cat">${d.cat}</span>
+            <h3 class="brand-title">${d.num}. ${d.name}</h3>
+          </div>
+          <a href="${d.canva}" target="_blank" rel="noopener" class="canva-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+            🎨 Open in Canva
+          </a>
+        </div>
+        <div class="showcase-grid">
+          <div class="preview-box">
+            <h4>
+              <span>Profile Logo</span>
+              <span class="spec-tag">1080 × 1080 (1:1)</span>
+            </h4>
+            <a href="${d.logo}" target="_blank">
+              <img src="${d.logo}" alt="${d.name} Logo" loading="lazy">
+            </a>
+          </div>
+          <div class="preview-box">
+            <h4>
+              <span>Storefront Hoarding Banner</span>
+              <span class="spec-tag">1200 × 500 (2.4:1)</span>
+            </h4>
+            <a href="${d.banner}" target="_blank">
+              <img src="${d.banner}" alt="${d.name} Banner" loading="lazy">
+            </a>
+          </div>
+        </div>
+      `;
+      root.appendChild(card);
+    });
+  </script>
+
+</body>
+</html>

@@ -55,10 +55,10 @@ HINDI_NAME_MAP = {
 
 THEMES = {
     "jewellery": {
-        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFFFF 0%, #FFFDF8 45%, #F8F2E2 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFFDF8 45%, #F7F1DF 100%)",
-        "gold_glow": "rgba(212, 175, 55, 0.12)",
-        "accent": "#D4AF37",
+        "bg_banner": "radial-gradient(circle at 50% 20%, #161D2B 0%, #0B0E17 55%, #05060A 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #182236 0%, #0D1322 50%, #060911 100%)",
+        "gold_glow": "rgba(245, 206, 98, 0.14)",
+        "accent": "#F5CE62",
         "crest_type": "diamond",
         "prefix": "॥ 卐 श्री नवकाराय नमः 卐 ॥",
         "badge": "VERIFIED 100% PURE JAIN ENTERPRISE",
@@ -71,10 +71,10 @@ THEMES = {
         ]
     },
     "religious": {
-        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFFFF 0%, #FFFBF5 45%, #FBF0DF 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFFBF5 45%, #FBF0DF 100%)",
-        "gold_glow": "rgba(245, 180, 70, 0.15)",
-        "accent": "#D4AF37",
+        "bg_banner": "radial-gradient(circle at 50% 20%, #25160A 0%, #130B05 55%, #060302 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #2B190C 0%, #170E07 50%, #0A0503 100%)",
+        "gold_glow": "rgba(245, 180, 70, 0.18)",
+        "accent": "#F5CE62",
         "crest_type": "temple",
         "prefix": "॥ 卐 अहिंसा परमो धर्मः 卐 ॥",
         "badge": "SACRED DIGAMBER JAIN TIRTH & TRUST",
@@ -87,10 +87,10 @@ THEMES = {
         ]
     },
     "industry": {
-        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFFFF 0%, #F9FAFB 45%, #F1F5F9 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFFFF 0%, #F9FAFB 45%, #F1F5F9 100%)",
-        "gold_glow": "rgba(212, 175, 55, 0.10)",
-        "accent": "#D4AF37",
+        "bg_banner": "radial-gradient(circle at 50% 20%, #161D28 0%, #0B0E14 55%, #05070A 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #192230 0%, #0C121B 50%, #06090E 100%)",
+        "gold_glow": "rgba(245, 206, 98, 0.12)",
+        "accent": "#F5CE62",
         "crest_type": "diamond",
         "prefix": "॥ 卐 ॐ अर्हं नमः 卐 ॥",
         "badge": "VERIFIED 100% JAIN ENTERPRISE",
@@ -134,25 +134,14 @@ def clean_display_title(name: str) -> tuple:
     en = re.sub(r', [a-zA-Z\s]+, [a-zA-Z\s]+', '', en)
     return hi, en.upper()
 
-def format_phone(phone_raw: str) -> str:
-    raw = str(phone_raw or "").strip()
-    digits = re.sub(r'\D', '', raw)
-    if len(digits) == 10:
-        return f"+91 {digits[:5]} {digits[5:]}"
-    if len(digits) == 11 and digits.startswith("0"):
-        return f"+91 {digits[1:6]} {digits[6:]}"
-    if len(digits) == 12 and digits.startswith("91"):
-        return f"+91 {digits[2:7]} {digits[7:]}"
-    if raw and not raw.lower().startswith("nan") and raw != "0":
-        return raw
-    return "Contact on Portal"
-
 def get_luxury_banner_html(firm: dict) -> str:
     theme = resolve_theme(firm.get("j4j_category", firm.get("category", "")), firm.get("name", ""))
     raw_name = firm.get("name", "Jain Enterprise")
     name_hi, name_en = clean_display_title(raw_name)
     deals = firm.get("deals_in") or theme["deals_default"]
-    phone = format_phone(firm.get("phone"))
+    phone = firm.get("phone") or "Verified On Portal"
+    if phone and not phone.startswith("+91") and len(phone) >= 10:
+        phone = f"+91 {phone[-10:-5]} {phone[-5:]}"
     addr = firm.get("address") or f"{firm.get('city', 'Indore')}, {firm.get('state', 'India')}"
     est = firm.get("est") or f"ESTD. {firm.get('city', 'RAJASTHAN').upper()}"
     badge = firm.get("badge") or theme["badge"]
@@ -173,34 +162,45 @@ def get_luxury_banner_html(firm: dict) -> str:
     width: 1200px;
     height: 500px;
     background: {theme['bg_banner']};
-    color: #1E293B;
-    font-family: 'Outfit', 'Montserrat', sans-serif;
+    color: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
     position: relative;
     overflow: hidden;
-    padding: 22px 36px 18px;
+    padding: 24px 40px 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }}
 
-  /* Royal 24K Gold Double Frame */
+  /* Metallic Gold Foil Gradients */
+  .gold-text {{
+    background: linear-gradient(135deg, #FFF6D1 0%, #F5CE62 25%, #E5A827 50%, #FBE394 75%, #B87C10 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 8px rgba(229, 168, 39, 0.35));
+  }}
+  .gold-gradient-border {{
+    border: 1px solid rgba(245, 206, 98, 0.45);
+  }}
+
+  /* Royal Double Framing */
   .frame-border {{
     position: absolute;
-    inset: 10px;
-    border: 2px solid #D4AF37;
+    inset: 12px;
+    border: 1px solid rgba(245, 206, 98, 0.28);
     pointer-events: none;
   }}
   .frame-inner {{
     position: absolute;
-    inset: 14px;
-    border: 1px solid rgba(212, 175, 55, 0.45);
+    inset: 16px;
+    border: 1px solid rgba(245, 206, 98, 0.45);
     pointer-events: none;
   }}
   .corner-deco {{
     position: absolute;
-    width: 36px;
-    height: 36px;
-    border: 2.5px solid #B45309;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #F5CE62;
     pointer-events: none;
   }}
   .c-tl {{ top: 18px; left: 18px; border-right: none; border-bottom: none; }}
@@ -229,36 +229,35 @@ def get_luxury_banner_html(firm: dict) -> str:
     position: relative;
     z-index: 2;
     padding-bottom: 8px;
-    border-bottom: 1.5px solid rgba(212, 175, 55, 0.4);
+    border-bottom: 1px solid rgba(245, 206, 98, 0.25);
   }}
   .sacred-prefix {{
     font-family: 'Rozha One', serif;
-    font-size: 20px;
+    font-size: 18px;
     letter-spacing: 2px;
-    color: #991B1B;
-    font-weight: 700;
+    color: #F5CE62;
+    text-shadow: 0 0 12px rgba(245, 206, 98, 0.4);
   }}
   .hallmark-pill {{
     display: flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    border: 1px solid #D97706;
-    padding: 4px 18px;
+    background: rgba(245, 206, 98, 0.08);
+    border: 1px solid rgba(245, 206, 98, 0.4);
+    padding: 4px 16px;
     border-radius: 9999px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 1.5px;
-    color: #92400E;
+    color: #FFF2B2;
     text-transform: uppercase;
-    box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
+    box-shadow: 0 0 16px rgba(245, 206, 98, 0.15);
   }}
   .estd-text {{
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     letter-spacing: 2px;
-    color: #78350F;
+    color: #C0CAF5;
     text-transform: uppercase;
   }}
 
@@ -267,33 +266,28 @@ def get_luxury_banner_html(firm: dict) -> str:
     text-align: center;
     position: relative;
     z-index: 2;
-    margin: 2px 0;
+    margin: 4px 0;
   }}
   .crest-emblem {{
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 2px;
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 4px;
   }}
-  /* --- FOCUS DESIGN RULE: 1-2-3 HIERARCHY & 3-EFFECT MAX --- */
-  /* ① PRIMARY FOCUS (100% Attention): Size 60px, ExtraBold, Velvet Crimson, Soft Depth */
   .brand-title-hi {{
     font-family: 'Rozha One', serif;
-    font-size: 60px;
+    font-size: 58px;
     line-height: 1.1;
-    color: #7F1D1D;
     letter-spacing: 0.5px;
-    text-shadow: 0 3px 6px rgba(127, 29, 29, 0.16);
     margin-bottom: 2px;
   }}
-
-  /* ② SECONDARY FOCUS (60% Scale): Size 36px, Bold, Muted Noble Slate, 0 Shadows */
   .brand-title-en {{
     font-family: 'Cinzel', serif;
-    font-size: 36px;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: 5px;
-    color: #1E293B;
-    margin-bottom: 6px;
+    color: #FFFFFF;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    margin-bottom: 8px;
   }}
   
   /* Divider with Diamond Center */
@@ -302,61 +296,67 @@ def get_luxury_banner_html(firm: dict) -> str:
     align-items: center;
     justify-content: center;
     gap: 14px;
-    margin: 4px auto 8px;
-    width: 50%;
+    margin: 6px auto 10px;
+    width: 60%;
   }}
   .divider-line {{
     flex: 1;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 206, 98, 0.6), transparent);
   }}
   .divider-diamond {{
     width: 8px;
     height: 8px;
-    background: #B45309;
+    background: #F5CE62;
     transform: rotate(45deg);
+    box-shadow: 0 0 8px #F5CE62;
   }}
 
-  /* Specialty Capsule */
+  /* Specialty Ribbon / Bar */
   .specialty-capsule {{
     display: inline-block;
-    background: #FFFFFF;
-    border: 1.5px solid #D4AF37;
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(245, 206, 98, 0.35);
     border-radius: 6px;
-    padding: 6px 22px;
+    padding: 6px 20px;
     font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: #78350F;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #E2E8F0;
     text-transform: uppercase;
-    box-shadow: 0 4px 14px rgba(180, 83, 9, 0.08);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
   }}
 
-  /* Luxury Pillars */
+  /* 3 Luxury Pillars */
   .luxury-pillars {{
     display: flex;
     justify-content: center;
-    gap: 36px;
-    margin-top: 8px;
+    gap: 40px;
+    margin-top: 10px;
   }}
   .pillar-item {{
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: 8px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1px;
-    color: #991B1B;
+    letter-spacing: 1.5px;
+    color: #F5CE62;
     text-transform: uppercase;
   }}
   .pillar-dot {{
-    color: #D97706;
-    font-size: 10px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #F5CE62;
+    box-shadow: 0 0 6px #F5CE62;
   }}
 
-  /* Bottom Contact Bar - Bright Luxury */
+  /* Bottom Contact Bar */
   .contact-capsule {{
-    background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 50%, #7F1D1D 100%);
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(245, 206, 98, 0.3);
     border-radius: 10px;
     padding: 10px 24px;
     display: flex;
@@ -364,64 +364,62 @@ def get_luxury_banner_html(firm: dict) -> str:
     align-items: center;
     position: relative;
     z-index: 2;
-    box-shadow: 0 6px 18px rgba(127, 29, 29, 0.25);
-    border: 1.5px solid #F59E0B;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }}
   .contact-left {{
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }}
   .icon-circle {{
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid #FEF08A;
+    background: rgba(245, 206, 98, 0.15);
+    border: 1px solid #F5CE62;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #FEF08A;
+    color: #F5CE62;
   }}
   .contact-phone {{
     font-family: 'Cinzel', serif;
-    font-size: 21px;
+    font-size: 20px;
     font-weight: 800;
     letter-spacing: 1px;
-    color: #FFFFFF;
+    color: #FFF2B2;
   }}
   .contact-addr {{
     font-size: 13px;
-    font-weight: 600;
-    color: #FEF3C7;
+    font-weight: 500;
+    color: #CBD5E1;
     letter-spacing: 0.5px;
-    max-width: 520px;
+    max-width: 540px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }}
   .verified-seal {{
-    background: linear-gradient(135deg, #FEF08A 0%, #F59E0B 100%);
-    color: #78350F;
+    background: linear-gradient(135deg, #F5CE62 0%, #C9901C 100%);
+    color: #0B0E17;
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.5px;
-    padding: 6px 16px;
+    padding: 6px 14px;
     border-radius: 6px;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   }}
 
   .watermark {{
     position: absolute;
-    bottom: 2px;
-    right: 16px;
+    bottom: 3px;
+    right: 18px;
     font-size: 10px;
-    color: #94A3B8;
-    font-weight: 600;
+    color: rgba(245, 206, 98, 0.4);
+    font-weight: 500;
     letter-spacing: 0.5px;
     z-index: 10;
   }}
@@ -450,14 +448,21 @@ def get_luxury_banner_html(firm: dict) -> str:
   <div class="hero-brand">
     <div class="crest-emblem">
       <svg viewBox="0 0 100 100" fill="none">
-        <path d="M50 8 L90 35 L50 92 L10 35 Z" stroke="#D4AF37" stroke-width="3" fill="rgba(212, 175, 55, 0.15)"/>
-        <path d="M50 8 L50 92" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="2 2"/>
-        <path d="M10 35 L90 35" stroke="#D4AF37" stroke-width="2"/>
-        <path d="M26 35 L42 8 L58 8 L74 35" stroke="#D4AF37" stroke-width="1.5"/>
-        <circle cx="50" cy="52" r="10" stroke="#B45309" stroke-width="2" fill="#FEF3C7"/>
+        <path d="M50 8 L90 35 L50 92 L10 35 Z" stroke="url(#goldGrad)" stroke-width="3" fill="rgba(245, 206, 98, 0.1)"/>
+        <path d="M50 8 L50 92" stroke="url(#goldGrad)" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <path d="M10 35 L90 35" stroke="url(#goldGrad)" stroke-width="2"/>
+        <path d="M26 35 L42 8 L58 8 L74 35" stroke="url(#goldGrad)" stroke-width="1.5"/>
+        <circle cx="50" cy="52" r="10" stroke="url(#goldGrad)" stroke-width="2" fill="rgba(245, 206, 98, 0.25)"/>
+        <defs>
+          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFF6D1"/>
+            <stop offset="50%" stop-color="#F5CE62"/>
+            <stop offset="100%" stop-color="#C9901C"/>
+          </linearGradient>
+        </defs>
       </svg>
     </div>
-    <div class="brand-title-hi">{name_hi}</div>
+    <div class="brand-title-hi gold-text">{name_hi}</div>
     <div class="brand-title-en">{name_en}</div>
 
     <div class="ornate-divider">
@@ -498,7 +503,9 @@ def get_luxury_logo_html(firm: dict) -> str:
     theme = resolve_theme(firm.get("j4j_category", firm.get("category", "")), firm.get("name", ""))
     raw_name = firm.get("name", "Jain Enterprise")
     name_hi, name_en = clean_display_title(raw_name)
-    phone = format_phone(firm.get("phone"))
+    phone = firm.get("phone", "+91 90150 66666")
+    if phone and not phone.startswith("+91") and len(phone) >= 10:
+        phone = f"+91 {phone[-10:-5]} {phone[-5:]}"
     city = firm.get("city", "INDORE").upper()
     state = firm.get("state", "MADHYA PRADESH").upper()
     badge = firm.get("badge") or theme["badge"]
@@ -517,8 +524,8 @@ def get_luxury_logo_html(firm: dict) -> str:
     width: 1080px;
     height: 1080px;
     background: {theme['bg_logo']};
-    color: #1E293B;
-    font-family: 'Outfit', 'Montserrat', sans-serif;
+    color: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -528,28 +535,46 @@ def get_luxury_logo_html(firm: dict) -> str:
     padding: 40px;
   }}
 
+  /* Metallic Gold Foil */
+  .gold-text {{
+    background: linear-gradient(135deg, #FFF6D1 0%, #F5CE62 25%, #E5A827 50%, #FBE394 75%, #B87C10 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 12px rgba(229, 168, 39, 0.45));
+  }}
+
   /* Circular Medallion Frame */
   .seal-outer-ring {{
     position: absolute;
     width: 980px;
     height: 980px;
     border-radius: 50%;
-    border: 3px solid #D4AF37;
-    box-shadow: inset 0 0 60px rgba(212, 175, 55, 0.12), 0 10px 40px rgba(180, 83, 9, 0.08);
+    border: 2px solid rgba(245, 206, 98, 0.35);
+    box-shadow: inset 0 0 60px rgba(229, 168, 39, 0.1), 0 0 80px rgba(0,0,0,0.8);
   }}
   .seal-mid-ring {{
     position: absolute;
     width: 940px;
     height: 940px;
     border-radius: 50%;
-    border: 1.5px dashed #B45309;
+    border: 1px dashed rgba(245, 206, 98, 0.55);
   }}
   .seal-inner-ring {{
     position: absolute;
     width: 900px;
     height: 900px;
     border-radius: 50%;
-    border: 2px solid rgba(212, 175, 55, 0.6);
+    border: 2px solid rgba(245, 206, 98, 0.4);
+  }}
+
+  /* Ambient center aura */
+  .seal-aura {{
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, {theme['gold_glow']} 0%, transparent 68%);
+    pointer-events: none;
   }}
 
   /* Center Content Container */
@@ -565,54 +590,50 @@ def get_luxury_logo_html(firm: dict) -> str:
 
   .motto-top {{
     font-family: 'Rozha One', serif;
-    font-size: 28px;
+    font-size: 26px;
     letter-spacing: 3px;
-    color: #991B1B;
+    color: #F5CE62;
+    text-shadow: 0 0 16px rgba(245, 206, 98, 0.45);
     margin-bottom: 20px;
-    font-weight: 700;
   }}
 
   /* Crest Logo SVG */
   .center-crest {{
-    width: 130px;
-    height: 130px;
-    margin-bottom: 18px;
-    filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.3));
+    width: 140px;
+    height: 140px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px rgba(245, 206, 98, 0.35));
   }}
 
   .hallmark-badge {{
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    border: 1.5px solid #D97706;
-    padding: 6px 28px;
+    background: rgba(245, 206, 98, 0.12);
+    border: 1px solid #F5CE62;
+    padding: 6px 24px;
     border-radius: 9999px;
     font-size: 14px;
     font-weight: 800;
-    letter-spacing: 2px;
-    color: #92400E;
+    letter-spacing: 2.5px;
+    color: #FFF6D1;
     text-transform: uppercase;
-    margin-bottom: 22px;
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.12);
+    margin-bottom: 24px;
+    box-shadow: 0 0 20px rgba(245, 206, 98, 0.2);
   }}
 
-  /* --- FOCUS DESIGN RULE: 1-2-3 HIERARCHY & 3-EFFECT MAX --- */
-  /* ① PRIMARY FOCUS (100% Attention): Size 80px, ExtraBold, Velvet Crimson, Subtle Depth */
   .brand-title-hi {{
     font-family: 'Rozha One', serif;
-    font-size: 80px;
+    font-size: 82px;
     line-height: 1.12;
-    color: #7F1D1D;
     letter-spacing: 1px;
-    margin-bottom: 8px;
-    text-shadow: 0 3px 8px rgba(127, 29, 29, 0.16);
+    margin-bottom: 10px;
   }}
 
-  /* ② SECONDARY FOCUS (60% Scale: 48px = 60% of 80px): Cinzel 900, Slate, Flat Contrast */
   .brand-title-en {{
     font-family: 'Cinzel', serif;
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 900;
-    letter-spacing: 5px;
-    color: #1E293B;
+    letter-spacing: 6px;
+    color: #FFFFFF;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.9);
     margin-bottom: 16px;
   }}
 
@@ -621,48 +642,48 @@ def get_luxury_logo_html(firm: dict) -> str:
     align-items: center;
     gap: 16px;
     width: 380px;
-    margin: 6px 0 18px;
+    margin: 8px 0 20px;
   }}
   .div-line {{
     flex: 1;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 206, 98, 0.8), transparent);
   }}
   .div-star {{
-    color: #B45309;
-    font-size: 16px;
+    color: #F5CE62;
+    font-size: 14px;
+    text-shadow: 0 0 10px #F5CE62;
   }}
 
   .loc-pill {{
-    font-family: 'Cinzel', serif;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 4px;
-    color: #78350F;
+    color: #CBD5E1;
     text-transform: uppercase;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
   }}
 
   .contact-pill-logo {{
-    background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%);
-    border: 2px solid #F59E0B;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(245, 206, 98, 0.35);
     border-radius: 12px;
-    padding: 10px 36px;
+    padding: 10px 32px;
     font-family: 'Cinzel', serif;
     font-size: 24px;
     font-weight: 800;
     letter-spacing: 2px;
-    color: #FFFFFF;
-    box-shadow: 0 8px 24px rgba(127, 29, 29, 0.25);
+    color: #FFF2B2;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }}
 
   .watermark {{
     position: absolute;
     bottom: 24px;
     font-size: 12px;
-    color: #94A3B8;
+    color: rgba(245, 206, 98, 0.45);
     letter-spacing: 1px;
-    font-weight: 600;
+    font-weight: 500;
   }}
 </style>
 </head>
@@ -670,23 +691,32 @@ def get_luxury_logo_html(firm: dict) -> str:
   <div class="seal-outer-ring"></div>
   <div class="seal-mid-ring"></div>
   <div class="seal-inner-ring"></div>
+  <div class="seal-aura"></div>
 
   <div class="seal-content">
     <div class="motto-top">{prefix}</div>
 
     <div class="center-crest">
       <svg viewBox="0 0 120 120" fill="none">
-        <circle cx="60" cy="60" r="56" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="3 3"/>
-        <path d="M60 18 L94 48 L60 102 L26 48 Z" stroke="#B45309" stroke-width="3.5" fill="rgba(212, 175, 55, 0.18)"/>
-        <path d="M26 48 L94 48" stroke="#B45309" stroke-width="2"/>
-        <path d="M38 48 L50 24 L70 24 L82 48" stroke="#B45309" stroke-width="2"/>
-        <circle cx="60" cy="65" r="14" stroke="#D4AF37" stroke-width="2" fill="#FEF3C7"/>
+        <!-- Royal Crown and Diamond Medallion -->
+        <circle cx="60" cy="60" r="56" stroke="url(#logoGold)" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <path d="M60 18 L94 48 L60 102 L26 48 Z" stroke="url(#logoGold)" stroke-width="3.5" fill="rgba(245, 206, 98, 0.12)"/>
+        <path d="M26 48 L94 48" stroke="url(#logoGold)" stroke-width="2"/>
+        <path d="M38 48 L50 24 L70 24 L82 48" stroke="url(#logoGold)" stroke-width="2"/>
+        <circle cx="60" cy="65" r="14" stroke="url(#logoGold)" stroke-width="2" fill="rgba(245, 206, 98, 0.25)"/>
+        <defs>
+          <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FFF6D1"/>
+            <stop offset="45%" stop-color="#F5CE62"/>
+            <stop offset="85%" stop-color="#C9901C"/>
+          </linearGradient>
+        </defs>
       </svg>
     </div>
 
     <div class="hallmark-badge">★ {badge} ★</div>
 
-    <div class="brand-title-hi">{name_hi}</div>
+    <div class="brand-title-hi gold-text">{name_hi}</div>
     <div class="brand-title-en">{name_en}</div>
 
     <div class="divider-wrap">

@@ -1,7 +1,11 @@
 {
   "current_city": "Indore",
-  "area_idx": 0,
+  "area_idx": 1,
   "category_idx": 0,
-  "total_mined": 0,
-  "completed_areas": []
+  "total_mined": 122,
+  "completed_areas": [
+    "Indore - Rajwada",
+    "Indore - Sarafa Bazar",
+    "Indore - Marothia Bazar"
+  ]
 }

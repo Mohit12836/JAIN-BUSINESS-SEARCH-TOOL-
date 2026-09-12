@@ -21,9 +21,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from backend.google_sheets_sync import sync_excel_to_google_sheet
     from backend.config import get_master_excel_path
+    from backend.canva_storefront_generator import get_firm_asset_slug, generate_single_firm_assets, OUTPUT_DIR as CANVA_OUTPUT_DIR
 except ImportError:
     from google_sheets_sync import sync_excel_to_google_sheet
     from config import get_master_excel_path
+    from canva_storefront_generator import get_firm_asset_slug, generate_single_firm_assets, OUTPUT_DIR as CANVA_OUTPUT_DIR
 
 if sys.platform == "win32":
     try:
@@ -222,6 +224,8 @@ def load_leads_from_excel(excel_path: str) -> List[Dict[str, Any]]:
         
     return leads
 
+read_leads_from_excel = load_leads_from_excel
+
 def update_excel_lead_status(excel_path: str, row_idx: int, biz_id: str, profile_url: str, status: str):
     """Updates columns 24, 25, 26 in the Excel file and saves it immediately."""
     wb = openpyxl.load_workbook(excel_path)
@@ -275,11 +279,17 @@ async def login_to_portal(page: Page, email: str, password: str) -> bool:
     await page.fill("input[id='data.email']", email)
     await page.fill("input[id='data.password']", password)
     await page.click("button[type='submit']")
-    await page.wait_for_timeout(4000)
+    try:
+        await page.wait_for_url(lambda u: "/member/login" not in u, timeout=12000)
+    except Exception:
+        await page.wait_for_timeout(4000)
     
     if "/member/login" in page.url:
-        print("Login failed or still on login page!")
-        return False
+        # Check if login button needs re-click or wait
+        await page.wait_for_timeout(2000)
+        if "/member/login" in page.url:
+            print("Login failed or still on login page!")
+            return False
         
     print("Login successful! Redirected to member dashboard.")
     return True
@@ -311,41 +321,66 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     print(f"--> Selecting State: {target_state}...")
     state_wrap = page.locator('div.choices:has(select[id="data.state_id"])')
     await state_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(500)
+    await page.wait_for_timeout(300)
     
     state_opt = state_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=target_state)
     if await state_opt.count() > 0:
         await state_opt.first.click()
     else:
         await state_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
-    await page.wait_for_timeout(3500)
+        
+    # Wait dynamically for district options to populate via Livewire
+    dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
+    for _ in range(25):
+        valid_opts = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled)')
+        if await valid_opts.count() > 0:
+            break
+        await page.wait_for_timeout(200)
     
     # ------------------ STEP 3: SELECT DISTRICT ------------------
     lead_city = lead.get("city", "Indore")
-    print(f"--> Selecting District matching '{lead_city}'...")
-    dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
+    target_dist = lead.get("district") or lead_city
+    print(f"--> Selecting District matching '{target_dist}'...")
     await dist_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(500)
+    await page.wait_for_timeout(400)
     
-    dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=lead_city)
+    dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)', has_text=target_dist)
     if await dist_opt.count() > 0:
         await dist_opt.first.click()
     else:
-        await dist_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
-    await page.wait_for_timeout(3500)
+        fallback_dist = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)').first
+        if await fallback_dist.count() > 0:
+            await fallback_dist.click()
+        
+    # Wait dynamically for city options to populate via Livewire
+    city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
+    for _ in range(25):
+        valid_city_opts = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)')
+        if await valid_city_opts.count() > 0:
+            break
+        await page.wait_for_timeout(200)
     
     # ------------------ STEP 4: SELECT CITY ------------------
     print(f"--> Selecting City matching '{lead_city}'...")
-    city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
     await city_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(500)
+    await page.wait_for_timeout(400)
     
-    city_opt = city_wrap.locator('.choices__list--dropdown .choices__item--choice').filter(has_text=lead_city)
+    try:
+        search_input = city_wrap.locator('input.choices__input--cloned, input.choices__input')
+        if await search_input.count() > 0 and await search_input.first.is_visible():
+            await search_input.first.fill(lead_city)
+            await page.wait_for_timeout(400)
+    except Exception:
+        pass
+
+    city_opt = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)', has_text=lead_city)
     if await city_opt.count() > 0:
         await city_opt.last.click()
     else:
-        await city_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
-    await page.wait_for_timeout(2000)
+        fallback_city = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)').first
+        if await fallback_city.count() > 0:
+            await fallback_city.click()
+    await page.wait_for_timeout(500)
 
     # ------------------ STEP 5: PREPARE DATA FIELDS ------------------
     pin_digits = re.sub(r'\D', '', lead.get("pincode", ""))
@@ -425,7 +460,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     # ------------------ STEP 7: TAB 4 (IMAGES & PHOTO UPLOAD) ------------------
     print("--> Configuring Tab 4: Uploading Genuine Signboard / Storefront Photo...")
     await page.click('button:has-text("Images")')
-    await page.wait_for_timeout(1500)
+    await page.wait_for_timeout(400)
     await page.evaluate('''() => {
         const el = document.getElementById("data.dynamic_data.logo_display_type");
         if (el && el.options.length > 1) {
@@ -435,71 +470,66 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     }''')
     
     # -------------------------------------------------------------
-    # SMART PHOTO & CANVA STOREFRONT UPLOADER
-    # If genuine photo exists (> 10KB), upload it.
-    # If photo is missing, broken, or low-quality:
-    # Automatically generate Canva-designed Storefront Logo & Banner!
+    # CANVA PRO ASSET RESOLUTION & ON-THE-FLY GENERATION
     # -------------------------------------------------------------
-    from backend.canva_storefront_generator import storefront_generator
+    firm_name = lead.get("name", "")
+    slug = get_firm_asset_slug(firm_name)
+    local_banner = os.path.join(CANVA_OUTPUT_DIR, f"{slug}_banner_1200x500.png")
+    local_logo = os.path.join(CANVA_OUTPUT_DIR, f"{slug}_logo_1080x1080.png")
 
-    photo_url = lead.get("storefront_photo") or lead.get("photo_url") or ""
-    temp_img_path = None
-    if photo_url:
-        clean_lead_name = re.sub(r'\W+', '_', lead.get('name', 'lead'))[:15]
-        temp_img_path = download_temp_image(photo_url, filename_prefix=clean_lead_name)
-    
-    # Check if we have a valid photo (> 10KB)
-    has_valid_photo = temp_img_path and os.path.exists(temp_img_path) and os.path.getsize(temp_img_path) > 10000
-
-    logo_upload_file = temp_img_path if has_valid_photo else None
-    banner_upload_file = temp_img_path if has_valid_photo else None
-
-    if not has_valid_photo:
-        print(f"🎨 [Canva Auto-Designer]: Shop '{lead.get('name')}' photo missing or low-quality.")
-        print("   Generating professional Canva Storefront Logo and Banner...")
+    # If missing on disk or < 10KB, generate immediately on-the-fly!
+    if not (os.path.exists(local_banner) and os.path.getsize(local_banner) > 10000 and
+            os.path.exists(local_logo) and os.path.getsize(local_logo) > 10000):
+        print(f"--> On-the-fly generating Canva Pro assets for [{firm_name}]...")
         try:
-            gen_logo, gen_banner = await storefront_generator.generate_storefront_assets_async(
-                firm_name=lead.get("name", "Jain Business"),
-                category=lead.get("category_clean", lead.get("category", "Business")),
-                city=lead.get("city", "Indore"),
-                phone=lead.get("phone", ""),
-                existing_photo_path=temp_img_path if temp_img_path and os.path.exists(temp_img_path) else None
-            )
-            if gen_logo and os.path.exists(gen_logo):
-                logo_upload_file = gen_logo
-            if gen_banner and os.path.exists(gen_banner):
-                banner_upload_file = gen_banner
-        except Exception as c_err:
-            print(f"⚠️ Canva storefront generator warning: {c_err}")
+            b_path, l_path, _, _ = await generate_single_firm_assets(lead)
+            if os.path.exists(b_path):
+                local_banner = b_path
+            if os.path.exists(l_path):
+                local_logo = l_path
+        except Exception as ge:
+            print(f"⚠️ Canva on-the-fly generation error: {ge}")
+
+    banner_upload_file = local_banner if os.path.exists(local_banner) and os.path.getsize(local_banner) > 10000 else None
+    logo_upload_file = local_logo if os.path.exists(local_logo) and os.path.getsize(local_logo) > 10000 else None
+
+    # Fallback: check photo_url download if banner is still missing
+    if not banner_upload_file:
+        photo_url = lead.get("storefront_photo") or lead.get("photo_url") or ""
+        if photo_url and photo_url.startswith("http"):
+            banner_upload_file = download_temp_image(photo_url, filename_prefix=slug)
+            if not logo_upload_file:
+                logo_upload_file = banner_upload_file
 
     # Upload to FilePond inputs (file_inputs[0] = Logo, file_inputs[1] = Banner)
     try:
         file_inputs = await page.query_selector_all('input[type="file"]')
         if file_inputs:
             if logo_upload_file and os.path.exists(logo_upload_file):
-                print(f"--> Uploading to Logo FilePond: {logo_upload_file}")
+                print(f"--> Attaching Logo FilePond: {logo_upload_file}")
                 await file_inputs[0].set_input_files(logo_upload_file)
+                await page.wait_for_timeout(400)
             
             if len(file_inputs) > 1 and banner_upload_file and os.path.exists(banner_upload_file):
-                print(f"--> Uploading to Banner FilePond: {banner_upload_file}")
+                print(f"--> Attaching Banner FilePond: {banner_upload_file}")
                 await file_inputs[1].set_input_files(banner_upload_file)
+                await page.wait_for_timeout(400)
 
-            print("--> Waiting for FilePond upload completion...")
-            try:
-                await page.wait_for_selector(
-                    '.filepond--item[data-filepond-item-state="processing-complete"], .filepond--image-preview, .filepond--file-info',
-                    timeout=18000
-                )
-                print("✓ Storefront images successfully uploaded and attached!")
-            except Exception as fe:
-                print(f"FilePond wait notice: {fe}")
-                await page.wait_for_timeout(3500)
+            print("--> Waiting for FilePond upload to reach 100% completion...")
+            needed_files = 2 if (logo_upload_file and banner_upload_file) else 1
+            for attempt in range(30):  # up to 15 seconds
+                busy_count = await page.locator('.filepond--item[data-filepond-item-state*="busy"]').count()
+                complete_count = await page.locator('.filepond--item[data-filepond-item-state="processing-complete"]').count()
+                if busy_count == 0 and complete_count >= needed_files:
+                    print(f"✓ All {complete_count} FilePond items uploaded completely (state=processing-complete)!")
+                    break
+                await page.wait_for_timeout(500)
+            
+            await page.wait_for_timeout(1000)
     except Exception as up_err:
         print(f"⚠️ Photo upload error: {up_err}")
-    
-    # Return to Tab 1
-    await page.click('button:has-text("Business Details")')
-    await page.wait_for_timeout(1000)
+
+    # DO NOT switch back to Tab 1; stay on Images tab so FilePond state remains bound!
 
     # ------------------ STEP 8: DRY-RUN vs LIVE SUBMISSION ------------------
     if dry_run:
@@ -519,7 +549,12 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         print("🚀 LIVE SUBMISSION: Clicking Create button...")
         create_btn = page.locator('button[type="submit"]:has-text("Create")')
         await create_btn.first.click()
-        await page.wait_for_timeout(6000)
+        
+        # Wait up to 10 seconds for redirect to /business-listings/(\d+)
+        for _ in range(20):
+            await page.wait_for_timeout(500)
+            if re.search(r'/business-listings/(\d+)', page.url):
+                break
         
         current_url = page.url
         print(f"URL after submission: {current_url}")
@@ -589,6 +624,17 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         
         print(f"✓ Listing created successfully! Business ID: {biz_id}")
         print(f"✓ Profile URL: {profile_url}")
+
+        # If on edit page and 'Publish Listing' button is visible, click it!
+        try:
+            pub_btn = page.locator('button:has-text("Publish Listing")')
+            if await pub_btn.count() > 0 and await pub_btn.first.is_visible():
+                print("--> Clicking 'Publish Listing' button to make it live...")
+                await pub_btn.first.click()
+                await page.wait_for_timeout(2000)
+                print("✓ Listing officially published live on JainForJain portal!")
+        except Exception as pe:
+            print(f"Publish note: {pe}")
         
         return {
             "status": "submitted_success",
@@ -641,36 +687,61 @@ async def run_auto_entry_batch(
             args=["--no-sandbox", "--disable-dev-shm-usage"]
         )
         context = await browser.new_context(viewport={"width": 1400, "height": 1000})
-        page = await context.new_page()
+        login_page = await context.new_page()
         
-        # Login
-        logged_in = await login_to_portal(page, email, password)
+        # Login once for all workers
+        logged_in = await login_to_portal(login_page, email, password)
         if not logged_in:
             print("❌ Cannot proceed without successful login.")
             await browser.close()
             return
-            
+        await login_page.close()
+
+        # High-Speed Parallel Worker Queue (Locked to MAX_PORTAL_CONCURRENCY to prevent Livewire collisions)
+        from backend.config import MAX_PORTAL_CONCURRENCY
+        concurrency = min(MAX_PORTAL_CONCURRENCY, len(ready_leads))
+        print(f"\n⚡ Launching {concurrency} Concurrent Workers for Turbo Speed Submission (Zero Error Mode)...")
+        
+        queue = asyncio.Queue()
+        for l in ready_leads:
+            queue.put_nowait(l)
+
         submitted_count = 0
-        for idx, lead in enumerate(ready_leads, start=1):
+        excel_lock = asyncio.Lock()
+
+        async def worker(worker_id: int):
+            nonlocal submitted_count
+            w_page = await context.new_page()
             try:
-                res = await fill_listing_form(page, lead, dry_run=dry_run)
-                
-                if dry_run:
-                    print(f"✓ Lead [{lead['sl']}] Form filled & verified in Dry-Run mode.")
-                else:
-                    biz_id = res.get("biz_id", "")
-                    profile_url = res.get("profile_url", "")
-                    update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
-                    print(f"✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
-                    submitted_count += 1
-                    
-            except Exception as e:
-                print(f"❌ Error processing lead [{lead['name']}]: {e}")
-                if not dry_run:
-                    update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Failed: {str(e)[:30]}")
-                    
-            await asyncio.sleep(2.0)
-            
+                while not queue.empty():
+                    try:
+                        lead = queue.get_nowait()
+                    except asyncio.QueueEmpty:
+                        break
+
+                    try:
+                        res = await fill_listing_form(w_page, lead, dry_run=dry_run)
+                        if dry_run:
+                            print(f"[Worker {worker_id}] ✓ Lead [{lead['sl']}] Form filled & verified in Dry-Run mode.")
+                        else:
+                            biz_id = res.get("biz_id", "")
+                            profile_url = res.get("profile_url", "")
+                            async with excel_lock:
+                                update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
+                                submitted_count += 1
+                            print(f"[Worker {worker_id}] ✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
+                    except Exception as e:
+                        print(f"[Worker {worker_id}] ❌ Error processing lead [{lead['name']}]: {e}")
+                        if not dry_run:
+                            async with excel_lock:
+                                update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Failed: {str(e)[:30]}")
+                    finally:
+                        queue.task_done()
+            finally:
+                await w_page.close()
+
+        # Execute all workers concurrently
+        await asyncio.gather(*(worker(i+1) for i in range(concurrency)))
         await browser.close()
         
         # If any live submissions occurred, trigger instant Google Sheet sync!
@@ -681,7 +752,7 @@ async def run_auto_entry_batch(
             except Exception as e:
                 print(f"⚠️ Google Sheets sync notice: {e}")
                 
-        print("\nAll batch leads have been processed successfully!")
+        print(f"\n⚡ All {submitted_count} leads processed and submitted successfully at Turbo Speed!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="JainForJain Autonomous Entry Bot")
