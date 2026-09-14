@@ -152,6 +152,49 @@ def append_to_master_excel(records: List[Dict[str, Any]], excel_path: str):
         rec["row_idx"] = cur_row
         rec["sl"] = sl_no
         
+        firm_name = rec.get("name", "").strip() or f"जैन प्रतिष्ठान {cur_row}"
+        from backend.photo_engine import get_firm_asset_slug
+        slug = get_firm_asset_slug(firm_name)
+        canva_banner_fallback = f"http://127.0.0.1:8000/api/canva-asset/{slug}_banner_1200x500.png"
+        canva_logo_fallback = f"http://127.0.0.1:8000/api/canva-asset/{slug}_logo_1080x1080.png"
+
+        # Banner determination (Column 17)
+        banner_source = rec.get("banner_source")
+        raw_storefront = rec.get("storefront_photo", "").strip() if rec.get("storefront_photo") else ""
+        if banner_source == "ORIGINAL_STOREFRONT" or (not banner_source and raw_storefront and "googleusercontent" in raw_storefront):
+            banner_text = "📸 Original Storefront (1600px)"
+            banner_link = raw_storefront or rec.get("canva_banner_url") or canva_banner_fallback
+        else:
+            banner_text = "🎨 Canva Pro Storefront Banner"
+            banner_link = rec.get("canva_banner_url") or raw_storefront or canva_banner_fallback
+        if not banner_link.startswith("http"):
+            banner_link = f"http://127.0.0.1:8000{banner_link}"
+
+        # Showroom / Profile Logo determination (Column 18)
+        raw_showcase = rec.get("showcase_photo", "").strip() if rec.get("showcase_photo") else ""
+        if raw_showcase and "googleusercontent" in raw_showcase:
+            showcase_text = "🏬 Original Showroom (1600px)"
+            showcase_link = raw_showcase
+        else:
+            showcase_text = "💎 Canva Pro Profile Logo"
+            showcase_link = rec.get("canva_logo_url") or canva_logo_fallback
+        if not showcase_link.startswith("http"):
+            showcase_link = f"http://127.0.0.1:8000{showcase_link}"
+
+        # Official Website Logo determination (Column 20)
+        logo_source = rec.get("logo_source")
+        raw_web_logo = rec.get("website_logo", "").strip() if rec.get("website_logo") else ""
+        if logo_source == "ORIGINAL_BRAND_LOGO" or (not logo_source and raw_web_logo and raw_web_logo.startswith("http")):
+            web_logo_text = "🏷️ Original Brand Logo (256px HD)"
+            web_logo_link = raw_web_logo
+        else:
+            web_logo_text = "🏷️ Canva Pro Official Logo"
+            web_logo_link = rec.get("canva_logo_url") or canva_logo_fallback
+        if not web_logo_link.startswith("http"):
+            web_logo_link = f"http://127.0.0.1:8000{web_logo_link}"
+
+        gallery_url = rec.get("gallery_url") or rec.get("maps_url") or ""
+
         row_values = [
             sl_no,
             rec.get("name", ""),
@@ -169,10 +212,10 @@ def append_to_master_excel(records: List[Dict[str, Any]], excel_path: str):
             rec.get("longitude", ""),
             "Open Google Map" if rec.get("maps_url") else "",
             "Visit Website" if rec.get("website") else "",
-            "📸 View Storefront (1600px)" if rec.get("storefront_photo") else "No Photo Listed",
-            "🏬 View Showroom (1600px)" if rec.get("showcase_photo") else "Check Gallery",
-            "🌐 Browse All Photos" if rec.get("gallery_url") else "",
-            "🏷️ View Web Logo" if rec.get("website_logo") else "Use Storefront Photo",
+            banner_text,
+            showcase_text,
+            "🌐 Browse All Photos" if gallery_url else "",
+            web_logo_text,
             rec.get("description", ""),
             rec.get("tier", "⚪ 70% Lead Match"),
             rec.get("reason", "Category Correlation"),
@@ -207,20 +250,20 @@ def append_to_master_excel(records: List[Dict[str, Any]], excel_path: str):
                 cell.hyperlink = rec.get("website")
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            if col_idx == 17 and rec.get("storefront_photo"):
-                cell.hyperlink = rec.get("storefront_photo")
+            if col_idx == 17 and banner_link:
+                cell.hyperlink = banner_link
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            if col_idx == 18 and rec.get("showcase_photo"):
-                cell.hyperlink = rec.get("showcase_photo")
+            if col_idx == 18 and showcase_link:
+                cell.hyperlink = showcase_link
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            if col_idx == 19 and rec.get("gallery_url"):
-                cell.hyperlink = rec.get("gallery_url")
+            if col_idx == 19 and gallery_url:
+                cell.hyperlink = gallery_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            if col_idx == 20 and rec.get("website_logo"):
-                cell.hyperlink = rec.get("website_logo")
+            if col_idx == 20 and web_logo_link:
+                cell.hyperlink = web_logo_link
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
             if col_idx == 21:

@@ -161,15 +161,47 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         if not website:
             website = profile_url
 
-        # Canva Pro Graphic Links (Never empty, never relying on low-quality external photos)
+        # Smart Asset Priority: Authentic Original First -> Canva Pro 24K Gold Bespoke Fallback
         slug = get_firm_asset_slug(firm_name)
-        raw_banner = rec.get("canva_banner_url") or rec.get("storefront_photo") or f"/api/canva-asset/{slug}_banner_1200x500.png"
-        raw_logo = rec.get("canva_logo_url") or rec.get("showcase_photo") or f"/api/canva-asset/{slug}_logo_1080x1080.png"
-        
-        banner_link = raw_banner if raw_banner.startswith("http") else f"http://127.0.0.1:8000{raw_banner}"
-        logo_link = raw_logo if raw_logo.startswith("http") else f"http://127.0.0.1:8000{raw_logo}"
+        canva_banner_fallback = f"http://127.0.0.1:8000/api/canva-asset/{slug}_banner_1200x500.png"
+        canva_logo_fallback = f"http://127.0.0.1:8000/api/canva-asset/{slug}_logo_1080x1080.png"
+
+        # Banner determination (Column 17)
+        banner_source = rec.get("banner_source")
+        raw_storefront = rec.get("storefront_photo", "").strip() if rec.get("storefront_photo") else ""
+        if banner_source == "ORIGINAL_STOREFRONT" or (not banner_source and raw_storefront and "googleusercontent" in raw_storefront):
+            banner_text = "📸 Original Storefront (1600px)"
+            banner_link = raw_storefront or rec.get("canva_banner_url") or canva_banner_fallback
+        else:
+            banner_text = "🎨 Canva Pro Storefront Banner"
+            banner_link = rec.get("canva_banner_url") or raw_storefront or canva_banner_fallback
+        if not banner_link.startswith("http"):
+            banner_link = f"http://127.0.0.1:8000{banner_link}"
+
+        # Showroom / Profile Logo determination (Column 18)
+        raw_showcase = rec.get("showcase_photo", "").strip() if rec.get("showcase_photo") else ""
+        if raw_showcase and "googleusercontent" in raw_showcase:
+            showcase_text = "🏬 Original Showroom (1600px)"
+            showcase_link = raw_showcase
+        else:
+            showcase_text = "💎 Canva Pro Profile Logo"
+            showcase_link = rec.get("canva_logo_url") or canva_logo_fallback
+        if not showcase_link.startswith("http"):
+            showcase_link = f"http://127.0.0.1:8000{showcase_link}"
+
+        # Official Website Logo determination (Column 20)
+        logo_source = rec.get("logo_source")
+        raw_web_logo = rec.get("website_logo", "").strip() if rec.get("website_logo") else ""
+        if logo_source == "ORIGINAL_BRAND_LOGO" or (not logo_source and raw_web_logo and raw_web_logo.startswith("http")):
+            web_logo_text = "🏷️ Original Brand Logo (256px HD)"
+            web_logo_link = raw_web_logo
+        else:
+            web_logo_text = "🏷️ Canva Pro Official Logo"
+            web_logo_link = rec.get("canva_logo_url") or canva_logo_fallback
+        if not web_logo_link.startswith("http"):
+            web_logo_link = f"http://127.0.0.1:8000{web_logo_link}"
+
         gallery_url = rec.get("gallery_url") or maps_url
-        web_logo = logo_link
 
         desc = rec.get("description", "").strip()
         if not desc:
@@ -196,10 +228,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
             longitude,
             "Open Google Map",
             "Visit Website",
-            "🎨 Canva Pro Storefront Banner",
-            "💎 Canva Pro Profile Logo",
+            banner_text,
+            showcase_text,
             "🌐 Browse All Photos",
-            "🏷️ Canva Pro Official Logo",
+            web_logo_text,
             desc,
             tier,
             reason,
@@ -243,16 +275,16 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
                 cell.hyperlink = banner_link
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 18 and logo_link:
-                cell.hyperlink = logo_link
+            elif col_idx == 18 and showcase_link:
+                cell.hyperlink = showcase_link
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
             elif col_idx == 19 and gallery_url:
                 cell.hyperlink = gallery_url
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif col_idx == 20 and web_logo:
-                cell.hyperlink = web_logo
+            elif col_idx == 20 and web_logo_link:
+                cell.hyperlink = web_logo_link
                 cell.font = link_font
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
@@ -402,8 +434,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     high_85 = sum(1 for r in records if "85%" in r.get("tier", ""))
     with_phones = sum(1 for r in records if r.get("phone") and r.get("phone") != "Not Listed")
     with_pincodes = sum(1 for r in records if r.get("pincode") and r.get("pincode") != "N/A")
-    with_banner = sum(1 for r in records if r.get("canva_banner_url") or r.get("storefront_photo"))
-    with_logo = sum(1 for r in records if r.get("canva_logo_url") or r.get("showcase_photo"))
+    original_banners = sum(1 for r in records if r.get("banner_source") == "ORIGINAL_STOREFRONT" or (r.get("storefront_photo") and "googleusercontent" in str(r.get("storefront_photo"))))
+    canva_banners = max(0, total_firms - original_banners)
+    original_logos = sum(1 for r in records if r.get("logo_source") == "ORIGINAL_BRAND_LOGO" or (r.get("website_logo") and str(r.get("website_logo")).startswith("http")))
+    canva_logos = max(0, total_firms - original_logos)
     
     metrics = [
         ["Target Category", category or "All Commercial"],
@@ -412,8 +446,10 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
         ["🟢 100% Confirmed Jain Firms", verified_100 or total_firms],
         ["Active Calling & WhatsApp Numbers", with_phones or total_firms],
         ["Extracted 6-Digit Postal Pincodes", with_pincodes or total_firms],
-        ["Canva Pro 1200x500 Hoarding Banners", with_banner or total_firms],
-        ["Canva Pro 1080x1080 Profile Logos", with_logo or total_firms],
+        ["📸 Original Storefront Signboards (1600px)", original_banners],
+        ["🎨 Canva Pro 24K Gold Banners (1200x500)", canva_banners],
+        ["🏷️ Authentic Brand Logos (256px HD)", original_logos],
+        ["💎 Canva Pro Profile Logos (1080x1080)", canva_logos],
         ["Synthesized Ready-to-Paste Descriptions", total_firms],
         ["Zero Empty Columns Status", "✅ 100% Complete & Verified"]
     ]
@@ -422,7 +458,7 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     for metric in metrics:
         ws_summary.append(metric)
         
-    for row in ws_summary.iter_rows(min_row=3, max_row=12, min_col=1, max_col=2):
+    for row in ws_summary.iter_rows(min_row=3, max_row=15, min_col=1, max_col=2):
         for cell in row:
             cell.font = Font(name="Segoe UI", size=11)
             cell.border = cell_border

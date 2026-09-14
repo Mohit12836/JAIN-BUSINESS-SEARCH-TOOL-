@@ -302,7 +302,31 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     print(f"=======================================================")
     
     await page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=45000)
-    await page.wait_for_selector("input[id='data.business_name']", timeout=15000)
+    await page.wait_for_timeout(1000)
+    
+    # 1. Detect session expiration and auto re-login
+    if "/member/login" in page.url:
+        print("Portal session expired, re-logging in...")
+        logged = await login_to_portal(page, DEFAULT_USER, DEFAULT_PASS)
+        if not logged:
+            raise RuntimeError("Portal session expired and auto-login failed.")
+        await page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=45000)
+        await page.wait_for_timeout(1000)
+        
+    # 2. Detect portal quota limit redirect (e.g. redirected to /member/dashboard)
+    if "/business-listings/create" not in page.url:
+        page_html = await page.content()
+        if "Listing Limit Reached" in page_html or "buy additional listings" in page_html or "75 Allowed" in page_html or "75 / 75" in page_html:
+            raise RuntimeError("Portal Listing Limit Reached: 75/75 quota reached (Remaining Allowance: 0 Left). Please contact admin or upgrade plan.")
+        raise RuntimeError(f"Portal redirected away from create form to: {page.url}")
+
+    try:
+        await page.wait_for_selector("input[id='data.business_name']", timeout=15000)
+    except Exception as e:
+        page_html = await page.content()
+        if "Listing Limit Reached" in page_html or "buy additional listings" in page_html or "75 / 75" in page_html:
+            raise RuntimeError("Portal Listing Limit Reached: 75/75 quota reached (Remaining Allowance: 0 Left).")
+        raise e
     await page.wait_for_timeout(2000)
     
     # ------------------ STEP 1: SELECT COUNTRY (INDIA) ------------------
@@ -470,36 +494,22 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     }''')
     
     # -------------------------------------------------------------
-    # CANVA PRO ASSET RESOLUTION & ON-THE-FLY GENERATION
+    # SMART ASSET RESOLUTION (ORIGINAL FIRST -> CANVA PRO FALLBACK)
     # -------------------------------------------------------------
     firm_name = lead.get("name", "")
-    slug = get_firm_asset_slug(firm_name)
-    local_banner = os.path.join(CANVA_OUTPUT_DIR, f"{slug}_banner_1200x500.png")
-    local_logo = os.path.join(CANVA_OUTPUT_DIR, f"{slug}_logo_1080x1080.png")
-
-    # If missing on disk or < 10KB, generate immediately on-the-fly!
-    if not (os.path.exists(local_banner) and os.path.getsize(local_banner) > 10000 and
-            os.path.exists(local_logo) and os.path.getsize(local_logo) > 10000):
-        print(f"--> On-the-fly generating Canva Pro assets for [{firm_name}]...")
-        try:
-            b_path, l_path, _, _ = await generate_single_firm_assets(lead)
-            if os.path.exists(b_path):
-                local_banner = b_path
-            if os.path.exists(l_path):
-                local_logo = l_path
-        except Exception as ge:
-            print(f"⚠️ Canva on-the-fly generation error: {ge}")
-
-    banner_upload_file = local_banner if os.path.exists(local_banner) and os.path.getsize(local_banner) > 10000 else None
-    logo_upload_file = local_logo if os.path.exists(local_logo) and os.path.getsize(local_logo) > 10000 else None
-
-    # Fallback: check photo_url download if banner is still missing
-    if not banner_upload_file:
-        photo_url = lead.get("storefront_photo") or lead.get("photo_url") or ""
-        if photo_url and photo_url.startswith("http"):
-            banner_upload_file = download_temp_image(photo_url, filename_prefix=slug)
-            if not logo_upload_file:
-                logo_upload_file = banner_upload_file
+    from backend.photo_engine import resolve_lead_assets_smart
+    asset_res = await resolve_lead_assets_smart(lead)
+    
+    banner_upload_file = asset_res.get("banner_file")
+    logo_upload_file = asset_res.get("logo_file")
+    banner_source = asset_res.get("banner_source", "CANVA_BESPOKE")
+    logo_source = asset_res.get("logo_source", "CANVA_BESPOKE")
+    
+    lead["banner_source"] = banner_source
+    lead["logo_source"] = logo_source
+    print(f"--> [Asset Engine] Final Selection for [{firm_name}]:")
+    print(f"    Banner: {banner_source} -> {banner_upload_file}")
+    print(f"    Logo:   {logo_source} -> {logo_upload_file}")
 
     # Upload to FilePond inputs (file_inputs[0] = Logo, file_inputs[1] = Banner)
     try:

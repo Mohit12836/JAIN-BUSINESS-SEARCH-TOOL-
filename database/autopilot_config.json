@@ -11,5 +11,11 @@
   "last_run_result": null,
   "next_run_timestamp": "2026-09-13 10:30:00",
   "total_runs": 0,
-  "running_state": "idle"
+  "running_state": "idle",
+  "interval_minutes": 30,
+  "active_window": "12_hours",
+  "window_start": "09:00",
+  "window_end": "21:00",
+  "today_date": "2026-09-13",
+  "today_submitted": 0
 }
