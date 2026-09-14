@@ -10,21 +10,10 @@ if sys.platform == "win32":
 import uvicorn
 
 def main():
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-    
     port = int(os.environ.get("PORT", 8000))
     host = "0.0.0.0"
-    
-    config = uvicorn.Config(
-        app="backend.app:app",
-        host=host,
-        port=port,
-        reload=False,
-        loop="asyncio"
-    )
-    server = uvicorn.Server(config)
-    asyncio.run(server.serve())
+    print(f"Starting JainBiz server on {host}:{port}...")
+    uvicorn.run("backend.app:app", host=host, port=port, reload=False)
 
 if __name__ == "__main__":
     main()
