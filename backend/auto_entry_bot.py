@@ -692,9 +692,10 @@ async def run_auto_entry_batch(
         print(f"Processing first {limit} lead(s)...")
 
     async with async_playwright() as p:
+        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
         browser = await p.chromium.launch(
             headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage"]
+            args=CHROMIUM_LOW_RESOURCE_ARGS
         )
         context = await browser.new_context(viewport={"width": 1400, "height": 1000})
         login_page = await context.new_page()

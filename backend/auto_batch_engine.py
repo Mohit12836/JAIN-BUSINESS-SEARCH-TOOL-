@@ -182,9 +182,10 @@ async def execute_streamed_live_pipeline(
     from playwright.async_api import async_playwright
     try:
         async with async_playwright() as p:
+            from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
             portal_browser = await p.chromium.launch(
                 headless=True,
-                args=["--no-sandbox", "--disable-dev-shm-usage"]
+                args=CHROMIUM_LOW_RESOURCE_ARGS
             )
             portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
             portal_page = await portal_context.new_page()

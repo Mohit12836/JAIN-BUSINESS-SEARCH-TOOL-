@@ -120,14 +120,10 @@ async def scrape_google_maps_task(
     emit_progress(5, "प्लेराइट स्टेल्थ ब्राउज़र प्रारंभ हो रहा है...")
 
     async with async_playwright() as p:
+        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
         browser = await p.chromium.launch(
             headless=True,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-infobars"
-            ]
+            args=CHROMIUM_LOW_RESOURCE_ARGS
         )
         
         context = await browser.new_context(

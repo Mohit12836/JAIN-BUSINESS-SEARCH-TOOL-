@@ -45,3 +45,25 @@ MAX_PORTAL_CONCURRENCY = 2          # Max parallel tabs for Livewire/Filament (p
 FILEPOND_TIMEOUT_SECONDS = 18       # Strict wait for file uploads to reach processing-complete
 LIVEWIRE_REDIRECT_TIMEOUT_SECONDS = 12 # Timeout to capture live business ID upon creation
 
+# ==============================================================================
+# ULTRA LOW-CPU PLAYWRIGHT CHROMIUM LAUNCH ARGS (Prevents VPS Throttling)
+# ==============================================================================
+CHROMIUM_LOW_RESOURCE_ARGS = [
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",                        # Eliminates background GPU thread (saves ~4% CPU)
+    "--disable-software-rasterizer",        # Disables CPU 3D fallback
+    "--disable-extensions",                 # Disables browser plugins
+    "--disable-background-networking",      # Blocks background telemetry/updates
+    "--disable-background-timer-throttling",
+    "--disable-backgrounding-occluded-windows",
+    "--disable-breakpad",                   # Disables crash reporting thread
+    "--disable-component-update",
+    "--disable-domain-reliability",
+    "--disable-sync",
+    "--disable-translate",
+    "--mute-audio",
+    "--no-first-run",
+    "--disable-blink-features=AutomationControlled"
+]
+

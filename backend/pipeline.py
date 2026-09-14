@@ -92,14 +92,10 @@ async def run_autonomous_10x_pipeline(
 
     async with async_playwright() as p:
         emit_log("🌐 स्टेल्थ ब्राउज़र प्रारंभ हो रहा है (Playwright Chromium)...", stage="BROWSER", badge="🌐", percent=10)
+        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
         browser = await p.chromium.launch(
             headless=True,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-infobars"
-            ]
+            args=CHROMIUM_LOW_RESOURCE_ARGS
         )
         context = await browser.new_context(
             viewport={"width": 1366, "height": 850},
@@ -301,9 +297,10 @@ async def run_autonomous_10x_pipeline(
         emit_progress(58, "jainforjain.com पोर्टल से कनेक्ट हो रहा है...")
 
         async with async_playwright() as p:
+            from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
             portal_browser = await p.chromium.launch(
                 headless=True,
-                args=["--no-sandbox", "--disable-dev-shm-usage"]
+                args=CHROMIUM_LOW_RESOURCE_ARGS
             )
             portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 1000})
             portal_page = await portal_context.new_page()

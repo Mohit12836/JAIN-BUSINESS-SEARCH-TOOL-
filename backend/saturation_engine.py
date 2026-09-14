@@ -319,9 +319,10 @@ async def crawl_area_deep(
         search_queries = [item["query"] for item in query_items]
     
     async with async_playwright() as p:
+        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
         browser = await p.chromium.launch(
             headless=True,
-            args=["--disable-blink-features=AutomationControlled", "--no-sandbox", "--disable-dev-shm-usage"]
+            args=CHROMIUM_LOW_RESOURCE_ARGS
         )
         context = await browser.new_context(
             viewport={"width": 1280, "height": 800},
