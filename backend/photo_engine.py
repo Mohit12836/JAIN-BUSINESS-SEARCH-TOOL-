@@ -9,8 +9,16 @@ import io
 import re
 import urllib.parse
 import urllib.request
-from typing import Dict, Any, List, Optional, Tuple
-from PIL import Image, ImageFilter, ImageOps, ImageDraw, ImageStat
+try:
+    from PIL import Image, ImageFilter, ImageOps, ImageDraw, ImageStat
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+    Image = None
+    ImageFilter = None
+    ImageOps = None
+    ImageDraw = None
+    ImageStat = None
 
 GENERIC_DOMAINS = {
     'facebook.com', 'instagram.com', 'wa.me', 'api.whatsapp.com',
@@ -135,6 +143,9 @@ def download_and_verify_image(url: str, min_size_kb: int = 3, min_dim: int = 48)
         if len(data) < min_size_kb * 1024:
             return None
             
+        if not HAS_PIL:
+            return None
+            
         img = Image.open(io.BytesIO(data))
         img.verify() # Verify file header integrity
         
@@ -156,13 +167,15 @@ def download_and_verify_image(url: str, min_size_kb: int = 3, min_dim: int = 48)
     except Exception:
         return None
 
-def create_smart_storefront_banner(orig_img: Image.Image, output_path: str, target_size=(1200, 500)) -> bool:
+def create_smart_storefront_banner(orig_img: Any, output_path: str, target_size=(1200, 500)) -> bool:
     """
     Transforms any original storefront signboard photo into a studio-grade 1200x500 banner:
     1. Background: Zoomed and Gaussian-blurred version of the photo with a subtle dark tint.
     2. Foreground: 100% uncropped, sharp original signboard placed in the center with drop-shadow.
     Guarantees 0% text crop and pristine presentation for jainforjain.com.
     """
+    if not HAS_PIL or orig_img is None:
+        return False
     try:
         orig_img = orig_img.convert("RGBA")
         w_target, h_target = target_size
@@ -170,33 +183,32 @@ def create_smart_storefront_banner(orig_img: Image.Image, output_path: str, targ
         # 1. Blurred background
         ratio_w = w_target / orig_img.width
         ratio_h = h_target / orig_img.height
-        scale_bg = max(ratio_w, ratio_h)
+        scale_bg = max(ratio_w, ratio_h) * 1.2
         bg_w = int(orig_img.width * scale_bg)
         bg_h = int(orig_img.height * scale_bg)
         
         bg_resized = orig_img.resize((bg_w, bg_h), Image.Resampling.LANCZOS)
         
+        # Crop center to target
         left = (bg_w - w_target) // 2
         top = (bg_h - h_target) // 2
         bg_cropped = bg_resized.crop((left, top, left + w_target, top + h_target))
         
+        # Heavy Gaussian blur for depth of field studio effect
         bg_blurred = bg_cropped.filter(ImageFilter.GaussianBlur(radius=28))
         
-        # Elegant dark luxury overlay (25% opacity)
-        tint = Image.new("RGBA", target_size, (15, 23, 42, 65))
-        bg_blurred = Image.alpha_composite(bg_blurred, tint)
+        # Darken blurred background for premium contrast
+        overlay = Image.new("RGBA", (w_target, h_target), (0, 0, 0, 65))
+        bg_blurred = Image.alpha_composite(bg_blurred, overlay)
         
-        # 2. Foreground: Keep 100% of original photo, fit cleanly inside canvas
-        max_fg_w = w_target - 32
-        max_fg_h = h_target - 20
-        
-        scale_fg = min(max_fg_w / orig_img.width, max_fg_h / orig_img.height)
+        # 2. Foreground: Pristine, sharp, uncropped original signboard
+        scale_fg = min(w_target * 0.92 / orig_img.width, h_target * 0.90 / orig_img.height)
         fg_w = int(orig_img.width * scale_fg)
         fg_h = int(orig_img.height * scale_fg)
         fg_resized = orig_img.resize((fg_w, fg_h), Image.Resampling.LANCZOS)
         
-        # 3. Drop shadow & border
-        shadow = Image.new("RGBA", (fg_w + 16, fg_h + 16), (0, 0, 0, 0))
+        # Drop shadow behind foreground signboard
+        shadow = Image.new("RGBA", (fg_w + 24, fg_h + 24), (0, 0, 0, 0))
         shadow_draw = ImageDraw.Draw(shadow)
         shadow_draw.rounded_rectangle([4, 4, fg_w + 12, fg_h + 12], radius=10, fill=(0, 0, 0, 90))
         shadow = shadow.filter(ImageFilter.GaussianBlur(radius=6))
@@ -215,11 +227,13 @@ def create_smart_storefront_banner(orig_img: Image.Image, output_path: str, targ
         print(f"Error creating smart storefront banner: {e}")
         return False
 
-def create_smart_logo_canvas(orig_logo: Image.Image, output_path: str, target_size=(1080, 1080)) -> bool:
+def create_smart_logo_canvas(orig_logo: Any, output_path: str, target_size=(1080, 1080)) -> bool:
     """
     Places the original brand logo/favicon centered on a pristine 1080x1080 luxury canvas
     with subtle golden inner border and soft drop shadow.
     """
+    if not HAS_PIL or orig_logo is None:
+        return False
     try:
         orig_logo = orig_logo.convert("RGBA")
         w_target, h_target = target_size
