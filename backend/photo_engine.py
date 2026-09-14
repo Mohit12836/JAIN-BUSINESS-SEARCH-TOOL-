@@ -9,6 +9,8 @@ import io
 import re
 import urllib.parse
 import urllib.request
+from typing import Dict, Any, List, Optional, Tuple
+
 try:
     from PIL import Image, ImageFilter, ImageOps, ImageDraw, ImageStat
     HAS_PIL = True
