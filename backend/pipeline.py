@@ -90,20 +90,30 @@ async def run_autonomous_10x_pipeline(
     if not queries:
         queries = [{"query": f"Jain {category} in {city}", "vector_type": "Direct Search"}]
 
-    async with async_playwright() as p:
-        emit_log("🌐 स्टेल्थ ब्राउज़र प्रारंभ हो रहा है (Playwright Chromium)...", stage="BROWSER", badge="🌐", percent=10)
-        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
-        browser = await p.chromium.launch(
-            headless=True,
-            args=CHROMIUM_LOW_RESOURCE_ARGS
-        )
-        context = await browser.new_context(
-            viewport={"width": 1366, "height": 850},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            locale="en-IN"
-        )
-        search_page = await context.new_page()
-        detail_page = await context.new_page()
+    from backend.system_guard import (
+        CHROMIUM_TURBO_ARGS,
+        apply_turbo_routing,
+        safe_close_browser,
+        free_system_resources_completely
+    )
+
+    browser = None
+    context = None
+    try:
+        async with async_playwright() as p:
+            emit_log("🌐 स्टेल्थ ब्राउज़र प्रारंभ हो रहा है (Playwright Chromium)...", stage="BROWSER", badge="🌐", percent=10)
+            browser = await p.chromium.launch(
+                headless=True,
+                args=CHROMIUM_TURBO_ARGS
+            )
+            context = await browser.new_context(
+                viewport={"width": 1366, "height": 850},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                locale="en-IN"
+            )
+            await apply_turbo_routing(context, block_images=False)
+            search_page = await context.new_page()
+            detail_page = await context.new_page()
 
         for q_idx, q_item in enumerate(queries):
             if len(mined_records) >= count:
@@ -275,7 +285,12 @@ async def run_autonomous_10x_pipeline(
             except Exception as q_err:
                 emit_log(f"⚠️ क्वेरी त्रुटि: {str(q_err)[:60]}", stage="WARN", badge="⚠️")
 
-        await browser.close()
+            await safe_close_browser(browser, context)
+            browser = None
+            context = None
+    finally:
+        await safe_close_browser(browser, context)
+        free_system_resources_completely()
 
     emit_log(f"💾 कुल {len(mined_records)} नए रिकॉर्ड्स Master Excel में जोड़े जा रहे हैं...", stage="EXCEL_SAVE", badge="💾", percent=50)
     if mined_records:
@@ -296,57 +311,65 @@ async def run_autonomous_10x_pipeline(
         emit_log(f"🔐 पोर्टल सबमिशन प्रारंभ: jainforjain.com पर लॉगिन किया जा रहा है ({DEFAULT_USER})...", stage="PORTAL_AUTH", badge="🔐", percent=55)
         emit_progress(58, "jainforjain.com पोर्टल से कनेक्ट हो रहा है...")
 
-        async with async_playwright() as p:
-            from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
-            portal_browser = await p.chromium.launch(
-                headless=True,
-                args=CHROMIUM_LOW_RESOURCE_ARGS
-            )
-            portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 1000})
-            portal_page = await portal_context.new_page()
+        portal_browser = None
+        portal_context = None
+        try:
+            async with async_playwright() as p:
+                portal_browser = await p.chromium.launch(
+                    headless=True,
+                    args=CHROMIUM_TURBO_ARGS
+                )
+                portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 1000})
+                await apply_turbo_routing(portal_context, block_images=False)
+                portal_page = await portal_context.new_page()
 
-            logged_in = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
-            if not logged_in:
-                emit_log("❌ jainforjain.com पोर्टल पर लॉगिन विफल। कृपया क्रेडेंशियल्स जांचें।", stage="PORTAL_ERR", badge="❌", percent=70)
-            else:
-                emit_log("✅ jainforjain.com पोर्टल पर लॉगिन सफल!", stage="PORTAL_OK", badge="✅", percent=60)
+                logged_in = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
+                if not logged_in:
+                    emit_log("❌ jainforjain.com पोर्टल पर लॉगिन विफल। कृपया क्रेडेंशियल्स जांचें।", stage="PORTAL_ERR", badge="❌", percent=70)
+                else:
+                    emit_log("✅ jainforjain.com पोर्टल पर लॉगिन सफल!", stage="PORTAL_OK", badge="✅", percent=60)
 
-                for p_idx, lead in enumerate(mined_records, start=1):
-                    if quota_reached:
-                        break
-
-                    lead_name = lead.get("name", "")
-                    lead_row = lead.get("row_idx", 0)
-                    pct_submit = 60 + int((p_idx / len(mined_records)) * 30)
-
-                    emit_log(f"📝 [{p_idx}/{len(mined_records)}] फॉर्म भरा जा रहा है: '{lead_name}'...", stage="PORTAL_FILL", badge="📝", percent=pct_submit)
-                    emit_progress(pct_submit, f"पोर्टल पर फॉर्म भरा जा रहा है: {lead_name}")
-
-                    try:
-                        res = await fill_listing_form(portal_page, lead, dry_run=False)
-                        biz_id = res.get("biz_id", "")
-                        profile_url = res.get("profile_url", "")
-
-                        if biz_id:
-                            update_excel_lead_status(excel_path, lead_row, biz_id, profile_url, "Submitted - Live")
-                            submitted_count += 1
-                            emit_log(f"🎉 [{p_idx}/{len(mined_records)}] सफलतापूर्वक सबमिट! ID: {biz_id} | 🔗 {profile_url}", stage="PORTAL_SUBMITTED", badge="🎉")
-                            
-                            lead["j4j_business_id"] = biz_id
-                            lead["j4j_profile_url"] = profile_url
-                            lead["submission_status"] = "Submitted - Live"
-
-                    except Exception as sub_err:
-                        err_str = str(sub_err)
-                        if any(w in err_str.lower() for w in ["limit", "package", "maximum listing", "quota"]):
-                            quota_reached = True
-                            emit_log("⚠️ पोर्टल अलर्ट: फ़्री पैकेज लिस्टिंग कोटा पूरा हो चुका है (अधिकतम 5 लिस्टिंग्स)।", stage="QUOTA_LIMIT", badge="⚠️")
-                            emit_log("💡 सभी बाकी रिकॉर्ड्स Master Excel और Google Sheet में 'Ready to Submit' स्थिति में सुरक्षित हैं।", stage="QUOTA_INFO", badge="💡")
+                    for p_idx, lead in enumerate(mined_records, start=1):
+                        if quota_reached:
                             break
-                        else:
-                            emit_log(f"⚠️ सबमिशन सूचना [{lead_name}]: {err_str[:90]}", stage="PORTAL_WARN", badge="⚠️")
 
-            await portal_browser.close()
+                        lead_name = lead.get("name", "")
+                        lead_row = lead.get("row_idx", 0)
+                        pct_submit = 60 + int((p_idx / len(mined_records)) * 30)
+
+                        emit_log(f"📝 [{p_idx}/{len(mined_records)}] फॉर्म भरा जा रहा है: '{lead_name}'...", stage="PORTAL_FILL", badge="📝", percent=pct_submit)
+                        emit_progress(pct_submit, f"पोर्टल पर फॉर्म भरा जा रहा है: {lead_name}")
+
+                        try:
+                            res = await fill_listing_form(portal_page, lead, dry_run=False)
+                            biz_id = res.get("biz_id", "")
+                            profile_url = res.get("profile_url", "")
+
+                            if biz_id:
+                                update_excel_lead_status(excel_path, lead_row, biz_id, profile_url, "Submitted - Live")
+                                submitted_count += 1
+                                emit_log(f"🎉 [{p_idx}/{len(mined_records)}] सफलतापूर्वक सबमिट! ID: {biz_id} | 🔗 {profile_url}", stage="PORTAL_SUBMITTED", badge="🎉")
+                                
+                                lead["j4j_business_id"] = biz_id
+                                lead["j4j_profile_url"] = profile_url
+                                lead["submission_status"] = "Submitted - Live"
+
+                        except Exception as sub_err:
+                            err_str = str(sub_err)
+                            if any(w in err_str.lower() for w in ["limit", "package", "maximum listing", "quota"]):
+                                quota_reached = True
+                                emit_log("⚠️ पोर्टल अलर्ट: फ़्री पैकेज लिस्टिंग कोटा पूरा हो चुका है (अधिकतम 5 लिस्टिंग्स)।", stage="QUOTA_LIMIT", badge="⚠️")
+                                emit_log("💡 सभी बाकी रिकॉर्ड्स Master Excel और Google Sheet में 'Ready to Submit' स्थिति में सुरक्षित हैं।", stage="QUOTA_INFO", badge="💡")
+                                break
+                            else:
+                                emit_log(f"⚠️ सबमिशन सूचना [{lead_name}]: {err_str[:90]}", stage="PORTAL_WARN", badge="⚠️")
+
+                await safe_close_browser(portal_browser, portal_context)
+                portal_browser = None
+                portal_context = None
+        finally:
+            await safe_close_browser(portal_browser, portal_context)
+            free_system_resources_completely()
 
     # =========================================================================
     # PHASE 3: LIVE GOOGLE SHEET SYNC

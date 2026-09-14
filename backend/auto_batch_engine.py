@@ -180,20 +180,29 @@ async def execute_streamed_live_pipeline(
 
     # Launch Playwright Browser for Live Submission
     from playwright.async_api import async_playwright
+    from backend.system_guard import (
+        CHROMIUM_TURBO_ARGS,
+        apply_turbo_routing,
+        safe_close_browser,
+        free_system_resources_completely
+    )
+
+    portal_browser = None
+    portal_context = None
     try:
         async with async_playwright() as p:
-            from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
             portal_browser = await p.chromium.launch(
                 headless=True,
-                args=CHROMIUM_LOW_RESOURCE_ARGS
+                args=CHROMIUM_TURBO_ARGS
             )
             portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
+            await apply_turbo_routing(portal_context, block_images=False)
             portal_page = await portal_context.new_page()
 
             logged = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
             if not logged:
                 emit_log("❌ jainforjain.com पोर्टल लॉगिन विफल! क्रेडेंशियल्स जांचें.", stage="PORTAL_ERR", badge="❌")
-                await portal_browser.close()
+                await safe_close_browser(portal_browser, portal_context)
                 return {"status": "error", "message": "Portal login failed"}
 
             emit_log("✅ पोर्टल लॉगिन 100% सफल! लाइव एंट्री वर्कर तैयार...", stage="PORTAL_OK", badge="✅", pct=15)
@@ -323,9 +332,14 @@ async def execute_streamed_live_pipeline(
                     )
                     curr_crawl_idx += 1
 
-            await portal_browser.close()
+            await safe_close_browser(portal_browser, portal_context)
+            portal_browser = None
+            portal_context = None
     except Exception as e:
         emit_log(f"पाइपलाइन अपवाद: {e}", stage="WARN", badge="⚠️")
+    finally:
+        await safe_close_browser(portal_browser, portal_context)
+        free_system_resources_completely()
 
     # Desktop backup if on Windows
     try:

@@ -691,79 +691,97 @@ async def run_auto_entry_batch(
         ready_leads = ready_leads[:limit]
         print(f"Processing first {limit} lead(s)...")
 
-    async with async_playwright() as p:
-        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
-        browser = await p.chromium.launch(
-            headless=True,
-            args=CHROMIUM_LOW_RESOURCE_ARGS
-        )
-        context = await browser.new_context(viewport={"width": 1400, "height": 1000})
-        login_page = await context.new_page()
-        
-        # Login once for all workers
-        logged_in = await login_to_portal(login_page, email, password)
-        if not logged_in:
-            print("❌ Cannot proceed without successful login.")
-            await browser.close()
-            return
-        await login_page.close()
+    from backend.system_guard import (
+        CHROMIUM_TURBO_ARGS,
+        apply_turbo_routing,
+        safe_close_browser,
+        free_system_resources_completely
+    )
 
-        # High-Speed Parallel Worker Queue (Locked to MAX_PORTAL_CONCURRENCY to prevent Livewire collisions)
-        from backend.config import MAX_PORTAL_CONCURRENCY
-        concurrency = min(MAX_PORTAL_CONCURRENCY, len(ready_leads))
-        print(f"\n⚡ Launching {concurrency} Concurrent Workers for Turbo Speed Submission (Zero Error Mode)...")
-        
-        queue = asyncio.Queue()
-        for l in ready_leads:
-            queue.put_nowait(l)
+    browser = None
+    context = None
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=CHROMIUM_TURBO_ARGS
+            )
+            context = await browser.new_context(viewport={"width": 1400, "height": 1000})
+            
+            # Apply Turbo Network Routing (Blocks fonts, video, trackers to speed up form loads)
+            await apply_turbo_routing(context, block_images=False)
+            
+            login_page = await context.new_page()
+            
+            # Login once for all workers
+            logged_in = await login_to_portal(login_page, email, password)
+            if not logged_in:
+                print("❌ Cannot proceed without successful login.")
+                await safe_close_browser(browser, context)
+                return
+            await login_page.close()
 
-        submitted_count = 0
-        excel_lock = asyncio.Lock()
+            # High-Speed Parallel Worker Queue
+            from backend.config import MAX_PORTAL_CONCURRENCY
+            concurrency = min(MAX_PORTAL_CONCURRENCY, len(ready_leads))
+            print(f"\n⚡ Launching {concurrency} Concurrent Workers for Turbo Speed Submission (Zero Error Mode)...")
+            
+            queue = asyncio.Queue()
+            for l in ready_leads:
+                queue.put_nowait(l)
 
-        async def worker(worker_id: int):
-            nonlocal submitted_count
-            w_page = await context.new_page()
-            try:
-                while not queue.empty():
-                    try:
-                        lead = queue.get_nowait()
-                    except asyncio.QueueEmpty:
-                        break
+            submitted_count = 0
+            excel_lock = asyncio.Lock()
 
-                    try:
-                        res = await fill_listing_form(w_page, lead, dry_run=dry_run)
-                        if dry_run:
-                            print(f"[Worker {worker_id}] ✓ Lead [{lead['sl']}] Form filled & verified in Dry-Run mode.")
-                        else:
-                            biz_id = res.get("biz_id", "")
-                            profile_url = res.get("profile_url", "")
-                            async with excel_lock:
-                                update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
-                                submitted_count += 1
-                            print(f"[Worker {worker_id}] ✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
-                    except Exception as e:
-                        print(f"[Worker {worker_id}] ❌ Error processing lead [{lead['name']}]: {e}")
-                        if not dry_run:
-                            async with excel_lock:
-                                update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Failed: {str(e)[:30]}")
-                    finally:
-                        queue.task_done()
-            finally:
-                await w_page.close()
+            async def worker(worker_id: int):
+                nonlocal submitted_count
+                w_page = await context.new_page()
+                try:
+                    while not queue.empty():
+                        try:
+                            lead = queue.get_nowait()
+                        except asyncio.QueueEmpty:
+                            break
 
-        # Execute all workers concurrently
-        await asyncio.gather(*(worker(i+1) for i in range(concurrency)))
-        await browser.close()
-        
-        # If any live submissions occurred, trigger instant Google Sheet sync!
-        if not dry_run and submitted_count > 0:
-            print("\n🔄 Synchronizing updated Excel statuses to Google Sheets...")
-            try:
-                await sync_excel_to_google_sheet(excel_path)
-            except Exception as e:
-                print(f"⚠️ Google Sheets sync notice: {e}")
-                
-        print(f"\n⚡ All {submitted_count} leads processed and submitted successfully at Turbo Speed!")
+                        try:
+                            res = await fill_listing_form(w_page, lead, dry_run=dry_run)
+                            if dry_run:
+                                print(f"[Worker {worker_id}] ✓ Lead [{lead['sl']}] Form filled & verified in Dry-Run mode.")
+                            else:
+                                biz_id = res.get("biz_id", "")
+                                profile_url = res.get("profile_url", "")
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
+                                    submitted_count += 1
+                                print(f"[Worker {worker_id}] ✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
+                        except Exception as e:
+                            print(f"[Worker {worker_id}] ❌ Error processing lead [{lead['name']}]: {e}")
+                            if not dry_run:
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Failed: {str(e)[:30]}")
+                        finally:
+                            queue.task_done()
+                finally:
+                    await w_page.close()
+
+            # Execute all workers concurrently
+            await asyncio.gather(*(worker(i+1) for i in range(concurrency)))
+            await safe_close_browser(browser, context)
+            browser = None
+            context = None
+            
+            # If any live submissions occurred, trigger instant Google Sheet sync!
+            if not dry_run and submitted_count > 0:
+                print("\n🔄 Synchronizing updated Excel statuses to Google Sheets...")
+                try:
+                    await sync_excel_to_google_sheet(excel_path)
+                except Exception as e:
+                    print(f"⚠️ Google Sheets sync notice: {e}")
+                    
+            print(f"\n⚡ All {submitted_count} leads processed and submitted successfully at Turbo Speed!")
+    finally:
+        await safe_close_browser(browser, context)
+        free_system_resources_completely()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="JainForJain Autonomous Entry Bot")

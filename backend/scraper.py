@@ -119,21 +119,33 @@ async def scrape_google_maps_task(
 
     emit_progress(5, "प्लेराइट स्टेल्थ ब्राउज़र प्रारंभ हो रहा है...")
 
-    async with async_playwright() as p:
-        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
-        browser = await p.chromium.launch(
-            headless=True,
-            args=CHROMIUM_LOW_RESOURCE_ARGS
-        )
-        
-        context = await browser.new_context(
-            viewport={"width": 1280, "height": 800},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            locale="en-IN"
-        )
-        
-        search_page = await context.new_page()
-        detail_page = await context.new_page()
+    from backend.system_guard import (
+        CHROMIUM_TURBO_ARGS,
+        apply_turbo_routing,
+        safe_close_browser,
+        free_system_resources_completely
+    )
+
+    browser = None
+    context = None
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=CHROMIUM_TURBO_ARGS
+            )
+            
+            context = await browser.new_context(
+                viewport={"width": 1280, "height": 800},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                locale="en-IN"
+            )
+            
+            # Apply Turbo Network Routing (Blocks non-essential fonts, video, and trackers)
+            await apply_turbo_routing(context, block_images=False)
+            
+            search_page = await context.new_page()
+            detail_page = await context.new_page()
 
         for city in target_cities:
             current_step += 1
@@ -352,7 +364,12 @@ async def scrape_google_maps_task(
             if len(collected_records) >= max_firms_target:
                 break
 
-        await browser.close()
+            await safe_close_browser(browser, context)
+            browser = None
+            context = None
+    finally:
+        await safe_close_browser(browser, context)
+        free_system_resources_completely()
 
     emit_progress(95, "एक्सेल वर्कबुक (.xlsx) तैयार की जा रही है...")
 

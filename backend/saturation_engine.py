@@ -318,20 +318,32 @@ async def crawl_area_deep(
         query_items = build_entity_queries(entity_type=entity_type, location=city, area=area, category=category)
         search_queries = [item["query"] for item in query_items]
     
-    async with async_playwright() as p:
-        from backend.config import CHROMIUM_LOW_RESOURCE_ARGS
-        browser = await p.chromium.launch(
-            headless=True,
-            args=CHROMIUM_LOW_RESOURCE_ARGS
-        )
-        context = await browser.new_context(
-            viewport={"width": 1280, "height": 800},
-            locale="en-IN",
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-        )
-        
-        search_page = await context.new_page()
-        detail_page = await context.new_page()
+    from backend.system_guard import (
+        CHROMIUM_TURBO_ARGS,
+        apply_turbo_routing,
+        safe_close_browser,
+        free_system_resources_completely
+    )
+
+    browser = None
+    context = None
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=CHROMIUM_TURBO_ARGS
+            )
+            context = await browser.new_context(
+                viewport={"width": 1280, "height": 800},
+                locale="en-IN",
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            )
+            
+            # Apply Turbo Network Routing (Blocks non-essential fonts, video, and trackers)
+            await apply_turbo_routing(context, block_images=False)
+            
+            search_page = await context.new_page()
+            detail_page = await context.new_page()
         
         is_exhaustive = (entity_type in ["all", "hyperlocal", "exhaustive"] or target_count >= 150)
         
@@ -522,7 +534,12 @@ async def crawl_area_deep(
             except Exception as q_err:
                 print(f"Error on query '{q}': {q_err}")
                 
-        await browser.close()
+            await safe_close_browser(browser, context)
+            browser = None
+            context = None
+    finally:
+        await safe_close_browser(browser, context)
+        free_system_resources_completely()
         
     if collected_records and not on_lead_verified_callback:
         append_to_master_excel(collected_records, excel_path)
