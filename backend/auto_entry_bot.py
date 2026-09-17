@@ -344,63 +344,107 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     print(f"--> Selecting State: {target_state}...")
     state_wrap = page.locator('div.choices:has(select[id="data.state_id"])')
     await state_wrap.locator('.choices__inner').click()
+    await page.wait_for_timeout(200)
     
     state_opt = state_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=target_state)
     if await state_opt.count() > 0:
         await state_opt.first.click()
     else:
-        await state_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
+        fallback_state = state_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder)').first
+        if await fallback_state.count() > 0:
+            await fallback_state.click()
         
-    # Wait dynamically for district options to populate via Livewire (Safe fast poll)
-    dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
-    for _ in range(30):
-        valid_opts = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled)')
-        if await valid_opts.count() > 0:
-            break
-        await page.wait_for_timeout(100)
+    # Wait for Livewire to asynchronously populate District options
+    print("--> Waiting for Livewire to populate Districts for State...")
+    try:
+        await page.wait_for_function(
+            '''() => {
+                const sel = document.getElementById("data.district_id");
+                return sel && sel.options && Array.from(sel.options).some(o => o.value && o.value !== "");
+            }''',
+            timeout=8000
+        )
+    except Exception as d_wait_err:
+        print(f"⚠️ District options wait notice: {d_wait_err}")
+    await page.wait_for_timeout(300)
     
     # ------------------ STEP 3: SELECT DISTRICT ------------------
     lead_city = lead.get("city", "Indore")
     target_dist = lead.get("district") or lead_city
     print(f"--> Selecting District matching '{target_dist}'...")
+    dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
     await dist_wrap.locator('.choices__inner').click()
+    await page.wait_for_timeout(200)
     
-    dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)', has_text=target_dist)
+    dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)', has_text=target_dist)
     if await dist_opt.count() > 0:
         await dist_opt.first.click()
     else:
-        fallback_dist = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)').first
+        fallback_dist = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)').first
         if await fallback_dist.count() > 0:
             await fallback_dist.click()
         
-    # Wait dynamically for city options to populate via Livewire (Safe fast poll)
-    city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
-    for _ in range(30):
-        valid_city_opts = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)')
-        if await valid_city_opts.count() > 0:
-            break
-        await page.wait_for_timeout(100)
+    # Wait for Livewire to asynchronously populate City options
+    print("--> Waiting for Livewire to populate Cities for District...")
+    try:
+        await page.wait_for_function(
+            '''() => {
+                const sel = document.getElementById("data.city_id");
+                return sel && sel.options && Array.from(sel.options).some(o => o.value && o.value !== "");
+            }''',
+            timeout=8000
+        )
+    except Exception as c_wait_err:
+        print(f"⚠️ City options wait notice: {c_wait_err}")
+    await page.wait_for_timeout(300)
     
     # ------------------ STEP 4: SELECT CITY ------------------
     print(f"--> Selecting City matching '{lead_city}'...")
+    city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
     await city_wrap.locator('.choices__inner').click()
+    await page.wait_for_timeout(200)
     
     try:
         search_input = city_wrap.locator('input.choices__input--cloned, input.choices__input')
         if await search_input.count() > 0 and await search_input.first.is_visible():
             await search_input.first.fill(lead_city)
-            await page.wait_for_timeout(150)
+            await page.wait_for_timeout(200)
     except Exception:
         pass
 
-    city_opt = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)', has_text=lead_city)
+    city_opt = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)', has_text=lead_city)
     if await city_opt.count() > 0:
         await city_opt.last.click()
     else:
-        fallback_city = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)').first
+        fallback_city = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)').first
         if await fallback_city.count() > 0:
             await fallback_city.click()
-    await page.wait_for_timeout(200)
+    await page.wait_for_timeout(300)
+
+    # Double check and ensure district and city are bound in DOM and Livewire
+    await page.evaluate('''() => {
+        const stateEl = document.getElementById("data.state_id") || document.querySelector('[wire\\\\:id]');
+        if (window.Alpine && stateEl && window.Alpine.$data(stateEl)) {
+            const wire = window.Alpine.$data(stateEl).$wire;
+            const distSelect = document.getElementById("data.district_id");
+            const citySelect = document.getElementById("data.city_id");
+            if (wire && distSelect && distSelect.value) {
+                wire.set('data.district_id', distSelect.value);
+            }
+            if (wire && citySelect && citySelect.value) {
+                wire.set('data.city_id', citySelect.value);
+            }
+        }
+    }''')
+    
+    loc_vals = await page.evaluate('''() => {
+        return {
+            state: document.getElementById("data.state_id")?.value || "",
+            district: document.getElementById("data.district_id")?.value || "",
+            city: document.getElementById("data.city_id")?.value || ""
+        };
+    }''')
+    print(f"--> [Location Verified] State ID: {loc_vals['state']} | District ID: {loc_vals['district']} | City ID: {loc_vals['city']}")
 
     # ------------------ STEP 5: ATOMIC SAFE ALL-FIELDS INJECTION (0.1s) ------------------
     pin_digits = re.sub(r'\D', '', lead.get("pincode", ""))
