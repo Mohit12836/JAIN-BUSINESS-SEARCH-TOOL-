@@ -416,10 +416,16 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     address_val = lead.get("address", f"{lead['city']}, India")
     cat_id = get_category_id(lead.get("category", ""), lead.get("name", ""))
     
-    raw_slug = f"{lead['name']} {lead_city}"
+    # Build a guaranteed unique slug: Name + Market/Area + City + Pincode Suffix
+    area_or_market = (lead.get("market") or lead.get("area") or "").strip()
+    clean_area = re.sub(r'[^a-zA-Z0-9]+', '-', area_or_market.lower()).strip('-')[:20] if area_or_market else ""
+    pin_suffix = pin_digits[-3:] if len(pin_digits) >= 3 else "01"
+    
+    slug_parts = [lead['name'], clean_area, lead_city, pin_suffix]
+    raw_slug = " ".join([p for p in slug_parts if p])
     initial_slug = re.sub(r'[^a-zA-Z0-9]+', '-', raw_slug.lower()).strip('-')[:55]
     
-    print(f"--> [Safe Turbo] Atomically Injecting All Form Fields (Category ID: {cat_id} | Slug: {initial_slug})...")
+    print(f"--> [Safe Turbo] Atomically Injecting All Form Fields (Category ID: {cat_id} | Unique Slug: {initial_slug})...")
     await page.evaluate('''async (args) => {
         // 1. Livewire Alpine $wire binding
         const stateEl = document.getElementById("data.state_id") || document.querySelector('[wire\\\\:id]');
