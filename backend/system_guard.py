@@ -98,16 +98,9 @@ async def safe_close_browser(browser: Any, context: Optional[Any] = None):
 
 def free_system_resources_completely():
     """
-    Frees 100% CPU and memory after batch processing:
-    1. Python garbage collection.
-    2. Reaps any lingering orphan headless Chromium processes on Linux.
+    Safely frees memory via Python garbage collection without killing active Playwright sessions.
     """
     try:
         gc.collect()
-        if not sys.platform.startswith("win"):
-            # Clean only headless automation sub-processes
-            os.system("pkill -9 -f 'playwright.*chrome' 2>/dev/null || true")
-            os.system("pkill -9 -f 'chromium.*--headless' 2>/dev/null || true")
-            os.system("pkill -9 -f 'chrome.*--headless' 2>/dev/null || true")
     except Exception as e:
         print(f"⚠️ Resource cleanup note: {e}")

@@ -301,8 +301,17 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     print(f"Category: {lead['category']} | City: {lead['city']} | Phone: {lead['phone']}")
     print(f"=======================================================")
     
-    await page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=45000)
-    await page.wait_for_timeout(1000)
+    if page.is_closed():
+        raise RuntimeError("Browser target page is closed.")
+        
+    try:
+        await page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=35000)
+    except Exception as nav_err:
+        print(f"⚠️ Navigation retry triggered for [{lead['name']}]: {nav_err}")
+        await page.wait_for_timeout(1000)
+        await page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=35000)
+        
+    await page.wait_for_timeout(500)
     
     # 1. Detect session expiration and auto re-login
     if "/member/login" in page.url:

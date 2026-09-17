@@ -254,6 +254,26 @@ async def execute_streamed_live_pipeline(
                             quota_reached = True
                             emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
                             break
+                        elif any(w in err_str.lower() for w in ["connection closed", "target closed", "browser has been closed", "session closed"]):
+                            emit_log("🔄 ब्राउज़र डिस्कनेक्ट हुआ! नया सत्र शुरू किया जा रहा है...", stage="RECONNECT", badge="🔄")
+                            try:
+                                if portal_page and not portal_page.is_closed():
+                                    await portal_page.close()
+                                if portal_context:
+                                    await portal_context.close()
+                                if portal_browser and portal_browser.is_connected():
+                                    await portal_browser.close()
+                            except Exception:
+                                pass
+                            try:
+                                portal_browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
+                                portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
+                                await apply_turbo_routing(portal_context, block_images=False)
+                                portal_page = await portal_context.new_page()
+                                await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
+                                emit_log("✅ नया ब्राउज़र सत्र तैयार! पुनः सबमिशन जारी...", stage="RECONNECT_OK", badge="✅")
+                            except Exception as rec_err:
+                                emit_log(f"❌ रीकनेक्शन त्रुटि: {rec_err}", stage="RECONNECT_FAIL", badge="❌")
                         else:
                             update_excel_lead_status(excel_path, cur_row, "", "", f"Failed: {err_str[:25]}")
                             emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
