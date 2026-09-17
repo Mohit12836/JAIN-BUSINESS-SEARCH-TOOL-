@@ -247,6 +247,7 @@ async def execute_streamed_live_pipeline(
                             emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
                             break
                         else:
+                            update_excel_lead_status(excel_path, cur_row, "", "", f"Failed: {err_str[:25]}")
                             emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
 
             # 2. If more leads are needed to satisfy target_count, crawl Maps and stream live on-the-fly!

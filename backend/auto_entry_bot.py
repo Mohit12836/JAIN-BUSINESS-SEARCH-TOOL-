@@ -327,25 +327,23 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         if "Listing Limit Reached" in page_html or "buy additional listings" in page_html or "75 / 75" in page_html:
             raise RuntimeError("Portal Listing Limit Reached: 75/75 quota reached (Remaining Allowance: 0 Left).")
         raise e
-    await page.wait_for_timeout(2000)
     
     # ------------------ STEP 1: SELECT COUNTRY (INDIA) ------------------
     print("--> Selecting Country (India) for Livewire cascade...")
     await page.evaluate('''() => {
         const el = document.getElementById("data.country_id");
-        if (el) {
+        if (el && el.value !== "1") {
             el.value = "1";
             el.dispatchEvent(new Event('change', { bubbles: true }));
         }
     }''')
-    await page.wait_for_timeout(2000)
+    await page.wait_for_timeout(200)
     
     # ------------------ STEP 2: SELECT STATE ------------------
     target_state = resolve_state(lead)
     print(f"--> Selecting State: {target_state}...")
     state_wrap = page.locator('div.choices:has(select[id="data.state_id"])')
     await state_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(300)
     
     state_opt = state_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=target_state)
     if await state_opt.count() > 0:
@@ -353,20 +351,19 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     else:
         await state_wrap.locator('.choices__list--dropdown .choices__item--choice').first.click()
         
-    # Wait dynamically for district options to populate via Livewire
+    # Wait dynamically for district options to populate via Livewire (Safe fast poll)
     dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
-    for _ in range(25):
+    for _ in range(30):
         valid_opts = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled)')
         if await valid_opts.count() > 0:
             break
-        await page.wait_for_timeout(200)
+        await page.wait_for_timeout(100)
     
     # ------------------ STEP 3: SELECT DISTRICT ------------------
     lead_city = lead.get("city", "Indore")
     target_dist = lead.get("district") or lead_city
     print(f"--> Selecting District matching '{target_dist}'...")
     await dist_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(400)
     
     dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)', has_text=target_dist)
     if await dist_opt.count() > 0:
@@ -376,24 +373,23 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         if await fallback_dist.count() > 0:
             await fallback_dist.click()
         
-    # Wait dynamically for city options to populate via Livewire
+    # Wait dynamically for city options to populate via Livewire (Safe fast poll)
     city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
-    for _ in range(25):
+    for _ in range(30):
         valid_city_opts = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)')
         if await valid_city_opts.count() > 0:
             break
-        await page.wait_for_timeout(200)
+        await page.wait_for_timeout(100)
     
     # ------------------ STEP 4: SELECT CITY ------------------
     print(f"--> Selecting City matching '{lead_city}'...")
     await city_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(400)
     
     try:
         search_input = city_wrap.locator('input.choices__input--cloned, input.choices__input')
         if await search_input.count() > 0 and await search_input.first.is_visible():
             await search_input.first.fill(lead_city)
-            await page.wait_for_timeout(400)
+            await page.wait_for_timeout(150)
     except Exception:
         pass
 
@@ -404,9 +400,9 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         fallback_city = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__item--disabled):not(.has-no-choices)').first
         if await fallback_city.count() > 0:
             await fallback_city.click()
-    await page.wait_for_timeout(500)
+    await page.wait_for_timeout(200)
 
-    # ------------------ STEP 5: PREPARE DATA FIELDS ------------------
+    # ------------------ STEP 5: ATOMIC SAFE ALL-FIELDS INJECTION (0.1s) ------------------
     pin_digits = re.sub(r'\D', '', lead.get("pincode", ""))
     if not pin_digits or len(pin_digits) != 6:
         pin_digits = "452002" if "indore" in lead_city.lower() else "302001"
@@ -420,27 +416,54 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     address_val = lead.get("address", f"{lead['city']}, India")
     cat_id = get_category_id(lead.get("category", ""), lead.get("name", ""))
     
-    print(f"--> Syncing Form State via Livewire $wire (Category ID: {cat_id})...")
+    raw_slug = f"{lead['name']} {lead_city}"
+    initial_slug = re.sub(r'[^a-zA-Z0-9]+', '-', raw_slug.lower()).strip('-')[:55]
+    
+    print(f"--> [Safe Turbo] Atomically Injecting All Form Fields (Category ID: {cat_id} | Slug: {initial_slug})...")
     await page.evaluate('''async (args) => {
-        const stateEl = document.getElementById("data.state_id");
-        if (!window.Alpine || !window.Alpine.$data(stateEl)) return;
-        const wire = window.Alpine.$data(stateEl).$wire;
-        if (!wire) return;
+        // 1. Livewire Alpine $wire binding
+        const stateEl = document.getElementById("data.state_id") || document.querySelector('[wire\\\\:id]');
+        if (window.Alpine && stateEl && window.Alpine.$data(stateEl)) {
+            const wire = window.Alpine.$data(stateEl).$wire;
+            if (wire) {
+                await wire.set('data.business_name', args.name);
+                await wire.set('data.slug', args.slug);
+                await wire.set('data.pincode', args.pincode);
+                await wire.set('data.address', args.address);
+                await wire.set('data.mobile', args.mobile);
+                await wire.set('data.whatsapp', args.whatsapp);
+                await wire.set('data.l1_category', args.catId);
+                if (args.email) await wire.set('data.email', args.email);
+                if (args.website) await wire.set('data.website', args.website);
+                if (args.lat) await wire.set('data.latitude', args.lat);
+                if (args.lng) await wire.set('data.longitude', args.lng);
+                if (args.mapLink) await wire.set('data.dynamic_data.map_link', args.mapLink);
+            }
+        }
         
-        await wire.set('data.business_name', args.name);
-        await wire.set('data.pincode', args.pincode);
-        await wire.set('data.address', args.address);
-        await wire.set('data.mobile', args.mobile);
-        await wire.set('data.whatsapp', args.whatsapp);
-        await wire.set('data.l1_category', args.catId);
-        
-        if (args.email) await wire.set('data.email', args.email);
-        if (args.website) await wire.set('data.website', args.website);
-        if (args.lat) await wire.set('data.latitude', args.lat);
-        if (args.lng) await wire.set('data.longitude', args.lng);
-        if (args.mapLink) await wire.set('data.dynamic_data.map_link', args.mapLink);
+        // 2. Immediate Direct DOM sync with bubbling events (Ensures form validity)
+        const setField = (id, val) => {
+            if (!val) return;
+            const el = document.getElementById(id) || document.querySelector(`[name="${id}"]`);
+            if (el) {
+                el.value = val;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        };
+        setField('data.business_name', args.name);
+        setField('data.slug', args.slug);
+        setField('data.pincode', args.pincode);
+        setField('data.address', args.address);
+        setField('data.mobile', args.mobile);
+        setField('data.whatsapp', args.whatsapp);
+        setField('data.email', args.email);
+        setField('data.website', args.website);
+        setField('data.latitude', args.lat);
+        setField('data.longitude', args.lng);
     }''', {
         "name": lead["name"],
+        "slug": initial_slug,
         "pincode": pin_digits,
         "address": address_val,
         "mobile": mobile_val,
@@ -452,21 +475,19 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         "lng": str(lead.get("longitude", "")).strip(),
         "mapLink": lead.get("maps_url", "")
     })
-    await page.wait_for_timeout(1500)
-
-    # Fill DOM inputs as dual-layer backup
-    await page.fill("input[id='data.business_name']", lead["name"])
-    await page.fill("input[id='data.pincode']", pin_digits)
-    await page.fill("textarea[id='data.address']", address_val)
-    await page.fill("input[id='data.mobile']", mobile_val)
-    await page.fill("input[id='data.whatsapp']", wa_val)
+    await page.wait_for_timeout(300)
     
     # ------------------ STEP 6: TAB 3 (DESCRIPTION) ------------------
     desc_text = lead.get("description", "")
     if desc_text:
         print("--> Injecting Tab 3: Description...")
         await page.click('button:has-text("Description")')
-        await page.wait_for_timeout(1000)
+        for _ in range(10):
+            ready = await page.evaluate('''() => Boolean(window.tinymce && window.tinymce.activeEditor) || Boolean(document.querySelector('input[id*="long_description"]'))''')
+            if ready:
+                break
+            await page.wait_for_timeout(100)
+            
         await page.evaluate('''(text) => {
             if (window.tinymce && window.tinymce.activeEditor) {
                 window.tinymce.activeEditor.setContent(text.replace(/\\n/g, '<br>'));
@@ -484,7 +505,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     # ------------------ STEP 7: TAB 4 (IMAGES & PHOTO UPLOAD) ------------------
     print("--> Configuring Tab 4: Uploading Genuine Signboard / Storefront Photo...")
     await page.click('button:has-text("Images")')
-    await page.wait_for_timeout(400)
+    await page.wait_for_timeout(200)
     await page.evaluate('''() => {
         const el = document.getElementById("data.dynamic_data.logo_display_type");
         if (el && el.options.length > 1) {
@@ -493,9 +514,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         }
     }''')
     
-    # -------------------------------------------------------------
     # SMART ASSET RESOLUTION (ORIGINAL FIRST -> CANVA PRO FALLBACK)
-    # -------------------------------------------------------------
     firm_name = lead.get("name", "")
     from backend.photo_engine import resolve_lead_assets_smart
     asset_res = await resolve_lead_assets_smart(lead)
@@ -518,33 +537,29 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             if logo_upload_file and os.path.exists(logo_upload_file):
                 print(f"--> Attaching Logo FilePond: {logo_upload_file}")
                 await file_inputs[0].set_input_files(logo_upload_file)
-                await page.wait_for_timeout(400)
+                await page.wait_for_timeout(200)
             
             if len(file_inputs) > 1 and banner_upload_file and os.path.exists(banner_upload_file):
                 print(f"--> Attaching Banner FilePond: {banner_upload_file}")
                 await file_inputs[1].set_input_files(banner_upload_file)
-                await page.wait_for_timeout(400)
+                await page.wait_for_timeout(200)
 
-            print("--> Waiting for FilePond upload to reach 100% completion...")
+            print("--> Waiting for FilePond upload to reach 100% completion (Safe dynamic check)...")
             needed_files = 2 if (logo_upload_file and banner_upload_file) else 1
-            for attempt in range(30):  # up to 15 seconds
+            for attempt in range(40):  # up to 6 seconds dynamic
                 busy_count = await page.locator('.filepond--item[data-filepond-item-state*="busy"]').count()
                 complete_count = await page.locator('.filepond--item[data-filepond-item-state="processing-complete"]').count()
                 if busy_count == 0 and complete_count >= needed_files:
                     print(f"✓ All {complete_count} FilePond items uploaded completely (state=processing-complete)!")
                     break
-                await page.wait_for_timeout(500)
-            
-            await page.wait_for_timeout(1000)
+                await page.wait_for_timeout(150)
     except Exception as up_err:
-        print(f"⚠️ Photo upload error: {up_err}")
-
-    # DO NOT switch back to Tab 1; stay on Images tab so FilePond state remains bound!
+        print(f"⚠️ Photo upload warning: {up_err}")
 
     # ------------------ STEP 8: DRY-RUN vs LIVE SUBMISSION ------------------
     if dry_run:
         desktop_dir = os.path.expanduser("~/Desktop")
-        clean_name = re.sub(r'\W+', '_', lead['name'])[:25]
+        clean_name = re.sub(r'\\W+', '_', lead['name'])[:25]
         screenshot_path = os.path.join(desktop_dir, f"Preview_Row_{lead['row_idx']}_{clean_name}.png")
         await page.screenshot(path=screenshot_path, full_page=True)
         print(f"📸 DRY RUN: Full-page proof screenshot saved to:")
@@ -560,9 +575,9 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         create_btn = page.locator('button[type="submit"]:has-text("Create")')
         await create_btn.first.click()
         
-        # Wait up to 10 seconds for redirect to /business-listings/(\d+)
-        for _ in range(20):
-            await page.wait_for_timeout(500)
+        # Wait up to 10 seconds for redirect to /business-listings/(\d+) (Fast dynamic 150ms check)
+        for _ in range(60):
+            await page.wait_for_timeout(150)
             if re.search(r'/business-listings/(\d+)', page.url):
                 break
         
@@ -579,16 +594,31 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             slug_conflict = any("slug" in e.lower() or "url key" in e.lower() for e in errors)
             if slug_conflict:
                 print(f"⚠️ Duplicate slug detected on portal! Resolving collision for [{lead['name']}]...")
-                # Retry 1: Append City
-                retry_name = f"{lead['name']} - {lead_city}"
-                print(f"--> Auto-retrying submission with: '{retry_name}'")
-                await page.evaluate('''async (n) => {
+                
+                # Switch to Tab 1 if needed
+                try:
+                    tab1 = page.locator('button[role="tab"]:has-text("Business Details")')
+                    if await tab1.count() > 0 and await tab1.first.is_visible():
+                        await tab1.first.click()
+                        await page.wait_for_timeout(400)
+                except Exception:
+                    pass
+
+                # Retry 1: Append City + Pincode to slug and name
+                retry_slug_1 = f"{initial_slug}-{pin_digits}"[:60]
+                retry_name_1 = f"{lead['name']} - {lead_city}"
+                print(f"--> Auto-retrying submission with Unique Slug: '{retry_slug_1}'...")
+                await page.evaluate('''async (args) => {
                     const stateEl = document.getElementById("data.state_id");
                     if (window.Alpine && window.Alpine.$data(stateEl)) {
-                        await window.Alpine.$data(stateEl).$wire.set('data.business_name', n);
+                        await window.Alpine.$data(stateEl).$wire.set('data.business_name', args.name);
+                        await window.Alpine.$data(stateEl).$wire.set('data.slug', args.slug);
                     }
-                }''', retry_name)
-                await page.fill("input[id='data.business_name']", retry_name)
+                }''', {"name": retry_name_1, "slug": retry_slug_1})
+                if await page.locator("input[id='data.business_name']").count() > 0:
+                    await page.locator("input[id='data.business_name']").fill(retry_name_1)
+                if await page.locator("input[id='data.slug']").count() > 0:
+                    await page.locator("input[id='data.slug']").fill(retry_slug_1)
                 await page.wait_for_timeout(1000)
                 await create_btn.first.click()
                 await page.wait_for_timeout(6000)
@@ -600,16 +630,23 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                 }''')
                 
                 if errors and any("slug" in e.lower() or "url key" in e.lower() for e in errors):
-                    # Retry 2: Append City + Pincode
-                    retry_name_pin = f"{lead['name']} - {lead_city} ({pin_digits})"
-                    print(f"--> Auto-retrying with location identifier: '{retry_name_pin}'")
-                    await page.evaluate('''async (n) => {
+                    # Retry 2: Append 4-digit unique random code
+                    import random, string
+                    rand_suffix = ''.join(random.choices(string.digits, k=4))
+                    retry_slug_2 = f"{initial_slug}-{rand_suffix}"[:60]
+                    retry_name_2 = f"{lead['name']} - {lead_city} ({pin_digits})"
+                    print(f"--> Auto-retrying with Location + Unique Code: '{retry_slug_2}'...")
+                    await page.evaluate('''async (args) => {
                         const stateEl = document.getElementById("data.state_id");
                         if (window.Alpine && window.Alpine.$data(stateEl)) {
-                            await window.Alpine.$data(stateEl).$wire.set('data.business_name', n);
+                            await window.Alpine.$data(stateEl).$wire.set('data.business_name', args.name);
+                            await window.Alpine.$data(stateEl).$wire.set('data.slug', args.slug);
                         }
-                    }''', retry_name_pin)
-                    await page.fill("input[id='data.business_name']", retry_name_pin)
+                    }''', {"name": retry_name_2, "slug": retry_slug_2})
+                    if await page.locator("input[id='data.business_name']").count() > 0:
+                        await page.locator("input[id='data.business_name']").fill(retry_name_2)
+                    if await page.locator("input[id='data.slug']").count() > 0:
+                        await page.locator("input[id='data.slug']").fill(retry_slug_2)
                     await page.wait_for_timeout(1000)
                     await create_btn.first.click()
                     await page.wait_for_timeout(6000)
@@ -629,8 +666,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         else:
             biz_id = f"JFJ-{lead['row_idx']:05d}"
             
-        clean_slug = re.sub(r'[^a-zA-Z0-9]+', '-', lead['name'].lower()).strip('-')
-        profile_url = f"https://jainforjain.com/{clean_slug}"
+        profile_url = f"https://jainforjain.com/{initial_slug}"
         
         print(f"✓ Listing created successfully! Business ID: {biz_id}")
         print(f"✓ Profile URL: {profile_url}")

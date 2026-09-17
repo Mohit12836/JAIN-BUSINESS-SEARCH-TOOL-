@@ -92,7 +92,7 @@ def calculate_next_run(cfg: Optional[Dict[str, Any]] = None, daily_time: str = "
     if cfg is None:
         cfg = load_autopilot_config()
         
-    interval_mins = cfg.get("interval_minutes", 30)
+    interval_mins = cfg.get("interval_minutes", 2)
     active_window = cfg.get("active_window", "24_hours")
     window_start_str = cfg.get("window_start", "00:00")
     window_end_str = cfg.get("window_end", "23:59")
