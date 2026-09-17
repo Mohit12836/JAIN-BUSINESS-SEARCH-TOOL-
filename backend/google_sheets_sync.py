@@ -185,6 +185,38 @@ async def sync_excel_to_google_sheet(
         finally:
             await browser.close()
 
+def download_google_sheet_to_excel(excel_path: str = DEFAULT_EXCEL, sheet_url: str = DEFAULT_SHEET_URL) -> bool:
+    """
+    Directly downloads the latest Google Sheet data via CSV export and updates the local Excel workbook.
+    Guarantees that the VPS/Bot always has access to all pending leads in the Google Sheet.
+    """
+    import urllib.request
+    import csv
+    import io
+    import openpyxl
+    try:
+        csv_url = "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/export?format=csv"
+        req = urllib.request.Request(csv_url, headers={"User-Agent": "Mozilla/5.0"})
+        content = urllib.request.urlopen(req, timeout=20).read().decode("utf-8")
+        reader = csv.reader(io.StringIO(content))
+        rows = list(reader)
+        if len(rows) <= 1:
+            return False
+            
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "JainForJain Data Entry Leads"
+        for r in rows:
+            ws.append(r)
+            
+        os.makedirs(os.path.dirname(excel_path), exist_ok=True)
+        wb.save(excel_path)
+        print(f"✅ Successfully pulled {len(rows)} rows from Google Sheets into {excel_path}!")
+        return True
+    except Exception as e:
+        print(f"⚠️ Warning pulling Google Sheet to Excel: {e}")
+        return False
+
 def run_sync_sync(excel_path: str = DEFAULT_EXCEL, sheet_url: str = DEFAULT_SHEET_URL) -> bool:
     """Synchronous wrapper for easy execution from CLI or other modules."""
     return asyncio.run(sync_excel_to_google_sheet(excel_path, sheet_url))

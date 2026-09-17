@@ -158,6 +158,14 @@ async def execute_streamed_live_pipeline(
     )
 
     excel_path = get_master_excel_path()
+    
+    # ALWAYS pull latest live Google Sheet so VPS never misses pending sheet leads!
+    try:
+        from backend.google_sheets_sync import download_google_sheet_to_excel
+        download_google_sheet_to_excel(excel_path)
+    except Exception as dl_err:
+        print(f"Note on Google Sheet auto-pull: {dl_err}")
+
     all_leads: List[Dict[str, Any]] = []
     if os.path.exists(excel_path):
         try:
@@ -168,7 +176,7 @@ async def execute_streamed_live_pipeline(
     unsubmitted_existing = [l for l in all_leads if "Submitted" not in str(l.get("submission_status", "")) and l.get("name")]
     
     emit_log(
-        f"📊 डेटाबेस स्थिति: कुल {len(all_leads)} लीड्स | {len(unsubmitted_existing)} पूर्व-सत्यापित अनसबमिटेड.",
+        f"📊 शीट डेटाबेस स्थिति: कुल {len(all_leads)} लीड्स | {len(unsubmitted_existing)} पूर्व-सत्यापित अनसबमिटेड.",
         stage="AUDIT",
         badge="📊",
         pct=10
@@ -250,11 +258,12 @@ async def execute_streamed_live_pipeline(
                             update_excel_lead_status(excel_path, cur_row, "", "", f"Failed: {err_str[:25]}")
                             emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
 
-            # 2. If more leads are needed to satisfy target_count, crawl Maps and stream live on-the-fly!
-            if submitted_count < target_count and not quota_reached:
+            # 2. ONLY crawl Maps if there were ZERO unsubmitted leads in the sheet!
+            # If the user already has unsubmitted leads in the sheet, NEVER search Maps!
+            if submitted_count < target_count and not quota_reached and len(unsubmitted_existing) == 0:
                 needed_fresh = target_count - submitted_count
                 emit_log(
-                    f"🏬 {needed_fresh} और लीड्स की आवश्यकता है — Maps सूक्ष्म-खोज शुरू (प्रत्येक लीड मिलते ही सीधे लाइव होगी)...",
+                    f"🏬 शीट में कोई लंबित लीड नहीं बची — Maps से {needed_fresh} नई लीड्स की खोज शुरू...",
                     stage="STREAM_SEARCH",
                     badge="🏬",
                     pct=min(15 + int((submitted_count / target_count) * 80), 30)
