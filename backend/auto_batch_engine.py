@@ -196,13 +196,19 @@ async def execute_streamed_live_pipeline(
     )
 
     portal_browser = None
-    portal_context = None
     try:
         async with async_playwright() as p:
-            portal_browser = await p.chromium.launch(
-                headless=True,
-                args=CHROMIUM_TURBO_ARGS
-            )
+            try:
+                portal_browser = await p.chromium.launch(
+                    headless=True,
+                    args=CHROMIUM_TURBO_ARGS
+                )
+            except Exception:
+                portal_browser = await p.chromium.launch(
+                    headless=True,
+                    channel="chrome",
+                    args=CHROMIUM_TURBO_ARGS
+                )
             portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
             await apply_turbo_routing(portal_context, block_images=False)
             portal_page = await portal_context.new_page()
@@ -266,7 +272,10 @@ async def execute_streamed_live_pipeline(
                             except Exception:
                                 pass
                             try:
-                                portal_browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
+                                try:
+                                    portal_browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
+                                except Exception:
+                                    portal_browser = await p.chromium.launch(headless=True, channel="chrome", args=CHROMIUM_TURBO_ARGS)
                                 portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
                                 await apply_turbo_routing(portal_context, block_images=False)
                                 portal_page = await portal_context.new_page()

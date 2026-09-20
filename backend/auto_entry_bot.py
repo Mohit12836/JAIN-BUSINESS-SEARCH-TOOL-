@@ -276,22 +276,58 @@ async def login_to_portal(page: Page, email: str, password: str) -> bool:
         
     print(f"Entering credentials for: {email}")
     await page.wait_for_selector("input[id='data.email']", timeout=15000)
-    await page.fill("input[id='data.email']", email)
-    await page.fill("input[id='data.password']", password)
-    await page.click("button[type='submit']")
-    try:
-        await page.wait_for_url(lambda u: "/member/login" not in u, timeout=12000)
-    except Exception:
-        await page.wait_for_timeout(4000)
     
+    # Wait for Livewire component to mount on login page
+    try:
+        await page.wait_for_function("() => Boolean(window.Livewire && window.Livewire.all().length > 0)", timeout=10000)
+    except Exception:
+        pass
+
+    # Native Livewire authentication (0.5s, no 405 MethodNotAllowed errors)
+    try:
+        await page.evaluate('''async (creds) => {
+            const wire = window.Livewire ? window.Livewire.all()[0]?.$wire : null;
+            if (wire) {
+                await wire.set('data.email', creds.email);
+                await wire.set('data.password', creds.password);
+                await wire.authenticate();
+                return true;
+            }
+            return false;
+        }''', {"email": email, "password": password})
+    except Exception as e:
+        print(f"Livewire login notice: {e}")
+
+    # Dynamic poll for redirect away from login
+    for _ in range(25):
+        await page.wait_for_timeout(400)
+        if "/member/login" not in page.url:
+            break
+
+    # Fallback to standard submit button only if still on login page
     if "/member/login" in page.url:
-        # Check if login button needs re-click or wait
-        await page.wait_for_timeout(2000)
-        if "/member/login" in page.url:
-            print("Login failed or still on login page!")
-            return False
+        try:
+            await page.fill("input[id='data.email']", email)
+            await page.fill("input[id='data.password']", password)
+            submit_btn = page.locator("button[type='submit']")
+            if await submit_btn.count() > 0 and await submit_btn.first.is_visible():
+                await submit_btn.first.click(timeout=3000)
+                for _ in range(15):
+                    await page.wait_for_timeout(400)
+                    if "/member/login" not in page.url:
+                        break
+        except Exception:
+            pass
+            
+    if "/member/login" in page.url:
+        err_msg = await page.evaluate('''() => {
+            const err = document.querySelector('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger');
+            return err ? err.innerText.trim() : "";
+        }''')
+        print(f"Login failed or still on login page! {err_msg}")
+        return False
         
-    print("Login successful! Redirected to member dashboard.")
+    print(f"Login successful! Redirected to: {page.url}")
     return True
 
 async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = True) -> Dict[str, Any]:
@@ -338,122 +374,128 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         raise e
     
     # ------------------ STEP 1: SELECT COUNTRY (INDIA) ------------------
-    print("--> Selecting Country (India) for Livewire cascade...")
-    await page.evaluate('''() => {
-        const el = document.getElementById("data.country_id");
-        if (el && el.value !== "1") {
-            el.value = "1";
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-    }''')
-    await page.wait_for_timeout(200)
+    # Country is 1 (India) by default on the portal. We ensure wire has it without triggering unnecessary resets.
     
-    # ------------------ STEP 2: SELECT STATE ------------------
+    # ------------------ STEP 2, 3, 4: BULLETPROOF LOCATION CASCADE (STATE -> DISTRICT -> CITY) ------------------
     target_state = resolve_state(lead)
-    print(f"--> Selecting State: {target_state}...")
-    state_wrap = page.locator('div.choices:has(select[id="data.state_id"])')
-    await state_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(200)
+    lead_city = (lead.get("city") or "Indore").strip()
+    target_dist = (lead.get("district") or lead_city).strip()
+    print(f"--> [Location Cascade] Resolving State: '{target_state}' | District: '{target_dist}' | City: '{lead_city}'...")
     
-    state_opt = state_wrap.locator('.choices__list--dropdown .choices__item--choice', has_text=target_state)
-    if await state_opt.count() > 0:
-        await state_opt.first.click()
-    else:
-        fallback_state = state_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder)').first
-        if await fallback_state.count() > 0:
-            await fallback_state.click()
-        
-    # Wait for Livewire to asynchronously populate District options
-    print("--> Waiting for Livewire to populate Districts for State...")
-    try:
-        await page.wait_for_function(
-            '''() => {
-                const sel = document.getElementById("data.district_id");
-                return sel && sel.options && Array.from(sel.options).some(o => o.value && o.value !== "");
-            }''',
-            timeout=8000
-        )
-    except Exception as d_wait_err:
-        print(f"⚠️ District options wait notice: {d_wait_err}")
-    await page.wait_for_timeout(300)
-    
-    # ------------------ STEP 3: SELECT DISTRICT ------------------
-    lead_city = lead.get("city", "Indore")
-    target_dist = lead.get("district") or lead_city
-    print(f"--> Selecting District matching '{target_dist}'...")
-    dist_wrap = page.locator('div.choices:has(select[id="data.district_id"])')
-    await dist_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(200)
-    
-    dist_opt = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)', has_text=target_dist)
-    if await dist_opt.count() > 0:
-        await dist_opt.first.click()
-    else:
-        fallback_dist = dist_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)').first
-        if await fallback_dist.count() > 0:
-            await fallback_dist.click()
-        
-    # Wait for Livewire to asynchronously populate City options
-    print("--> Waiting for Livewire to populate Cities for District...")
-    try:
-        await page.wait_for_function(
-            '''() => {
-                const sel = document.getElementById("data.city_id");
-                return sel && sel.options && Array.from(sel.options).some(o => o.value && o.value !== "");
-            }''',
-            timeout=8000
-        )
-    except Exception as c_wait_err:
-        print(f"⚠️ City options wait notice: {c_wait_err}")
-    await page.wait_for_timeout(300)
-    
-    # ------------------ STEP 4: SELECT CITY ------------------
-    print(f"--> Selecting City matching '{lead_city}'...")
-    city_wrap = page.locator('div.choices:has(select[id="data.city_id"])')
-    await city_wrap.locator('.choices__inner').click()
-    await page.wait_for_timeout(200)
-    
-    try:
-        search_input = city_wrap.locator('input.choices__input--cloned, input.choices__input')
-        if await search_input.count() > 0 and await search_input.first.is_visible():
-            await search_input.first.fill(lead_city)
-            await page.wait_for_timeout(200)
-    except Exception:
-        pass
+    loc_res = await page.evaluate('''async (args) => {
+        const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.getFormSelectOptions === 'function')?.$wire 
+                  || window.Livewire?.all()?.[0]?.$wire;
+        if (!wire) return {};
 
-    city_opt = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)', has_text=lead_city)
-    if await city_opt.count() > 0:
-        await city_opt.last.click()
-    else:
-        fallback_city = city_wrap.locator('.choices__list--dropdown .choices__item--choice:not(.choices__placeholder):not(.choices__item--disabled)').first
-        if await fallback_city.count() > 0:
-            await fallback_city.click()
-    await page.wait_for_timeout(300)
+        // 1. Set State
+        let chosenStateVal = null;
+        try {
+            const stateOpts = await wire.getFormSelectOptions('data.state_id');
+            const tState = args.targetState.toLowerCase().trim();
+            for (const opt of Object.values(stateOpts || {})) {
+                const lbl = (opt.label || "").toLowerCase();
+                if (lbl === tState) { chosenStateVal = opt.value; break; }
+            }
+            if (!chosenStateVal) {
+                for (const opt of Object.values(stateOpts || {})) {
+                    const lbl = (opt.label || "").toLowerCase();
+                    if (lbl.includes(tState) || tState.includes(lbl)) { chosenStateVal = opt.value; break; }
+                }
+            }
+            if (!chosenStateVal && Object.values(stateOpts || {}).length > 0) {
+                chosenStateVal = Object.values(stateOpts)[0].value;
+            }
+            if (chosenStateVal) {
+                await wire.set('data.state_id', chosenStateVal);
+            }
+        } catch(e) {}
+        await new Promise(r => setTimeout(r, 500));
 
-    # Double check and ensure district and city are bound in DOM and Livewire
-    await page.evaluate('''() => {
-        const stateEl = document.getElementById("data.state_id") || document.querySelector('[wire\\\\:id]');
-        if (window.Alpine && stateEl && window.Alpine.$data(stateEl)) {
-            const wire = window.Alpine.$data(stateEl).$wire;
-            const distSelect = document.getElementById("data.district_id");
-            const citySelect = document.getElementById("data.city_id");
-            if (wire && distSelect && distSelect.value) {
-                wire.set('data.district_id', distSelect.value);
+        // 2. Set District
+        let chosenDistVal = null;
+        try {
+            const distOpts = await wire.getFormSelectOptions('data.district_id');
+            const tDist = args.targetDist.toLowerCase().trim();
+            const tCity = args.leadCity.toLowerCase().trim();
+            for (const opt of Object.values(distOpts || {})) {
+                const lbl = (opt.label || "").toLowerCase();
+                if (lbl === tDist || lbl === tCity) { chosenDistVal = opt.value; break; }
             }
-            if (wire && citySelect && citySelect.value) {
-                wire.set('data.city_id', citySelect.value);
+            if (!chosenDistVal) {
+                for (const opt of Object.values(distOpts || {})) {
+                    const lbl = (opt.label || "").toLowerCase();
+                    if (lbl.includes(tDist) || tDist.includes(lbl) || lbl.includes(tCity) || tCity.includes(lbl)) {
+                        chosenDistVal = opt.value; break;
+                    }
+                }
             }
-        }
-    }''')
-    
-    loc_vals = await page.evaluate('''() => {
+            if (!chosenDistVal && Object.values(distOpts || {}).length > 0) {
+                chosenDistVal = Object.values(distOpts)[0].value;
+            }
+            if (chosenDistVal) {
+                await wire.set('data.district_id', chosenDistVal);
+            }
+        } catch(e) {}
+        await new Promise(r => setTimeout(r, 500));
+
+        // 3. Set City / Town (Registered Location)
+        let chosenCityVal = null;
+        let chosenCityLabel = "";
+        try {
+            const cityOpts = await wire.getFormSelectOptions('data.city_id');
+            const tCity = args.leadCity.toLowerCase().trim();
+            for (const opt of Object.values(cityOpts || {})) {
+                const lbl = (opt.label || "").toLowerCase();
+                if (lbl === tCity) {
+                    chosenCityVal = opt.value;
+                    chosenCityLabel = opt.label;
+                    break;
+                }
+            }
+            if (!chosenCityVal) {
+                for (const opt of Object.values(cityOpts || {})) {
+                    const lbl = (opt.label || "").toLowerCase();
+                    if (lbl.includes(tCity) || tCity.includes(lbl)) {
+                        chosenCityVal = opt.value;
+                        chosenCityLabel = opt.label;
+                        break;
+                    }
+                }
+            }
+            if (!chosenCityVal && Object.values(cityOpts || {}).length > 0) {
+                const first = Object.values(cityOpts)[0];
+                chosenCityVal = first.value;
+                chosenCityLabel = first.label;
+            }
+            
+            // Fallback standard IDs if empty
+            if (!chosenCityVal) {
+                if (tCity.includes("indore")) chosenCityVal = 1419;
+                else if (tCity.includes("jaipur")) chosenCityVal = 1;
+                else if (tCity.includes("ahmedabad")) chosenCityVal = 3;
+                else if (tCity.includes("surat")) chosenCityVal = 4;
+                else chosenCityVal = 1;
+            }
+
+            if (chosenCityVal) {
+                await wire.set('data.city_id', chosenCityVal);
+            }
+        } catch(e) {}
+        await new Promise(r => setTimeout(r, 500));
+
         return {
-            state: document.getElementById("data.state_id")?.value || "",
-            district: document.getElementById("data.district_id")?.value || "",
-            city: document.getElementById("data.city_id")?.value || ""
+            state: wire.get('data.state_id'),
+            district: wire.get('data.district_id'),
+            city: wire.get('data.city_id'),
+            cityLabel: chosenCityLabel
         };
-    }''')
-    print(f"--> [Location Verified] State ID: {loc_vals['state']} | District ID: {loc_vals['district']} | City ID: {loc_vals['city']}")
+    }''', {
+        "targetState": target_state,
+        "targetDist": target_dist,
+        "leadCity": lead_city
+    })
+    
+    print(f"--> [Location Verified] State ID: {loc_res.get('state')} | District ID: {loc_res.get('district')} | City ID: {loc_res.get('city')} ({loc_res.get('cityLabel', '')})")
 
     # ------------------ STEP 5: ATOMIC SAFE ALL-FIELDS INJECTION (0.1s) ------------------
     pin_digits = re.sub(r'\D', '', lead.get("pincode", ""))
@@ -480,24 +522,22 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     
     print(f"--> [Safe Turbo] Atomically Injecting All Form Fields (Category ID: {cat_id} | Unique Slug: {initial_slug})...")
     await page.evaluate('''async (args) => {
-        // 1. Livewire Alpine $wire binding
-        const stateEl = document.getElementById("data.state_id") || document.querySelector('[wire\\\\:id]');
-        if (window.Alpine && stateEl && window.Alpine.$data(stateEl)) {
-            const wire = window.Alpine.$data(stateEl).$wire;
-            if (wire) {
-                await wire.set('data.business_name', args.name);
-                await wire.set('data.slug', args.slug);
-                await wire.set('data.pincode', args.pincode);
-                await wire.set('data.address', args.address);
-                await wire.set('data.mobile', args.mobile);
-                await wire.set('data.whatsapp', args.whatsapp);
-                await wire.set('data.l1_category', args.catId);
-                if (args.email) await wire.set('data.email', args.email);
-                if (args.website) await wire.set('data.website', args.website);
-                if (args.lat) await wire.set('data.latitude', args.lat);
-                if (args.lng) await wire.set('data.longitude', args.lng);
-                if (args.mapLink) await wire.set('data.dynamic_data.map_link', args.mapLink);
-            }
+        // 1. Livewire $wire direct binding
+        const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
+                  || window.Livewire?.all()?.[0]?.$wire;
+        if (wire) {
+            await wire.set('data.business_name', args.name);
+            await wire.set('data.slug', args.slug);
+            await wire.set('data.pincode', args.pincode);
+            await wire.set('data.address', args.address);
+            await wire.set('data.mobile', args.mobile);
+            await wire.set('data.whatsapp', args.whatsapp);
+            await wire.set('data.l1_category', args.catId);
+            if (args.email) await wire.set('data.email', args.email);
+            if (args.website) await wire.set('data.website', args.website);
+            if (args.lat) await wire.set('data.latitude', args.lat);
+            if (args.lng) await wire.set('data.longitude', args.lng);
+            if (args.mapLink) await wire.set('data.dynamic_data.map_link', args.mapLink);
         }
         
         // 2. Immediate Direct DOM sync with bubbling events (Ensures form validity)
@@ -749,9 +789,11 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
 
 async def run_auto_entry_batch(
     excel_path: Optional[str] = None,
-    dry_run: bool = True,
+    dry_run: bool = False,
     limit: Optional[int] = None,
     city_filter: Optional[str] = None,
+    include_failed: bool = True,
+    workers: Optional[int] = None,
     email: str = DEFAULT_USER,
     password: str = DEFAULT_PASS
 ):
@@ -761,14 +803,17 @@ async def run_auto_entry_batch(
         
     print("==========================================================")
     print("     JAINFORJAIN.COM AUTONOMOUS DATA ENTRY BOT           ")
-    print(f" Mode: {'🔍 DRY-RUN PREVIEW (No Live Data Created)' if dry_run else '🚀 LIVE SUBMISSION'}")
+    print(f" Mode: {'🔍 DRY-RUN PREVIEW (No Live Data Created)' if dry_run else '🚀 LIVE SUBMISSION (DIRECT PORTAL PUBLISH)'}")
     print(f" Target Excel: {excel_path}")
     if city_filter:
         print(f" Priority City: {city_filter}")
     print("==========================================================")
     
     leads = load_leads_from_excel(excel_path)
-    ready_leads = [l for l in leads if l["submission_status"] in ["Ready to Submit", "", None]]
+    if include_failed:
+        ready_leads = [l for l in leads if l["submission_status"] in ["Ready to Submit", "", None] or str(l.get("submission_status", "")).startswith("Failed")]
+    else:
+        ready_leads = [l for l in leads if l["submission_status"] in ["Ready to Submit", "", None]]
     
     if city_filter:
         city_leads = [l for l in ready_leads if city_filter.lower() in str(l.get("city", "")).lower()]
@@ -776,7 +821,7 @@ async def run_auto_entry_batch(
         ready_leads = city_leads + other_leads
     
     print(f"Total leads in Excel: {len(leads)}")
-    print(f"Leads ready for submission: {len(ready_leads)}")
+    print(f"Leads pending for submission: {len(ready_leads)}")
     
     if not ready_leads:
         print("All leads have already been submitted! Nothing to process.")
@@ -797,10 +842,17 @@ async def run_auto_entry_batch(
     context = None
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=True,
-                args=CHROMIUM_TURBO_ARGS
-            )
+            try:
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=CHROMIUM_TURBO_ARGS
+                )
+            except Exception:
+                browser = await p.chromium.launch(
+                    channel="chrome",
+                    headless=True,
+                    args=CHROMIUM_TURBO_ARGS
+                )
             context = await browser.new_context(viewport={"width": 1400, "height": 1000})
             
             # Apply Turbo Network Routing (Blocks fonts, video, trackers to speed up form loads)
@@ -818,7 +870,8 @@ async def run_auto_entry_batch(
 
             # High-Speed Parallel Worker Queue
             from backend.config import MAX_PORTAL_CONCURRENCY
-            concurrency = min(MAX_PORTAL_CONCURRENCY, len(ready_leads))
+            effective_workers = workers or MAX_PORTAL_CONCURRENCY
+            concurrency = min(effective_workers, len(ready_leads))
             print(f"\n⚡ Launching {concurrency} Concurrent Workers for Turbo Speed Submission (Zero Error Mode)...")
             
             queue = asyncio.Queue()
@@ -881,18 +934,26 @@ async def run_auto_entry_batch(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="JainForJain Autonomous Entry Bot")
     parser.add_argument("--excel", default=None, help="Path to Excel sheet (defaults to auto-resolved path)")
-    parser.add_argument("--live", action="store_true", help="Perform LIVE submission (default is Dry-Run)")
-    parser.add_argument("--limit", type=int, default=1, help="Number of leads to process")
-    
+    parser.add_argument("--dry-run", action="store_true", help="Perform DRY-RUN preview (default is now LIVE submission)")
+    parser.add_argument("--live", action="store_true", default=True, help="Perform LIVE submission (default)")
+    parser.add_argument("--all-pending", action="store_true", help="Process ALL pending and failed leads in Excel")
+    parser.add_argument("--limit", type=int, default=None, help="Number of leads to process")
+    parser.add_argument("--workers", type=int, default=3, help="Number of concurrent browser workers (default: 3)")
     parser.add_argument("--city", default=None, help="Prioritize leads for specific city (e.g. 'Indore')")
     
     args = parser.parse_args()
-    dry_run_flag = not args.live
+    dry_run_flag = args.dry_run
     target_excel = args.excel or get_master_excel_path()
     
+    limit_val = args.limit
+    if not limit_val and not args.all_pending:
+        limit_val = 5
+        
     asyncio.run(run_auto_entry_batch(
         excel_path=target_excel,
         dry_run=dry_run_flag,
-        limit=args.limit,
-        city_filter=args.city
+        limit=limit_val,
+        city_filter=args.city,
+        include_failed=True,
+        workers=args.workers
     ))

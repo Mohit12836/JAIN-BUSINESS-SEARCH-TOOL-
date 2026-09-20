@@ -745,7 +745,10 @@ async def generate_single_firm_assets(firm: dict, browser=None, force: bool = Fa
     close_browser_at_end = False
     if browser is None:
         p = await async_playwright().start()
-        browser = await p.chromium.launch()
+        try:
+            browser = await p.chromium.launch()
+        except Exception:
+            browser = await p.chromium.launch(channel="chrome")
         close_browser_at_end = True
 
     try:
@@ -770,7 +773,10 @@ async def generate_batch_assets(records: list, max_concurrent: int = 4, force: b
     if not records:
         return records
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        try:
+            browser = await p.chromium.launch()
+        except Exception:
+            browser = await p.chromium.launch(channel="chrome")
         sem = asyncio.Semaphore(max_concurrent)
 
         async def worker(r):

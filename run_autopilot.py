@@ -57,10 +57,12 @@ async def main():
     print_banner()
     
     parser = argparse.ArgumentParser(description="JainBiz Auto-Pilot Pipeline")
-    parser.add_argument("--mode", choices=["auto", "scrape", "sync", "submit", "manual"], default=None)
+    parser.add_argument("--mode", choices=["auto", "scrape", "sync", "submit", "manual", "live-pending"], default=None)
     parser.add_argument("--entity-type", choices=["commercial", "mandir", "trust", "sangh", "all"], default=None)
     parser.add_argument("--count", type=int, default=None, help="Number of listings to process")
-    parser.add_argument("--live", action="store_true", help="Submit live to JainForJain")
+    parser.add_argument("--live", action="store_true", default=True, help="Submit live to JainForJain (default)")
+    parser.add_argument("--dry-run", action="store_true", help="Run in dry-run preview mode")
+    parser.add_argument("--workers", type=int, default=3, help="Concurrent workers for live submissions (default 3)")
     parser.add_argument("--city", default=None, help="City override for manual mode")
     parser.add_argument("--area", default=None, help="Area override for manual mode")
     parser.add_argument("--category", default=None, help="Category override for manual mode")
@@ -108,21 +110,23 @@ async def main():
         print("  [3] 🔄 Instant Google Sheet Sync (Push Desktop Excel to live Google Sheet now)")
         print("  [4] 🤖 Form Auto-Entry Only (Fill ready leads from Master Excel into portal)")
         print("  [5] 🎯 Manual Target Mode (Choose specific City, Area, or Custom Category)")
+        print("  [6] ⚡ Turbo Live All Pending Leads (Submit ALL 500+ pending & retry failed leads LIVE)")
         print("="*74)
         
         try:
-            choice = input("\nEnter action choice [1-5] (default 1): ").strip() or "1"
+            choice = input("\nEnter action choice [1-6] (default 6 for Turbo Live): ").strip() or "6"
         except Exception:
-            choice = "1"
+            choice = "6"
             
         choice_map = {
             "1": "auto",
             "2": "scrape",
             "3": "sync",
             "4": "submit",
-            "5": "manual"
+            "5": "manual",
+            "6": "live-pending"
         }
-        mode = choice_map.get(choice, "auto")
+        mode = choice_map.get(choice, "live-pending")
 
     # Handle Instant Sync Mode
     if mode == "sync":
@@ -130,6 +134,29 @@ async def main():
         print(f"\n🔄 Syncing Master Excel to Google Sheet now...")
         await sync_excel_to_google_sheet(DEFAULT_EXCEL)
         print("✓ Instant Google Sheet Sync Complete!")
+        return
+
+    # Handle Turbo Live All Pending Mode
+    if mode == "live-pending":
+        print(f"\n⚡ Starting Turbo Live Submission for ALL pending leads (Workers: {args.workers or 3})...")
+        await run_auto_entry_batch(
+            excel_path=DEFAULT_EXCEL,
+            dry_run=args.dry_run,
+            include_failed=True,
+            limit=args.count,
+            workers=args.workers or 3
+        )
+        if not args.no_sync:
+            try:
+                from backend.google_sheets_sync import sync_excel_to_google_sheet
+                print("\n🔄 Updating Google Sheet with latest live submission statuses...")
+                await sync_excel_to_google_sheet(DEFAULT_EXCEL)
+            except Exception:
+                pass
+        print("\n==========================================================================")
+        print("🎉 Turbo Live Pending process completed!")
+        print(f"📁 Updated Master Excel: {DEFAULT_EXCEL}")
+        print("==========================================================================")
         return
 
     count = args.count
@@ -173,19 +200,21 @@ async def main():
 
     # Auto Entry to JainForJain
     if mode in ["auto", "submit"]:
-        live_flag = args.live
-        if not live_flag and not args.mode:
+        live_flag = not args.dry_run
+        if not args.mode and not args.dry_run:
             try:
-                ans = input("\nDo you want LIVE submission or DRY-RUN preview? (type 'live' or press Enter for dry-run): ").strip().lower()
-                live_flag = (ans == "live")
+                ans = input("\nDo you want LIVE submission or DRY-RUN preview? (Press Enter for LIVE, or type 'dry' for preview): ").strip().lower()
+                live_flag = (ans != "dry")
             except Exception:
-                live_flag = False
+                live_flag = True
                 
-        print(f"\n--> Step 2: Running Data Entry Bot (Live={live_flag}) for up to {count} ready leads...")
+        print(f"\n--> Step 2: Running Data Entry Bot (Live={live_flag}) for up to {count} ready leads (Workers: {args.workers or 3})...")
         await run_auto_entry_batch(
             excel_path=DEFAULT_EXCEL,
             dry_run=not live_flag,
-            limit=count
+            limit=count,
+            include_failed=True,
+            workers=args.workers or 3
         )
         # Update Google Sheet with latest submission statuses
         if not args.no_sync:
