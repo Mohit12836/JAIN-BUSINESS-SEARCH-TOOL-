@@ -267,8 +267,10 @@ async def get_current_status():
         except Exception:
             pass
             
-    submitted = [l for l in leads if "Submitted" in l.get("submission_status", "")]
-    ready = [l for l in leads if l.get("submission_status") in ["Ready to Submit", "", None]]
+    from backend.auto_batch_engine import is_lead_pending
+    submitted = [l for l in leads if "Submitted" in str(l.get("submission_status", ""))]
+    ready = [l for l in leads if is_lead_pending(l)]
+    skipped = [l for l in leads if "skipped" in str(l.get("submission_status", "")).lower() or "already" in str(l.get("submission_status", "")).lower()]
     
     return {
         "city": progress.get("current_city", "Indore"),
@@ -276,6 +278,7 @@ async def get_current_status():
         "total_leads": len(leads),
         "submitted_leads": len(submitted),
         "ready_leads": len(ready),
+        "skipped_leads": len(skipped),
         "completed_areas": progress.get("completed_areas", [])
     }
 

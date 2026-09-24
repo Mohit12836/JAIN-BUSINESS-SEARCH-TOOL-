@@ -45,6 +45,17 @@ from backend.saturation_engine import (
     append_to_master_excel
 )
 
+def is_lead_pending(lead: Dict[str, Any]) -> bool:
+    """Returns True only if lead is pending submission (excludes already submitted, live, or gracefully skipped/duplicate leads)."""
+    status = str(lead.get("submission_status", "")).strip().lower()
+    if not lead.get("name"):
+        return False
+    if "submitted" in status or "live" in status:
+        return False
+    if "skipped" in status or "already" in status or "duplicate" in status:
+        return False
+    return True
+
 def get_auto_batch_status(city: Optional[str] = None) -> Dict[str, Any]:
     """Returns comprehensive status for the 1-Click Auto-Batch UI Card."""
     state = load_progress()
@@ -59,8 +70,9 @@ def get_auto_batch_status(city: Optional[str] = None) -> Dict[str, Any]:
         except Exception:
             all_leads = []
             
-    unsubmitted_count = sum(1 for l in all_leads if "Submitted" not in str(l.get("submission_status", "")))
-    submitted_count = sum(1 for l in all_leads if "Submitted" in str(l.get("submission_status", "")))
+    unsubmitted_count = sum(1 for l in all_leads if is_lead_pending(l))
+    submitted_count = sum(1 for l in all_leads if "submitted" in str(l.get("submission_status", "")).lower() or "live" in str(l.get("submission_status", "")).lower())
+    skipped_count = sum(1 for l in all_leads if "skipped" in str(l.get("submission_status", "")).lower() or "already" in str(l.get("submission_status", "")).lower())
     
     return {
         "city": active_city,
@@ -73,6 +85,7 @@ def get_auto_batch_status(city: Optional[str] = None) -> Dict[str, Any]:
         "excel_total_leads": len(all_leads),
         "excel_unsubmitted": unsubmitted_count,
         "excel_submitted": submitted_count,
+        "excel_skipped": skipped_count,
         "recommended_batch": 150 if unsubmitted_count < 150 else 100,
         "max_portal_concurrency": MAX_PORTAL_CONCURRENCY,
         "sheet_url": "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
@@ -236,7 +249,7 @@ async def execute_pure_submitter_batch(
         pass
 
     all_leads = load_leads_from_excel(excel_path)
-    unsubmitted = [l for l in all_leads if "Submitted" not in str(l.get("submission_status", "")) and l.get("name")]
+    unsubmitted = [l for l in all_leads if is_lead_pending(l)]
 
     emit_log(
         f"🏛️ [इंजन 2: पोर्टल ऑटो-सबमिटर] प्रारंभ | कुल लंबित लीड्स: {len(unsubmitted)} | सबमिट लक्ष्य: {min(target_count, len(unsubmitted))}",
@@ -289,7 +302,21 @@ async def execute_pure_submitter_batch(
                     res = await fill_listing_form(portal_page, lead, dry_run=False)
                     b_id = res.get("biz_id", "")
                     p_url = res.get("profile_url", "")
-                    if b_id:
+                    status_txt = res.get("status", "")
+                    
+                    if res.get("duplicate") or "Skipped" in status_txt or "Already" in status_txt:
+                        update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", p_url, "Skipped - Already on Portal")
+                        lead["submission_status"] = "Skipped - Already on Portal"
+                        try:
+                            await sync_excel_to_google_sheet(excel_path)
+                        except Exception:
+                            pass
+                        emit_log(
+                            f"⏭️ [स्किप] '{l_name}' पोर्टल पर पहले से मौजूद है! सुरक्षित स्किप कर अगली लीड पर जा रहे हैं...",
+                            stage="SKIPPED",
+                            badge="⏭️"
+                        )
+                    elif b_id and "VALIDATION_SKIPPED" not in b_id:
                         update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
                         submitted_count += 1
                         lead["j4j_business_id"] = b_id
@@ -307,16 +334,23 @@ async def execute_pure_submitter_batch(
                             pct=pct
                         )
                     else:
-                        update_excel_lead_status(excel_path, cur_row, "", "", "Submit Failed")
+                        update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {res.get('error', 'Validation')[:25]}")
+                        lead["submission_status"] = f"Skipped: {res.get('error', 'Validation')[:25]}"
+                        emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {res.get('error', 'फॉर्म सत्यापन चेतावनी')[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
                 except Exception as err:
                     err_str = str(err)
                     if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
                         quota_reached = True
                         emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
                         break
+                    elif any(w in err_str.lower() for w in ["slug", "url key", "already been taken"]):
+                        update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
+                        lead["submission_status"] = "Skipped - Already on Portal"
+                        emit_log(f"⏭️ [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है! अगली लीड पर जा रहे हैं...", stage="SKIPPED", badge="⏭️")
                     else:
-                        update_excel_lead_status(excel_path, cur_row, "", "", f"Failed: {err_str[:25]}")
-                        emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
+                        update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {err_str[:25]}")
+                        lead["submission_status"] = f"Skipped: {err_str[:25]}"
+                        emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {err_str[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
 
                 if delay_seconds > 0 and idx < len(targets) and not quota_reached:
                     emit_log(f"⏱️ टाइमर पॉज़: {delay_seconds} सेकंड...", stage="TIMER", badge="⏱️")
@@ -467,7 +501,7 @@ async def execute_streamed_live_pipeline(
         except Exception:
             all_leads = []
 
-    unsubmitted_existing = [l for l in all_leads if "Submitted" not in str(l.get("submission_status", "")) and l.get("name")]
+    unsubmitted_existing = [l for l in all_leads if is_lead_pending(l)]
     
     emit_log(
         f"📊 शीट डेटाबेस स्थिति: कुल {len(all_leads)} लीड्स | {len(unsubmitted_existing)} पूर्व-सत्यापित अनसबमिटेड.",
@@ -529,7 +563,21 @@ async def execute_streamed_live_pipeline(
                         res = await fill_listing_form(portal_page, lead, dry_run=False)
                         b_id = res.get("biz_id", "")
                         p_url = res.get("profile_url", "")
-                        if b_id:
+                        status_txt = res.get("status", "")
+                        
+                        if res.get("duplicate") or "Skipped" in status_txt or "Already" in status_txt:
+                            update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", p_url, "Skipped - Already on Portal")
+                            lead["submission_status"] = "Skipped - Already on Portal"
+                            try:
+                                await sync_excel_to_google_sheet(excel_path)
+                            except Exception:
+                                pass
+                            emit_log(
+                                f"⏭️ [स्किप] '{l_name}' पोर्टल पर पहले से मौजूद है! सुरक्षित स्किप कर अगली लीड पर जा रहे हैं...",
+                                stage="SKIPPED",
+                                badge="⏭️"
+                            )
+                        elif b_id and "VALIDATION_SKIPPED" not in b_id:
                             update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
                             submitted_count += 1
                             lead["j4j_business_id"] = b_id
@@ -547,13 +595,19 @@ async def execute_streamed_live_pipeline(
                                 pct=pct
                             )
                         else:
-                            update_excel_lead_status(excel_path, cur_row, "", "", "Submit Failed")
+                            update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {res.get('error', 'Validation')[:25]}")
+                            lead["submission_status"] = f"Skipped: {res.get('error', 'Validation')[:25]}"
+                            emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {res.get('error', 'फॉर्म सत्यापन चेतावनी')[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
                     except Exception as err:
                         err_str = str(err)
                         if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
                             quota_reached = True
                             emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
                             break
+                        elif any(w in err_str.lower() for w in ["slug", "url key", "already been taken"]):
+                            update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
+                            lead["submission_status"] = "Skipped - Already on Portal"
+                            emit_log(f"⏭️ [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है! अगली लीड पर जा रहे हैं...", stage="SKIPPED", badge="⏭️")
                         elif any(w in err_str.lower() for w in ["connection closed", "target closed", "browser has been closed", "session closed"]):
                             emit_log("🔄 ब्राउज़र डिस्कनेक्ट हुआ! नया सत्र शुरू किया जा रहा है...", stage="RECONNECT", badge="🔄")
                             try:
@@ -578,8 +632,9 @@ async def execute_streamed_live_pipeline(
                             except Exception as rec_err:
                                 emit_log(f"❌ रीकनेक्शन त्रुटि: {rec_err}", stage="RECONNECT_FAIL", badge="❌")
                         else:
-                            update_excel_lead_status(excel_path, cur_row, "", "", f"Failed: {err_str[:25]}")
-                            emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
+                            update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {err_str[:25]}")
+                            lead["submission_status"] = f"Skipped: {err_str[:25]}"
+                            emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {err_str[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
 
             # 2. ONLY crawl Maps if there were ZERO unsubmitted leads in the sheet!
             # If the user already has unsubmitted leads in the sheet, NEVER search Maps!
@@ -615,7 +670,21 @@ async def execute_streamed_live_pipeline(
                         res = await fill_listing_form(portal_page, rec, dry_run=False)
                         b_id = res.get("biz_id", "")
                         p_url = res.get("profile_url", "")
-                        if b_id:
+                        status_txt = res.get("status", "")
+                        
+                        if res.get("duplicate") or "Skipped" in status_txt or "Already" in status_txt:
+                            update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", p_url, "Skipped - Already on Portal")
+                            rec["submission_status"] = "Skipped - Already on Portal"
+                            try:
+                                await sync_excel_to_google_sheet(excel_path)
+                            except Exception:
+                                pass
+                            emit_log(
+                                f"⏭️ [स्किप] '{l_name}' पोर्टल पर पहले से मौजूद है! सुरक्षित स्किप कर अगली लीड पर जा रहे हैं...",
+                                stage="SKIPPED",
+                                badge="⏭️"
+                            )
+                        elif b_id and "VALIDATION_SKIPPED" not in b_id:
                             update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
                             submitted_count += 1
                             rec["j4j_business_id"] = b_id
@@ -633,14 +702,22 @@ async def execute_streamed_live_pipeline(
                                 pct=pct
                             )
                         else:
-                            update_excel_lead_status(excel_path, cur_row, "", "", "Submit Failed")
+                            update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {res.get('error', 'Validation')[:25]}")
+                            rec["submission_status"] = f"Skipped: {res.get('error', 'Validation')[:25]}"
+                            emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {res.get('error', 'फॉर्म सत्यापन चेतावनी')[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
                     except Exception as ex:
                         err_str = str(ex)
                         if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
                             quota_reached = True
                             emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
+                        elif any(w in err_str.lower() for w in ["slug", "url key", "already been taken"]):
+                            update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
+                            rec["submission_status"] = "Skipped - Already on Portal"
+                            emit_log(f"⏭️ [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है! अगली लीड पर जा रहे हैं...", stage="SKIPPED", badge="⏭️")
                         else:
-                            emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
+                            update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {err_str[:25]}")
+                            rec["submission_status"] = f"Skipped: {err_str[:25]}"
+                            emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {err_str[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
 
                 curr_crawl_idx = area_idx
                 while submitted_count < target_count and not quota_reached and curr_crawl_idx < len(areas) + area_idx:

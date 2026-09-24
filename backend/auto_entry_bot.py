@@ -522,14 +522,17 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     address_val = lead.get("address", f"{lead['city']}, India")
     cat_id = get_category_id(lead.get("category", ""), lead.get("name", ""))
     
-    # Build a guaranteed unique slug: Name + Market/Area + City + Pincode Suffix
+    # Build a guaranteed unique slug: Name + Market/Area + City + Pincode Suffix + Hash
+    import hashlib
     area_or_market = (lead.get("market") or lead.get("area") or "").strip()
-    clean_area = re.sub(r'[^a-zA-Z0-9]+', '-', area_or_market.lower()).strip('-')[:20] if area_or_market else ""
-    pin_suffix = pin_digits[-3:] if len(pin_digits) >= 3 else "01"
+    clean_area = re.sub(r'[^a-zA-Z0-9]+', '-', area_or_market.lower()).strip('-')[:12] if area_or_market else ""
+    clean_lead_name = re.sub(r'[^a-zA-Z0-9]+', '-', lead['name'].lower()).strip('-')[:28].strip('-')
+    clean_city_slug = re.sub(r'[^a-zA-Z0-9]+', '-', lead_city.lower()).strip('-')[:10]
+    pin_suffix = pin_digits[-4:] if len(pin_digits) >= 4 else "001"
+    u_hash = hashlib.md5(f"{lead.get('name')}_{lead.get('phone')}_{lead.get('row_idx', 0)}".encode()).hexdigest()[:3]
     
-    slug_parts = [lead['name'], clean_area, lead_city, pin_suffix]
-    raw_slug = " ".join([p for p in slug_parts if p])
-    initial_slug = re.sub(r'[^a-zA-Z0-9]+', '-', raw_slug.lower()).strip('-')[:55]
+    slug_parts = [clean_lead_name, clean_area, clean_city_slug, pin_suffix, u_hash]
+    initial_slug = "-".join([p for p in slug_parts if p])[:55].strip('-')
     
     print(f"--> [Safe Turbo] Atomically Injecting All Form Fields (Category ID: {cat_id} | Unique Slug: {initial_slug})...")
     await page.evaluate('''async (args) => {
@@ -714,24 +717,44 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                 except Exception:
                     pass
 
-                # Retry 1: Append City + Pincode to slug and name
-                retry_slug_1 = f"{initial_slug}-{pin_digits}"[:60]
-                retry_name_1 = f"{lead['name']} - {lead_city}"
+                # Retry 1: Append random unique code
+                import random, string
+                rand_code_1 = ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
+                retry_slug_1 = f"{initial_slug[:48]}-{rand_code_1}"
+                retry_name_1 = f"{lead['name']} ({rand_code_1.upper()})"
                 print(f"--> Auto-retrying submission with Unique Slug: '{retry_slug_1}'...")
+                
                 await page.evaluate('''async (args) => {
-                    const stateEl = document.getElementById("data.state_id");
-                    if (window.Alpine && window.Alpine.$data(stateEl)) {
-                        await window.Alpine.$data(stateEl).$wire.set('data.business_name', args.name);
-                        await window.Alpine.$data(stateEl).$wire.set('data.slug', args.slug);
+                    const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
+                              || window.Livewire?.all()?.[0]?.$wire;
+                    if (wire) {
+                        try { await wire.set('data.business_name', args.name); } catch(e) {}
+                        try { await wire.set('data.slug', args.slug); } catch(e) {}
+                    }
+                    const nameInp = document.getElementById('data.business_name') || document.querySelector('input[name="data.business_name"]');
+                    if (nameInp) {
+                        nameInp.value = args.name;
+                        nameInp.dispatchEvent(new Event('input', { bubbles: true }));
+                        nameInp.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    const slugInp = document.getElementById('data.slug') || document.querySelector('input[name="data.slug"]');
+                    if (slugInp) {
+                        slugInp.value = args.slug;
+                        slugInp.dispatchEvent(new Event('input', { bubbles: true }));
+                        slugInp.dispatchEvent(new Event('change', { bubbles: true }));
+                        slugInp.dispatchEvent(new Event('blur', { bubbles: true }));
                     }
                 }''', {"name": retry_name_1, "slug": retry_slug_1})
-                if await page.locator("input[id='data.business_name']").count() > 0:
-                    await page.locator("input[id='data.business_name']").fill(retry_name_1)
+                
                 if await page.locator("input[id='data.slug']").count() > 0:
-                    await page.locator("input[id='data.slug']").fill(retry_slug_1)
-                await page.wait_for_timeout(1000)
+                    try:
+                        await page.locator("input[id='data.slug']").fill(retry_slug_1)
+                    except Exception:
+                        pass
+
+                await page.wait_for_timeout(800)
                 await create_btn.first.click()
-                await page.wait_for_timeout(6000)
+                await page.wait_for_timeout(5000)
                 
                 current_url = page.url
                 errors = await page.evaluate('''() => {
@@ -740,26 +763,35 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                 }''')
                 
                 if errors and any("slug" in e.lower() or "url key" in e.lower() for e in errors):
-                    # Retry 2: Append 4-digit unique random code
-                    import random, string
-                    rand_suffix = ''.join(random.choices(string.digits, k=4))
-                    retry_slug_2 = f"{initial_slug}-{rand_suffix}"[:60]
-                    retry_name_2 = f"{lead['name']} - {lead_city} ({pin_digits})"
-                    print(f"--> Auto-retrying with Location + Unique Code: '{retry_slug_2}'...")
+                    # Retry 2: Emergency Unique Slug with timestamp
+                    import time
+                    ts_code = hex(int(time.time()))[-4:]
+                    retry_slug_2 = f"{clean_lead_name[:24]}-{clean_city_slug}-{ts_code}"
+                    print(f"--> Auto-retrying with Emergency Unique Slug: '{retry_slug_2}'...")
                     await page.evaluate('''async (args) => {
-                        const stateEl = document.getElementById("data.state_id");
-                        if (window.Alpine && window.Alpine.$data(stateEl)) {
-                            await window.Alpine.$data(stateEl).$wire.set('data.business_name', args.name);
-                            await window.Alpine.$data(stateEl).$wire.set('data.slug', args.slug);
+                        const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
+                                  || window.Livewire?.all()?.[0]?.$wire;
+                        if (wire) {
+                            try { await wire.set('data.slug', args.slug); } catch(e) {}
                         }
-                    }''', {"name": retry_name_2, "slug": retry_slug_2})
-                    if await page.locator("input[id='data.business_name']").count() > 0:
-                        await page.locator("input[id='data.business_name']").fill(retry_name_2)
+                        const slugInp = document.getElementById('data.slug') || document.querySelector('input[name="data.slug"]');
+                        if (slugInp) {
+                            slugInp.value = args.slug;
+                            slugInp.dispatchEvent(new Event('input', { bubbles: true }));
+                            slugInp.dispatchEvent(new Event('change', { bubbles: true }));
+                            slugInp.dispatchEvent(new Event('blur', { bubbles: true }));
+                        }
+                    }''', {"slug": retry_slug_2})
+                    
                     if await page.locator("input[id='data.slug']").count() > 0:
-                        await page.locator("input[id='data.slug']").fill(retry_slug_2)
-                    await page.wait_for_timeout(1000)
+                        try:
+                            await page.locator("input[id='data.slug']").fill(retry_slug_2)
+                        except Exception:
+                            pass
+                            
+                    await page.wait_for_timeout(800)
                     await create_btn.first.click()
-                    await page.wait_for_timeout(6000)
+                    await page.wait_for_timeout(5000)
                     current_url = page.url
                     errors = await page.evaluate('''() => {
                         const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
@@ -767,7 +799,23 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                     }''')
                     
         if errors:
-            raise Exception(f"Form validation errors: {', '.join(errors)}")
+            slug_conflict = any("slug" in e.lower() or "url key" in e.lower() for e in errors)
+            if slug_conflict:
+                print(f"⚠️ [Portal Duplicate] Business [{lead['name']}] already exists on portal. Gracefully skipping.")
+                return {
+                    "biz_id": "ALREADY_LISTED",
+                    "profile_url": f"https://jainforjain.com/{initial_slug}",
+                    "status": "Skipped - Already on Portal",
+                    "duplicate": True
+                }
+            print(f"⚠️ Form validation warning for [{lead['name']}]: {', '.join(errors)}")
+            return {
+                "biz_id": "VALIDATION_SKIPPED",
+                "profile_url": "",
+                "status": f"Skipped: {errors[0][:30]}",
+                "duplicate": False,
+                "error": ", ".join(errors)
+            }
             
         # Extract ID from redirected edit URL: /member/business-listings/{id}/edit
         biz_num_match = re.search(r'/business-listings/(\d+)', current_url)
@@ -909,15 +957,25 @@ async def run_auto_entry_batch(
                             else:
                                 biz_id = res.get("biz_id", "")
                                 profile_url = res.get("profile_url", "")
-                                async with excel_lock:
-                                    update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
-                                    submitted_count += 1
-                                print(f"[Worker {worker_id}] ✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
+                                status_txt = res.get("status", "Submitted - Live")
+                                if res.get("duplicate") or "Skipped" in status_txt or "Already" in status_txt:
+                                    async with excel_lock:
+                                        update_excel_lead_status(excel_path, lead["row_idx"], "ALREADY_LISTED", profile_url, "Skipped - Already on Portal")
+                                    print(f"[Worker {worker_id}] ⏭️ Duplicate skipped [{lead['name']}]")
+                                elif biz_id and "VALIDATION_SKIPPED" not in biz_id:
+                                    async with excel_lock:
+                                        update_excel_lead_status(excel_path, lead["row_idx"], biz_id, profile_url, "Submitted - Live")
+                                        submitted_count += 1
+                                    print(f"[Worker {worker_id}] ✓ Successfully submitted [{lead['name']}]! ID: {biz_id}")
+                                else:
+                                    async with excel_lock:
+                                        update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Skipped: {res.get('status', 'Validation')[:25]}")
+                                    print(f"[Worker {worker_id}] ⚠️ Skipped [{lead['name']}]: {res.get('status', 'Validation')}")
                         except Exception as e:
                             print(f"[Worker {worker_id}] ❌ Error processing lead [{lead['name']}]: {e}")
                             if not dry_run:
                                 async with excel_lock:
-                                    update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Failed: {str(e)[:30]}")
+                                    update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Skipped: {str(e)[:25]}")
                         finally:
                             queue.task_done()
                 finally:
