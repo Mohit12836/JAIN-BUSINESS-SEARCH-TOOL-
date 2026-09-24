@@ -78,23 +78,317 @@ def get_auto_batch_status(city: Optional[str] = None) -> Dict[str, Any]:
         "sheet_url": "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
     }
 
-async def execute_master_auto_batch(
-    target_count: int = 150,
+async def execute_pure_scraper_batch(
+    target_count: int = 50,
     city: Optional[str] = None,
     category: Optional[str] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Dict[str, Any]:
     """
-    Executes the next 100-150 entries in full autonomous mode.
-    Guarantees zero missed connections across Scraper, Canva, Excel, Google Sheets, and Portal
-    with on-the-fly streaming: each lead is live on the portal the moment it is verified!
+    ENGINE 1 (PURE SCRAPER):
+    100% focused on Maps extraction, Canva Pro asset generation, Master Excel, and Google Sheet sync.
+    Zero portal interaction! Blazing fast, zero timeouts.
     """
-    return await execute_streamed_live_pipeline(
-        target_count=target_count,
-        city=city,
-        category=category,
-        progress_callback=progress_callback
+    def emit_log(msg: str, stage: str = "INFO", badge: str = "ℹ️", pct: Optional[int] = None):
+        print(f"[{stage}] {msg}")
+        if progress_callback:
+            progress_callback({
+                "type": "log",
+                "time": datetime.datetime.now().strftime("%H:%M:%S"),
+                "stage": stage,
+                "badge": badge,
+                "message": msg,
+                "percent": pct
+            })
+
+    batch_id = f"SCRAPE-{uuid.uuid4().hex[:6].upper()}"
+    state = load_progress()
+    active_city = city or state.get("current_city") or "Indore"
+    areas = CITY_MICRO_ZONES.get(active_city, ["Sarafa Bazar", "Rajwada", "Marothia Bazar", "Sitlamata Bazar", "Palasia", "Vijay Nagar"])
+    
+    area_idx = state.get("area_idx", 0)
+    current_area = areas[area_idx % len(areas)]
+    next_area = areas[(area_idx + 1) % len(areas)]
+    active_category = category or CORE_CATEGORIES[state.get("category_idx", 0) % len(CORE_CATEGORIES)]
+
+    emit_log(
+        f"🔍 [इंजन 1: लीड स्क्रैपर] प्रारंभ | लक्ष्य: {target_count} लीड्स | शहर: {active_city} | बाज़ार: {current_area}",
+        stage="INIT",
+        badge="🔍",
+        pct=5
     )
+    emit_log(
+        "⚡ 4-पैरेलल टैब्स एक्टिवेट: Google Maps से सत्यापित जैन बिज़नेस + Canva HD फ़ोटो + Excel/Google Sheet सिंक...",
+        stage="SCRAPE_START",
+        badge="⚡",
+        pct=10
+    )
+
+    excel_path = get_master_excel_path()
+    try:
+        from backend.google_sheets_sync import download_google_sheet_to_excel
+        download_google_sheet_to_excel(excel_path)
+    except Exception:
+        pass
+
+    mined_leads = []
+    curr_crawl_idx = area_idx
+    while len(mined_leads) < target_count and curr_crawl_idx < len(areas) + area_idx:
+        crawl_area_name = areas[curr_crawl_idx % len(areas)]
+        needed = target_count - len(mined_leads)
+        emit_log(
+            f"📍 बाज़ार सैचुरेशन: [{active_city} - {crawl_area_name}] | आवश्यकता: {needed} लीड्स...",
+            stage="CRAWLING",
+            badge="📍"
+        )
+        batch_leads = await crawl_area_deep(
+            city=active_city,
+            area=crawl_area_name,
+            category=active_category,
+            target_count=needed,
+            entity_type="all",
+            excel_path=excel_path,
+            auto_sync_sheets=True,
+            progress_callback=progress_callback
+        )
+        if batch_leads:
+            mined_leads.extend(batch_leads)
+        curr_crawl_idx += 1
+
+    # Record batch and advance roadmap
+    total_cum = record_search_batch(
+        batch_id=batch_id,
+        category=active_category,
+        city=active_city,
+        area_name=current_area,
+        batch_size=target_count,
+        extracted_count=len(mined_leads),
+        next_area=next_area,
+        status="Ready to Submit",
+        sync_status="Synced"
+    )
+
+    state["area_idx"] = curr_crawl_idx
+    state["total_mined"] = total_cum
+    area_key = f"{active_city} - {current_area}"
+    if area_key not in state.get("completed_areas", []):
+        state.setdefault("completed_areas", []).append(area_key)
+    save_progress(state)
+
+    emit_log(
+        f"🎉 [इंजन 1 संपन्न!] कुल {len(mined_leads)} नए जैन व्यापारी Master Excel व Google Sheet में 'Ready to Submit' स्थिति में सुरक्षित हैं!",
+        stage="COMPLETE",
+        badge="🎉",
+        pct=100
+    )
+
+    summary = {
+        "status": "success",
+        "engine": "scraper_only",
+        "batch_id": batch_id,
+        "target_count": target_count,
+        "mined_count": len(mined_leads),
+        "current_area": current_area,
+        "next_area": next_area,
+        "total_mined": total_cum,
+        "sheet_url": "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
+    }
+
+    if progress_callback:
+        progress_callback({
+            "type": "complete",
+            "message": f"🎉 {len(mined_leads)} लीड्स सफलतापूर्वक Excel व Google Sheet में सुरक्षित!",
+            "percent": 100,
+            "mined_count": len(mined_leads),
+            "summary": summary
+        })
+
+    return summary
+
+
+async def execute_pure_submitter_batch(
+    target_count: int = 50,
+    delay_seconds: int = 0,
+    progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
+) -> Dict[str, Any]:
+    """
+    ENGINE 2 (PURE PORTAL SUBMITTER):
+    100% focused on taking unsubmitted 'Ready to Submit' leads from Excel/Sheet
+    and submitting them to jainforjain.com. Zero Google Maps scraping.
+    """
+    def emit_log(msg: str, stage: str = "INFO", badge: str = "ℹ️", pct: Optional[int] = None):
+        print(f"[{stage}] {msg}")
+        if progress_callback:
+            progress_callback({
+                "type": "log",
+                "time": datetime.datetime.now().strftime("%H:%M:%S"),
+                "stage": stage,
+                "badge": badge,
+                "message": msg,
+                "percent": pct
+            })
+
+    excel_path = get_master_excel_path()
+    try:
+        from backend.google_sheets_sync import download_google_sheet_to_excel
+        download_google_sheet_to_excel(excel_path)
+    except Exception:
+        pass
+
+    all_leads = load_leads_from_excel(excel_path)
+    unsubmitted = [l for l in all_leads if "Submitted" not in str(l.get("submission_status", "")) and l.get("name")]
+
+    emit_log(
+        f"🏛️ [इंजन 2: पोर्टल ऑटो-सबमिटर] प्रारंभ | कुल लंबित लीड्स: {len(unsubmitted)} | सबमिट लक्ष्य: {min(target_count, len(unsubmitted))}",
+        stage="INIT",
+        badge="🏛️",
+        pct=5
+    )
+
+    if not unsubmitted:
+        emit_log("✓ कोई लंबित लीड नहीं है! सभी लीड्स पहले से पोर्टल पर लाइव हैं।", stage="ALL_LIVE", badge="✅", pct=100)
+        return {"status": "no_pending_leads", "submitted_count": 0}
+
+    targets = unsubmitted[:target_count]
+    submitted_count = 0
+    quota_reached = False
+
+    from playwright.async_api import async_playwright
+    from backend.system_guard import CHROMIUM_TURBO_ARGS, apply_turbo_routing, safe_close_browser, free_system_resources_completely
+
+    portal_browser = None
+    portal_context = None
+    try:
+        async with async_playwright() as p:
+            try:
+                portal_browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
+            except Exception:
+                portal_browser = await p.chromium.launch(headless=True, channel="chrome", args=CHROMIUM_TURBO_ARGS)
+            portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
+            await apply_turbo_routing(portal_context, block_images=False)
+            portal_page = await portal_context.new_page()
+
+            emit_log("🔐 jainforjain.com पर लॉगिन किया जा रहा है...", stage="LOGIN", badge="🔐", pct=10)
+            logged = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
+            if not logged:
+                emit_log("❌ पोर्टल लॉगिन विफल! क्रेडेंशियल्स जांचें.", stage="LOGIN_ERR", badge="❌")
+                return {"status": "error", "message": "Portal login failed"}
+
+            emit_log("✅ पोर्टल लॉगिन 100% सफल! ऑटो-फिलिंग शुरू...", stage="PORTAL_OK", badge="✅", pct=15)
+
+            for idx, lead in enumerate(targets, start=1):
+                if quota_reached:
+                    break
+                l_name = lead.get("name", "")
+                cur_row = lead.get("row_idx", 2)
+                owner_name = lead.get("owner", "Proprietor")
+
+                emit_log(f"📝 [{idx}/{len(targets)}] फॉर्म भरा जा रहा है: '{l_name}' ({owner_name})...", stage="SUBMITTING", badge="📝")
+
+                try:
+                    res = await fill_listing_form(portal_page, lead, dry_run=False)
+                    b_id = res.get("biz_id", "")
+                    p_url = res.get("profile_url", "")
+                    if b_id:
+                        update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
+                        submitted_count += 1
+                        lead["j4j_business_id"] = b_id
+                        lead["j4j_profile_url"] = p_url
+                        lead["submission_status"] = "Submitted - Live"
+                        try:
+                            await sync_excel_to_google_sheet(excel_path)
+                        except Exception:
+                            pass
+                        pct = min(15 + int((idx / len(targets)) * 80), 98)
+                        emit_log(
+                            f"🎉 [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर लाइव! (ID: {b_id})",
+                            stage="LIVE_SUBMITTED",
+                            badge="🎉",
+                            pct=pct
+                        )
+                    else:
+                        update_excel_lead_status(excel_path, cur_row, "", "", "Submit Failed")
+                except Exception as err:
+                    err_str = str(err)
+                    if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
+                        quota_reached = True
+                        emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
+                        break
+                    else:
+                        update_excel_lead_status(excel_path, cur_row, "", "", f"Failed: {err_str[:25]}")
+                        emit_log(f"⚠️ सबमिशन सूचना [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
+
+                if delay_seconds > 0 and idx < len(targets) and not quota_reached:
+                    emit_log(f"⏱️ टाइमर पॉज़: {delay_seconds} सेकंड...", stage="TIMER", badge="⏱️")
+                    await asyncio.sleep(delay_seconds)
+    finally:
+        await safe_close_browser(portal_browser, portal_context)
+        free_system_resources_completely()
+
+    try:
+        await sync_excel_to_google_sheet(excel_path)
+    except Exception:
+        pass
+
+    emit_log(
+        f"🏆 [इंजन 2 संपन्न!] कुल {submitted_count}/{len(targets)} लीड्स jainforjain.com पर सफलतापूर्वक लाइव हुईं!",
+        stage="COMPLETE",
+        badge="🏆",
+        pct=100
+    )
+
+    summary = {
+        "status": "success",
+        "engine": "submitter_only",
+        "submitted_count": submitted_count,
+        "total_targets": len(targets)
+    }
+
+    if progress_callback:
+        progress_callback({
+            "type": "complete",
+            "message": f"🏆 {submitted_count} लीड्स पोर्टल पर लाइव हुईं!",
+            "percent": 100,
+            "submitted_count": submitted_count,
+            "summary": summary
+        })
+
+    return summary
+
+
+async def execute_master_auto_batch(
+    target_count: int = 150,
+    city: Optional[str] = None,
+    category: Optional[str] = None,
+    mode: str = "both",
+    progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
+) -> Dict[str, Any]:
+    """
+    Modular Master Dispatcher:
+    - mode="scraper_only": Runs pure Maps crawler + Canva + Excel + Sheets (0 portal)
+    - mode="submitter_only": Runs pure Portal Submitter on existing unsubmitted leads (0 Maps)
+    - mode="both": Runs combined stream pipeline
+    """
+    if mode == "scraper_only":
+        return await execute_pure_scraper_batch(
+            target_count=target_count,
+            city=city,
+            category=category,
+            progress_callback=progress_callback
+        )
+    elif mode == "submitter_only":
+        return await execute_pure_submitter_batch(
+            target_count=target_count,
+            delay_seconds=0,
+            progress_callback=progress_callback
+        )
+    else:
+        return await execute_streamed_live_pipeline(
+            target_count=target_count,
+            city=city,
+            category=category,
+            progress_callback=progress_callback
+        )
 
 
 async def execute_streamed_live_pipeline(

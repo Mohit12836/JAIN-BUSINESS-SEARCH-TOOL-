@@ -813,6 +813,7 @@ class AutoBatchRunRequest(BaseModel):
     count: int = 150
     city: Optional[str] = None
     category: Optional[str] = None
+    mode: str = "both"  # "scraper_only", "submitter_only", "both"
 
 @app.get("/api/auto-batch/status")
 async def api_auto_batch_status(city: Optional[str] = None):
@@ -824,7 +825,8 @@ async def api_auto_batch_status(city: Optional[str] = None):
 async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: BackgroundTasks):
     """
     1-Click Master Auto-Batch Endpoint:
-    Harvests and submits the next 100-150 entries in full autonomous mode.
+    Can run pure scraper ('scraper_only'), pure portal submitter ('submitter_only'),
+    or combined pipeline ('both').
     Dispatches real-time SSE progress events to /api/stream-progress/{task_id}.
     """
     from backend.auto_batch_engine import execute_master_auto_batch
@@ -834,6 +836,7 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
         "batch_size": req.count,
         "city": req.city,
         "category": req.category,
+        "mode": req.mode,
         "events": []
     }
     TASK_LISTENERS[task_id] = []
@@ -854,6 +857,7 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
                 target_count=req.count,
                 city=req.city,
                 category=req.category,
+                mode=req.mode,
                 progress_callback=dispatch_event
             )
             TASKS[task_id]["status"] = "completed"

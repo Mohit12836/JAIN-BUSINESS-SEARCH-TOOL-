@@ -317,12 +317,53 @@
           </div>
         </div>
 
-        <!-- Big 1-Click Action Button -->
-        <button id="btnRunMasterAutoBatch" onclick="runMasterAutoBatch()" class="spring-press w-full py-4 sm:py-5 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-black text-sm sm:text-base md:text-lg shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-3 cursor-pointer border border-white/20">
-          <span class="text-xl sm:text-2xl" id="iconMasterAutoBatch">🚀</span>
-          <span id="textMasterAutoBatch">1-क्लिक ऑटो-रन: अगले 150 एंट्रीज़ पोर्टल पर लाइव करें</span>
-          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-        </button>
+        <!-- TWO SEPARATE DEDICATED ENGINES (SCRAPER vs PORTAL SUBMITTER) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          <!-- Engine 1: Pure Scraper Only -->
+          <div class="bg-gradient-to-br from-indigo-50/90 to-purple-50/90 p-5 rounded-2xl border-2 border-indigo-300 shadow-md space-y-3 flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-indigo-600 text-white uppercase tracking-wider">इंजन 1 • शुद्ध स्क्रैपर</span>
+                <span class="text-xs font-bold text-indigo-700">₹0 API • 4 पैरेलल टैब्स</span>
+              </div>
+              <h3 class="text-base font-extrabold text-slate-900">🔍 सिर्फ लीड्स निकालें (Scraper Only)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Google Maps से 100% जैन बिज़नेस खोजेगा, Canva HD लोगो व बैनर बनाएगा और <b>Master Excel व Google Sheet में सुरक्षित सेव करेगा</b>। पोर्टल को बिल्कुल नहीं छुएगा (सुपरफास्ट स्पीड)।
+              </p>
+            </div>
+            <button id="btnRunScraperOnly" onclick="runEngineMode('scraper_only')" class="spring-press w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-sm shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 cursor-pointer border border-white/20">
+              <span id="iconScraperOnly">🔍</span>
+              <span id="textScraperOnly">सिर्फ स्क्रैपर चलाएं (ताज़ा लीड्स खोजें)</span>
+            </button>
+          </div>
+
+          <!-- Engine 2: Pure Submitter Only -->
+          <div class="bg-gradient-to-br from-emerald-50/90 to-teal-50/90 p-5 rounded-2xl border-2 border-emerald-300 shadow-md space-y-3 flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">इंजन 2 • शुद्ध सबमिटर</span>
+                <span class="text-xs font-bold text-emerald-700">ऑटो-फिलिंग • 0s डिले</span>
+              </div>
+              <h3 class="text-base font-extrabold text-slate-900">🏛️ सिर्फ पोर्टल पर सबमिट करें (Submitter Only)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                एक्सेल/शीट में जितनी भी <b class="text-amber-700 font-bold" id="panelUnsubmittedBadge">लंबित लीड्स</b> हैं, उन्हें सीधे <b>jainforjain.com पर फ़ोटो सहित लाइव सबमिट करेगा</b> और JFJ-ID कैप्चर करेगा। मैप्स स्क्रैप नहीं करेगा।
+              </p>
+            </div>
+            <button id="btnRunSubmitterOnly" onclick="runEngineMode('submitter_only')" class="spring-press w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer border border-white/20">
+              <span id="iconSubmitterOnly">🚀</span>
+              <span id="textSubmitterOnly">लंबित लीड्स पोर्टल पर सबमिट करें</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Optional: Combined Both Engine Button -->
+        <div class="text-center pt-1">
+          <button id="btnRunMasterAutoBatch" onclick="runEngineMode('both')" class="spring-press inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 bg-white/80 hover:bg-indigo-50 px-4 py-2 rounded-xl border border-slate-200 cursor-pointer transition-all">
+            <span id="iconMasterAutoBatch">⚡</span>
+            <span id="textMasterAutoBatch">दोनों काम एक साथ करें (Combined Live Pipeline)</span>
+            <span class="text-slate-400">➔</span>
+          </button>
+        </div>
 
         <!-- All Connections Solid Verification Strip ("सारे कनेक्शन सही हैं") -->
         <div class="pt-2 border-t border-indigo-100 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-600">
@@ -2879,10 +2920,18 @@
       }
     }
 
-    async function runMasterAutoBatch() {
-      const btn = document.getElementById('btnRunMasterAutoBatch');
-      const btnText = document.getElementById('textMasterAutoBatch');
-      const btnIcon = document.getElementById('iconMasterAutoBatch');
+    async function runEngineMode(mode = 'both') {
+      const btnScraper = document.getElementById('btnRunScraperOnly');
+      const textScraper = document.getElementById('textScraperOnly');
+      const iconScraper = document.getElementById('iconScraperOnly');
+
+      const btnSubmitter = document.getElementById('btnRunSubmitterOnly');
+      const textSubmitter = document.getElementById('textSubmitterOnly');
+      const iconSubmitter = document.getElementById('iconSubmitterOnly');
+
+      const btnBoth = document.getElementById('btnRunMasterAutoBatch');
+      const textBoth = document.getElementById('textMasterAutoBatch');
+      const iconBoth = document.getElementById('iconMasterAutoBatch');
 
       const consoleSec = document.getElementById('liveConsoleSection');
       if (consoleSec) {
@@ -2892,36 +2941,54 @@
 
       stopConsoleTimer();
       const timerEl = document.getElementById('consoleTimer');
-      if (timerEl) timerEl.innerText = '⚡ 0s डिले (2-वर्कर सेफ शील्ड)';
+      if (timerEl) {
+        if (mode === 'scraper_only') timerEl.innerText = '🔍 शुद्ध स्क्रैपर (0s डिले • 4-टैब)';
+        else if (mode === 'submitter_only') timerEl.innerText = '🏛️ पोर्टल सबमिटर (लाइव एंट्री)';
+        else timerEl.innerText = '⚡ कंबाइंड 1-क्लिक ऑटो-बैच';
+      }
       
       const pBar = document.getElementById('consoleProgressBar');
       if (pBar) pBar.style.width = '8%';
       const stageBadge = document.getElementById('consoleStageBadge');
-      if (stageBadge) stageBadge.innerText = 'AUTO_BATCH_INIT';
+      if (stageBadge) {
+        if (mode === 'scraper_only') stageBadge.innerText = 'SCRAPER_INIT';
+        else if (mode === 'submitter_only') stageBadge.innerText = 'SUBMITTER_INIT';
+        else stageBadge.innerText = 'AUTO_BATCH_INIT';
+      }
+
+      let initMsg = `🚀 1-क्लिक ऑटो-बैच प्रारंभ | लक्ष्य: अगले ${selectedAutoBatchCount} एंट्रीज़`;
+      if (mode === 'scraper_only') {
+        initMsg = `🔍 [इंजन 1: लीड स्क्रैपर] प्रारंभ | लक्ष्य: ${selectedAutoBatchCount} लीड्स | Maps ➔ Canva ➔ Master Excel ➔ Google Sheets (पोर्टल बंद)`;
+      } else if (mode === 'submitter_only') {
+        initMsg = `🏛️ [इंजन 2: पोर्टल सबमिटर] प्रारंभ | लक्ष्य: ${selectedAutoBatchCount} लीड्स | Excel ➔ jainforjain.com लाइव (मैप्स बंद)`;
+      }
 
       appendConsoleLog({
         time: new Date().toLocaleTimeString(),
-        badge: '🚀',
+        badge: mode === 'scraper_only' ? '🔍' : (mode === 'submitter_only' ? '🏛️' : '🚀'),
         stage: 'INIT',
-        message: `🚀 1-क्लिक मास्टर ऑटो-बैच प्रारंभ | लक्ष्य: अगले ${selectedAutoBatchCount} एंट्रीज़ | Scraper ➔ Canva ➔ Excel ➔ Google Sheets ➔ Portal Entry`,
+        message: initMsg,
         percent: 8
       });
 
-      if (btn) {
-        btn.disabled = true;
-        btn.classList.add('opacity-60');
-        if (btnText) btnText.innerText = `⚡ ऑटो-बैच प्रोसेसिंग जारी (अगले ${selectedAutoBatchCount} एंट्रीज़)...`;
-        if (btnIcon) btnIcon.innerText = '⏳';
-      }
+      // Disable buttons
+      if (btnScraper) { btnScraper.disabled = true; btnScraper.classList.add('opacity-60'); }
+      if (btnSubmitter) { btnSubmitter.disabled = true; btnSubmitter.classList.add('opacity-60'); }
+      if (btnBoth) { btnBoth.disabled = true; btnBoth.classList.add('opacity-60'); }
 
-      showToast(`🚀 मास्टर ऑटो-बैच शुरू: अगले ${selectedAutoBatchCount} एंट्रीज़ प्रोसेस हो रहे हैं`, 'info');
+      if (mode === 'scraper_only' && textScraper) { textScraper.innerText = `🔍 स्क्रैपिंग जारी (${selectedAutoBatchCount} लीड्स)...`; if (iconScraper) iconScraper.innerText = '⏳'; }
+      if (mode === 'submitter_only' && textSubmitter) { textSubmitter.innerText = `🏛️ पोर्टल सबमिशन जारी...`; if (iconSubmitter) iconSubmitter.innerText = '⏳'; }
+      if (mode === 'both' && textBoth) { textBoth.innerText = `⚡ ऑटो-बैच जारी...`; }
+
+      showToast(mode === 'scraper_only' ? '🔍 सिर्फ लीड स्क्रैपर शुरू!' : (mode === 'submitter_only' ? '🏛️ सिर्फ पोर्टल सबमिटर शुरू!' : '🚀 मास्टर ऑटो-बैच शुरू!'), 'info');
 
       try {
         const resp = await fetch('/api/auto-batch/run-next', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            count: selectedAutoBatchCount
+            count: selectedAutoBatchCount,
+            mode: mode
           })
         });
 
@@ -2948,22 +3015,24 @@
           if (pBar) pBar.style.width = '100%';
           if (stageBadge) stageBadge.innerText = 'COMPLETED';
 
+          const doneMsg = mode === 'scraper_only' 
+            ? `🎉 [इंजन 1 संपन्न!] सभी नई जैन लीड्स Master Excel व Google Sheet में 'Ready to Submit' स्थिति में सुरक्षित हैं!`
+            : (mode === 'submitter_only' ? `🏆 [इंजन 2 संपन्न!] सभी लंबित लीड्स jainforjain.com पर सफलतापूर्वक लाइव हुईं!` : `मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ लाइव!`);
+
           appendConsoleLog({
             time: new Date().toLocaleTimeString(),
             badge: '🏆',
             stage: 'DONE',
-            message: `मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ jainforjain.com व Google Sheet में लाइव!`,
+            message: doneMsg,
             percent: 100
           });
 
-          if (btn) {
-            btn.disabled = false;
-            btn.classList.remove('opacity-60');
-            if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
-            if (btnIcon) btnIcon.innerText = '🚀';
-          }
+          // Reset buttons
+          if (btnScraper) { btnScraper.disabled = false; btnScraper.classList.remove('opacity-60'); if (textScraper) textScraper.innerText = 'सिर्फ स्क्रैपर चलाएं (ताज़ा लीड्स खोजें)'; if (iconScraper) iconScraper.innerText = '🔍'; }
+          if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); if (textSubmitter) textSubmitter.innerText = 'लंबित लीड्स पोर्टल पर सबमिट करें'; if (iconSubmitter) iconSubmitter.innerText = '🚀'; }
+          if (btnBoth) { btnBoth.disabled = false; btnBoth.classList.remove('opacity-60'); if (textBoth) textBoth.innerText = 'दोनों काम एक साथ करें (Combined Live Pipeline)'; }
 
-          showToast(`🏆 मास्टर ऑटो-बैच पूर्ण! सभी एंट्रीज़ फ़ोटो सहित लाइव!`, 'success');
+          showToast(doneMsg, 'success');
           loadAutoBatchStatus();
           loadStatus(false);
           loadMasterLeads();
@@ -2985,12 +3054,9 @@
             message: 'त्रुटि: ' + msg
           });
 
-          if (btn) {
-            btn.disabled = false;
-            btn.classList.remove('opacity-60');
-            if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
-            if (btnIcon) btnIcon.innerText = '🔄';
-          }
+          if (btnScraper) { btnScraper.disabled = false; btnScraper.classList.remove('opacity-60'); if (textScraper) textScraper.innerText = 'सिर्फ स्क्रैपर चलाएं (ताज़ा लीड्स खोजें)'; if (iconScraper) iconScraper.innerText = '🔍'; }
+          if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); if (textSubmitter) textSubmitter.innerText = 'लंबित लीड्स पोर्टल पर सबमिट करें'; if (iconSubmitter) iconSubmitter.innerText = '🚀'; }
+          if (btnBoth) { btnBoth.disabled = false; btnBoth.classList.remove('opacity-60'); if (textBoth) textBoth.innerText = 'दोनों काम एक साथ करें (Combined Live Pipeline)'; }
 
           showToast('त्रुटि: ' + msg, 'error');
         }
@@ -3056,18 +3122,14 @@
         };
 
         eventSource.onerror = function() {
-          // Never cancel button on network jitter: seamlessly switch to polling!
           console.warn('SSE stream notice, switching to active background polling...');
           startPollingFallback();
         };
 
       } catch (err) {
-        if (btn) {
-          btn.disabled = false;
-          btn.classList.remove('opacity-60');
-          if (btnText) btnText.innerText = `1-क्लिक ऑटो-रन: अगले ${selectedAutoBatchCount} एंट्रीज़ पोर्टल पर लाइव करें`;
-          if (btnIcon) btnIcon.innerText = '🔄';
-        }
+        if (btnScraper) { btnScraper.disabled = false; btnScraper.classList.remove('opacity-60'); }
+        if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); }
+        if (btnBoth) { btnBoth.disabled = false; btnBoth.classList.remove('opacity-60'); }
         showToast('नेटवर्क त्रुटि: ' + err.message, 'error');
         appendConsoleLog({
           time: new Date().toLocaleTimeString(),
@@ -3076,6 +3138,10 @@
           message: 'कॉल विफल: ' + err.message
         });
       }
+    }
+
+    async function runMasterAutoBatch() {
+      return runEngineMode('both');
     }
 
     // ==================== ⏱️ 24/7 FULL AUTOMATION SCHEDULER LOGIC ====================
