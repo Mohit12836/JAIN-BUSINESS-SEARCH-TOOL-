@@ -4,10 +4,11 @@ Optimized for direct, zero-thinking copy-paste into JainForJain.com listing form
 Features auto-filters, clickable photo links, color-coded badges, and 3-paragraph descriptions.
 """
 
+from __future__ import annotations
 import os
 import re
 import urllib.parse
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
