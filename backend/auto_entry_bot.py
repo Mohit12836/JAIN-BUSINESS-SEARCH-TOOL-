@@ -387,6 +387,15 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                   || window.Livewire?.all()?.[0]?.$wire;
         if (!wire) return {};
 
+        const pollOptions = async (fieldName) => {
+            for (let i = 0; i < 15; i++) {
+                const opts = await wire.getFormSelectOptions(fieldName);
+                if (opts && Object.keys(opts).length > 0) return opts;
+                await new Promise(r => setTimeout(r, 60));
+            }
+            return (await wire.getFormSelectOptions(fieldName)) || {};
+        };
+
         // 1. Set State
         let chosenStateVal = null;
         try {
@@ -409,12 +418,13 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                 await wire.set('data.state_id', chosenStateVal);
             }
         } catch(e) {}
-        await new Promise(r => setTimeout(r, 500));
+        
+        // Dynamic wait for district options to populate
+        const distOpts = await pollOptions('data.district_id');
 
         // 2. Set District
         let chosenDistVal = null;
         try {
-            const distOpts = await wire.getFormSelectOptions('data.district_id');
             const tDist = args.targetDist.toLowerCase().trim();
             const tCity = args.leadCity.toLowerCase().trim();
             for (const opt of Object.values(distOpts || {})) {
@@ -436,13 +446,14 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                 await wire.set('data.district_id', chosenDistVal);
             }
         } catch(e) {}
-        await new Promise(r => setTimeout(r, 500));
+        
+        // Dynamic wait for city options to populate
+        const cityOpts = await pollOptions('data.city_id');
 
         // 3. Set City / Town (Registered Location)
         let chosenCityVal = null;
         let chosenCityLabel = "";
         try {
-            const cityOpts = await wire.getFormSelectOptions('data.city_id');
             const tCity = args.leadCity.toLowerCase().trim();
             for (const opt of Object.values(cityOpts || {})) {
                 const lbl = (opt.label || "").toLowerCase();
@@ -481,7 +492,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
                 await wire.set('data.city_id', chosenCityVal);
             }
         } catch(e) {}
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 100));
 
         return {
             state: wire.get('data.state_id'),

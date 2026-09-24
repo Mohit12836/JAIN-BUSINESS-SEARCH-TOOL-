@@ -62,6 +62,11 @@ async def apply_turbo_routing(page_or_context: Any, block_images: bool = False):
                 await route.abort()
                 return
 
+            # Block Google Maps background vector tiles, 3D geometry, and logging
+            if "/maps/vt" in url or "google.com/maps/vt" in url or "/geometry/" in url or "/maps/preview/log204" in url:
+                await route.abort()
+                return
+
             if block_images and rt == "image":
                 await route.abort()
                 return

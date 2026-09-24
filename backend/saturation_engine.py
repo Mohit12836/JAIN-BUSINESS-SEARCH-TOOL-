@@ -325,28 +325,170 @@ async def crawl_area_deep(
         free_system_resources_completely
     )
 
-    browser = None
-    context = None
+    playwright_instance = None
+    search_page = None
+    worker_pages = []
     try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(
+        playwright_instance = await async_playwright().start()
+        try:
+            browser = await playwright_instance.chromium.launch(
                 headless=True,
                 args=CHROMIUM_TURBO_ARGS
             )
-            context = await browser.new_context(
-                viewport={"width": 1280, "height": 800},
-                locale="en-IN",
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        except Exception:
+            browser = await playwright_instance.chromium.launch(
+                headless=True,
+                channel="chrome",
+                args=CHROMIUM_TURBO_ARGS
             )
             
-            # Apply Turbo Network Routing (Blocks non-essential fonts, video, and trackers)
-            await apply_turbo_routing(context, block_images=False)
-            
-            search_page = await context.new_page()
-            detail_page = await context.new_page()
+        context = await browser.new_context(
+            viewport={"width": 1280, "height": 800},
+            locale="en-IN",
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        )
         
+        # Apply Turbo Network Routing (Blocks non-essential fonts, video, trackers, and map tiles)
+        await apply_turbo_routing(context, block_images=False)
+        
+        search_page = await context.new_page()
+        
+        # 4 Parallel Worker Pages for Deep Inspection
+        NUM_WORKERS = 4
+        worker_pages = [await context.new_page() for _ in range(NUM_WORKERS)]
+        page_pool = asyncio.Queue()
+        for wp in worker_pages:
+            await page_pool.put(wp)
+
         is_exhaustive = (entity_type in ["all", "hyperlocal", "exhaustive"] or target_count >= 150)
-        
+
+        async def inspect_card_saturation(card_item: Dict[str, str]) -> Optional[Dict[str, Any]]:
+            nonlocal seen_keys
+            title = card_item.get('title', '').strip()
+            href = card_item.get('href', '')
+            if not title or not href:
+                return None
+
+            page = await page_pool.get()
+            try:
+                await page.goto(href, wait_until="domcontentloaded", timeout=12000)
+                try:
+                    await page.wait_for_selector('button[data-item-id^="phone:tel:"], button[data-item-id="address"], div[role="main"]', timeout=2000)
+                except Exception:
+                    pass
+
+                details = await page.evaluate(r'''() => {
+                    const phoneBtn = document.querySelector('button[data-item-id^="phone:tel:"]');
+                    const addrBtn = document.querySelector('button[data-item-id="address"]');
+                    const webBtn = document.querySelector('a[data-item-id="authority"]');
+                    const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
+                    
+                    const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
+                    const extraText = textContainers.map(c => c.innerText).join(' ');
+
+                    let phone = phoneBtn ? phoneBtn.getAttribute('data-item-id').replace('phone:tel:', '').trim() : '';
+                    let address = addrBtn ? addrBtn.getAttribute('aria-label').replace('Address:', '').trim() : '';
+                    let website = webBtn ? webBtn.href : '';
+                    let rating = ratingEl ? ratingEl.innerText.trim() : '';
+
+                    const rawPhotoList = [];
+                    document.querySelectorAll('button[jsaction*="heroHeaderImage"] img, button[aria-label*="Photo of" i] img, div.RZ66Rb img, img').forEach(img => {
+                        const s = img.src || img.getAttribute('src') || '';
+                        if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
+                    });
+
+                    return { phone, address, website, rating, rawPhotoList, extraText };
+                }''')
+
+                phone = details.get("phone", "")
+                address = details.get("address") or f"{area}, {city}, India"
+                extra_text = details.get("extraText", "")
+                website = details.get("website", "")
+                rating = details.get("rating", "4.8")
+                raw_photos = details.get("rawPhotoList", [])
+                
+                # Classify with Strict Jain Intelligence Filter (Zero Non-Jain Tolerance)
+                classification = classify_firm(title, address, extra_text)
+                
+                # STRICT FILTER: Only keep genuine Jain entities (Score >= 85)
+                if classification["score"] < 85 or "🔴" in classification.get("tier", ""):
+                    return None
+                    
+                owner_name = extract_owner_name(title, extra_text)
+                j4j_cat = map_to_j4j_category(category, title)
+                pincode = extract_pincode(address)
+                whatsapp = format_clean_whatsapp(phone)
+                description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
+                
+                # Extract GPS Coordinates
+                current_url = ""
+                try:
+                    current_url = page.url
+                except Exception:
+                    current_url = href
+                lat, lng = extract_lat_long(current_url or href, address)
+                district, state_val = get_state_and_district(city, address)
+                
+                # Authentic Media
+                media = process_firm_media(title, raw_photos, website, href)
+                
+                rec = {
+                    "name": title,
+                    "j4j_category": j4j_cat,
+                    "owner": owner_name,
+                    "phone": phone if phone else "Not Listed",
+                    "whatsapp": whatsapp,
+                    "email": "",
+                    "address": address,
+                    "city": city,
+                    "district": district,
+                    "state": state_val,
+                    "pincode": pincode,
+                    "latitude": lat,
+                    "longitude": lng,
+                    "rating": f"★ {rating}",
+                    "storefront_photo": media["storefront_photo"],
+                    "showcase_photo": media["showcase_photo"],
+                    "gallery_url": media["gallery_url"],
+                    "website_logo": media["website_logo"],
+                    "website": website,
+                    "maps_url": href,
+                    "description": description,
+                    "tier": classification["tier"],
+                    "score": classification["score"],
+                    "reason": classification["reason"],
+                    "area": area
+                }
+                
+                # Generate Canva Pro Assets
+                try:
+                    from backend.canva_storefront_generator import generate_single_firm_assets
+                    b_path, l_path, b_url, l_url = await generate_single_firm_assets(rec, browser=browser)
+                    rec["canva_banner_url"] = b_url
+                    rec["canva_logo_url"] = l_url
+                    rec["storefront_photo"] = b_url
+                    rec["showcase_photo"] = l_url
+                    rec["website_logo"] = l_url
+                except Exception as c_err:
+                    pass
+
+                save_scraped_lead(rec)
+                
+                if on_lead_verified_callback:
+                    try:
+                        if asyncio.iscoroutinefunction(on_lead_verified_callback):
+                            await on_lead_verified_callback(rec)
+                        else:
+                            on_lead_verified_callback(rec)
+                    except Exception as cb_err:
+                        print(f"  ⚠️ Error in on_lead_verified_callback: {cb_err}")
+
+                return rec
+            except Exception as err:
+                return None
+            finally:
+                await page_pool.put(page)
+
         for q in search_queries:
             if not is_exhaustive and len(collected_records) >= target_count:
                 break
@@ -368,19 +510,19 @@ async def crawl_area_deep(
             search_url = f"https://www.google.com/maps/search/{urllib.parse.quote(q)}"
             
             try:
-                await search_page.goto(search_url, wait_until="domcontentloaded", timeout=20000)
-                await search_page.wait_for_timeout(2000)
+                await search_page.goto(search_url, wait_until="domcontentloaded", timeout=15000)
+                try:
+                    await search_page.wait_for_selector('a.hfpxzc, div[role="feed"]', timeout=3000)
+                except Exception:
+                    pass
                 
-                # Infinite Scroll down to reach the end of the list
-                last_height = 0
-                scroll_attempts = 0
-                while scroll_attempts < 6:
-                    scroll_attempts += 1
+                # Fast responsive feed scroll (3 passes x 400ms = 1.2s total)
+                for _ in range(3):
                     await search_page.evaluate('''() => {
                         const feed = document.querySelector('div[role="feed"]');
                         if (feed) feed.scrollTop += 1800;
                     }''')
-                    await asyncio.sleep(1.2)
+                    await asyncio.sleep(0.4)
                     
                 # Collect all listing cards in this market
                 cards = await search_page.evaluate('''() => {
@@ -392,153 +534,67 @@ async def crawl_area_deep(
                 }''')
                 print(f"Found {len(cards)} places in feed for query: '{q}'")
                 
+                # Pre-filter unseen cards
+                unseen_cards = []
                 for card in cards:
+                    t = card.get('title', '').strip()
+                    h = card.get('href', '')
+                    if not t or not h:
+                        continue
+                    nt = re.sub(r'[^a-zA-Z0-9]', '', t.lower())
+                    if nt in seen_keys or is_already_scraped("", t):
+                        continue
+                    seen_keys.add(nt)
+                    unseen_cards.append(card)
+
+                # Process in parallel chunks of NUM_WORKERS
+                for chunk_idx in range(0, len(unseen_cards), NUM_WORKERS):
                     if not is_exhaustive and len(collected_records) >= target_count:
                         break
                     if is_exhaustive and query_collected >= 35:
                         break
-                        
-                    title = card['title'].strip()
-                    href = card['href']
-                    
-                    norm_title = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
-                    if norm_title in seen_keys or is_already_scraped("", title):
-                        continue
-                    seen_keys.add(norm_title)
-                    
-                    try:
-                        await detail_page.goto(href, wait_until="domcontentloaded", timeout=15000)
-                        await detail_page.wait_for_timeout(1200)
-                        
-                        details = await detail_page.evaluate(r'''() => {
-                            const phoneBtn = document.querySelector('button[data-item-id^="phone:tel:"]');
-                            const addrBtn = document.querySelector('button[data-item-id="address"]');
-                            const webBtn = document.querySelector('a[data-item-id="authority"]');
-                            const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
-                            
-                            const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
-                            const extraText = textContainers.map(c => c.innerText).join(' ');
-
-                            let phone = phoneBtn ? phoneBtn.getAttribute('data-item-id').replace('phone:tel:', '').trim() : '';
-                            let address = addrBtn ? addrBtn.getAttribute('aria-label').replace('Address:', '').trim() : '';
-                            let website = webBtn ? webBtn.href : '';
-                            let rating = ratingEl ? ratingEl.innerText.trim() : '';
-
-                            const rawPhotoList = [];
-                            document.querySelectorAll('button[jsaction*="heroHeaderImage"] img, button[aria-label*="Photo of" i] img, div.RZ66Rb img, img').forEach(img => {
-                                const s = img.src || img.getAttribute('src') || '';
-                                if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
-                            });
-
-                            return { phone, address, website, rating, rawPhotoList, extraText };
-                        }''')
-                        
-                        phone = details.get("phone", "")
-                        address = details.get("address") or f"{area}, {city}, India"
-                        extra_text = details.get("extraText", "")
-                        website = details.get("website", "")
-                        rating = details.get("rating", "4.8")
-                        raw_photos = details.get("rawPhotoList", [])
-                        
-                        # Classify with Strict Jain Intelligence Filter (Zero Non-Jain Tolerance)
-                        classification = classify_firm(title, address, extra_text)
-                        
-                        # STRICT FILTER: Only keep 100% genuine Jain entities (Score >= 85)
-                        if classification["score"] < 85 or "🔴" in classification.get("tier", ""):
-                            print(f"  ⏭️ Disqualified non-Jain: '{title}' ({classification.get('reason')})")
-                            continue
-                            
-                        owner_name = extract_owner_name(title, extra_text)
-                        j4j_cat = map_to_j4j_category(category, title)
-                        pincode = extract_pincode(address)
-                        whatsapp = format_clean_whatsapp(phone)
-                        description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
-                        
-                        # Extract GPS Coordinates
-                        current_url = detail_page.url or href
-                        lat, lng = extract_lat_long(current_url, address)
-                        district, state_val = get_state_and_district(city, address)
-                        
-                        # Authentic Media
-                        media = process_firm_media(title, raw_photos, website, href)
-                        
-                        rec = {
-                            "name": title,
-                            "j4j_category": j4j_cat,
-                            "owner": owner_name,
-                            "phone": phone if phone else "Not Listed",
-                            "whatsapp": whatsapp,
-                            "email": "",
-                            "address": address,
-                            "city": city,
-                            "district": district,
-                            "state": state_val,
-                            "pincode": pincode,
-                            "latitude": lat,
-                            "longitude": lng,
-                            "rating": f"★ {rating}",
-                            "storefront_photo": media["storefront_photo"],
-                            "showcase_photo": media["showcase_photo"],
-                            "gallery_url": media["gallery_url"],
-                            "website_logo": media["website_logo"],
-                            "website": website,
-                            "maps_url": href,
-                            "description": description,
-                            "tier": classification["tier"],
-                            "score": classification["score"],
-                            "reason": classification["reason"],
-                            "area": area
-                        }
-                        
-                        # Generate 1-2-3 Hierarchy Canva Pro Assets (1200x500 Banner & 1080x1080 Logo)
-                        try:
-                            from backend.canva_storefront_generator import generate_single_firm_assets
-                            b_path, l_path, b_url, l_url = await generate_single_firm_assets(rec, browser=browser)
-                            rec["canva_banner_url"] = b_url
-                            rec["canva_logo_url"] = l_url
-                            rec["storefront_photo"] = b_url
-                            rec["showcase_photo"] = l_url
-                            rec["website_logo"] = l_url
-                        except Exception as c_err:
-                            print(f"  ⚠️ Canva generation notice: {c_err}")
-
-                        save_scraped_lead(rec)
-                        collected_records.append(rec)
-                        query_collected += 1
-                        print(f"  ✅ [JAIN VERIFIED {len(collected_records)}/{target_count}] {title} ({owner_name}) | Tier: {classification['tier']}")
-                        if progress_callback:
-                            try:
-                                pct = min(20 + int((len(collected_records) / max(target_count, 1)) * 30), 50)
-                                progress_callback({
-                                    "type": "log",
-                                    "stage": "JAIN_VERIFIED",
-                                    "badge": "✅",
-                                    "message": f"✅ [{len(collected_records)}/{target_count}] जैन सत्यापित: {title} ({owner_name})",
-                                    "percent": pct
-                                })
-                            except Exception:
-                                pass
-
-                        if on_lead_verified_callback:
-                            try:
-                                if asyncio.iscoroutinefunction(on_lead_verified_callback):
-                                    await on_lead_verified_callback(rec)
-                                else:
-                                    on_lead_verified_callback(rec)
-                            except Exception as cb_err:
-                                print(f"  ⚠️ Error in on_lead_verified_callback: {cb_err}")
-
-                    except Exception as err:
-                        print(f"  Error on place '{title}': {err}")
-                        
+                    chunk = unseen_cards[chunk_idx:chunk_idx + NUM_WORKERS]
+                    tasks = [inspect_card_saturation(c) for c in chunk]
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                    for r in results:
+                        if isinstance(r, dict) and r:
+                            collected_records.append(r)
+                            query_collected += 1
+                            print(f"  ✅ [JAIN VERIFIED {len(collected_records)}/{target_count}] {r['name']} ({r.get('owner', '')}) | Tier: {r.get('tier')}")
+                            if progress_callback:
+                                try:
+                                    pct = min(20 + int((len(collected_records) / max(target_count, 1)) * 30), 50)
+                                    progress_callback({
+                                        "type": "log",
+                                        "stage": "JAIN_VERIFIED",
+                                        "badge": "✅",
+                                        "message": f"✅ [{len(collected_records)}/{target_count}] जैन सत्यापित: {r['name']} ({r.get('owner', '')})",
+                                        "percent": pct
+                                    })
+                                except Exception:
+                                    pass
+                            if not is_exhaustive and len(collected_records) >= target_count:
+                                break
             except Exception as q_err:
                 print(f"Error on query '{q}': {q_err}")
-                
-            await safe_close_browser(browser, context)
-            browser = None
-            context = None
+
     finally:
+        for wp in worker_pages:
+            try:
+                await wp.close()
+            except Exception:
+                pass
+        if search_page:
+            try:
+                await search_page.close()
+            except Exception:
+                pass
         await safe_close_browser(browser, context)
+        if playwright_instance:
+            try:
+                await playwright_instance.stop()
+            except Exception:
+                pass
         free_system_resources_completely()
         
     if collected_records and not on_lead_verified_callback:
