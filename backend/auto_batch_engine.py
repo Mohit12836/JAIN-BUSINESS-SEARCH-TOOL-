@@ -355,7 +355,7 @@ async def execute_pure_submitter_batch(
                             stage="SKIPPED",
                             badge="⏭️"
                         )
-                    elif b_id and "VALIDATION_SKIPPED" not in b_id:
+                    elif b_id and b_id.startswith("JFJ-") and res.get("status") == "submitted_success":
                         update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
                         submitted_count += 1
                         lead["j4j_business_id"] = b_id
@@ -367,7 +367,7 @@ async def execute_pure_submitter_batch(
                             pass
                         pct = min(15 + int((idx / len(targets)) * 80), 98)
                         emit_log(
-                            f"🎉 [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर लाइव! (ID: {b_id})",
+                            f"🎉 [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर 100% लाइव! (ID: {b_id})",
                             stage="LIVE_SUBMITTED",
                             badge="🎉",
                             pct=pct
@@ -643,7 +643,7 @@ async def execute_streamed_live_pipeline(
                                 stage="SKIPPED",
                                 badge="⏭️"
                             )
-                        elif b_id and "VALIDATION_SKIPPED" not in b_id:
+                        elif b_id and b_id.startswith("JFJ-") and res.get("status") == "submitted_success":
                             update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
                             submitted_count += 1
                             lead["j4j_business_id"] = b_id

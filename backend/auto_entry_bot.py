@@ -686,6 +686,14 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     else:
         print("🚀 LIVE SUBMISSION: Clicking Create button...")
         create_btn = page.locator('button[type="submit"]:has-text("Create")')
+        
+        server_500_detected = False
+        def on_response(response):
+            nonlocal server_500_detected
+            if response.status >= 500 and "livewire" in response.url:
+                server_500_detected = True
+        
+        page.on("response", on_response)
         await create_btn.first.click()
         
         # Wait up to 10 seconds for redirect to /business-listings/(\d+) (Fast dynamic 150ms check)
@@ -694,156 +702,142 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             if re.search(r'/business-listings/(\d+)', page.url):
                 break
         
+        try:
+            page.remove_listener("response", on_response)
+        except Exception:
+            pass
+        
         current_url = page.url
         print(f"URL after submission: {current_url}")
         
         # Check for error notifications
         errors = await page.evaluate('''() => {
-            const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
+            const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger, div.fi-no-notification'));
             return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
         }''')
         
-        if errors:
-            slug_conflict = any("slug" in e.lower() or "url key" in e.lower() for e in errors)
-            if slug_conflict:
-                print(f"⚠️ Duplicate slug detected on portal! Resolving collision for [{lead['name']}]...")
-                
-                # Switch to Tab 1 if needed
+        if errors and any("slug" in e.lower() or "url key" in e.lower() for e in errors):
+            print(f"⚠️ Duplicate slug detected on portal! Resolving collision for [{lead['name']}]...")
+            
+            # Switch to Tab 1 if needed
+            try:
+                tab1 = page.locator('button[role="tab"]:has-text("Business Details")')
+                if await tab1.count() > 0 and await tab1.first.is_visible():
+                    await tab1.first.click()
+                    await page.wait_for_timeout(400)
+            except Exception:
+                pass
+
+            # Retry 1: Append random unique code
+            import random, string
+            rand_code_1 = ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
+            retry_slug_1 = f"{initial_slug[:48]}-{rand_code_1}"
+            retry_name_1 = f"{lead['name']} ({rand_code_1.upper()})"
+            print(f"--> Auto-retrying submission with Unique Slug: '{retry_slug_1}'...")
+            
+            await page.evaluate('''async (args) => {
+                const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
+                          || window.Livewire?.all()?.[0]?.$wire;
+                if (wire) {
+                    try { await wire.set('data.business_name', args.name); } catch(e) {}
+                    try { await wire.set('data.slug', args.slug); } catch(e) {}
+                }
+                const nameInp = document.getElementById('data.business_name') || document.querySelector('input[name="data.business_name"]');
+                if (nameInp) {
+                    nameInp.value = args.name;
+                    nameInp.dispatchEvent(new Event('input', { bubbles: true }));
+                    nameInp.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                const slugInp = document.getElementById('data.slug') || document.querySelector('input[name="data.slug"]');
+                if (slugInp) {
+                    slugInp.value = args.slug;
+                    slugInp.dispatchEvent(new Event('input', { bubbles: true }));
+                    slugInp.dispatchEvent(new Event('change', { bubbles: true }));
+                    slugInp.dispatchEvent(new Event('blur', { bubbles: true }));
+                }
+            }''', {"name": retry_name_1, "slug": retry_slug_1})
+            
+            if await page.locator("input[id='data.slug']").count() > 0:
                 try:
-                    tab1 = page.locator('button[role="tab"]:has-text("Business Details")')
-                    if await tab1.count() > 0 and await tab1.first.is_visible():
-                        await tab1.first.click()
-                        await page.wait_for_timeout(400)
+                    await page.locator("input[id='data.slug']").fill(retry_slug_1)
                 except Exception:
                     pass
 
-                # Retry 1: Append random unique code
-                import random, string
-                rand_code_1 = ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-                retry_slug_1 = f"{initial_slug[:48]}-{rand_code_1}"
-                retry_name_1 = f"{lead['name']} ({rand_code_1.upper()})"
-                print(f"--> Auto-retrying submission with Unique Slug: '{retry_slug_1}'...")
-                
-                await page.evaluate('''async (args) => {
-                    const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
-                              || window.Livewire?.all()?.[0]?.$wire;
-                    if (wire) {
-                        try { await wire.set('data.business_name', args.name); } catch(e) {}
-                        try { await wire.set('data.slug', args.slug); } catch(e) {}
-                    }
-                    const nameInp = document.getElementById('data.business_name') || document.querySelector('input[name="data.business_name"]');
-                    if (nameInp) {
-                        nameInp.value = args.name;
-                        nameInp.dispatchEvent(new Event('input', { bubbles: true }));
-                        nameInp.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                    const slugInp = document.getElementById('data.slug') || document.querySelector('input[name="data.slug"]');
-                    if (slugInp) {
-                        slugInp.value = args.slug;
-                        slugInp.dispatchEvent(new Event('input', { bubbles: true }));
-                        slugInp.dispatchEvent(new Event('change', { bubbles: true }));
-                        slugInp.dispatchEvent(new Event('blur', { bubbles: true }));
-                    }
-                }''', {"name": retry_name_1, "slug": retry_slug_1})
-                
-                if await page.locator("input[id='data.slug']").count() > 0:
-                    try:
-                        await page.locator("input[id='data.slug']").fill(retry_slug_1)
-                    except Exception:
-                        pass
-
-                await page.wait_for_timeout(800)
-                await create_btn.first.click()
-                await page.wait_for_timeout(5000)
-                
-                current_url = page.url
-                errors = await page.evaluate('''() => {
-                    const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
-                    return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
-                }''')
-                
-                if errors and any("slug" in e.lower() or "url key" in e.lower() for e in errors):
-                    # Retry 2: Emergency Unique Slug with timestamp
-                    import time
-                    ts_code = hex(int(time.time()))[-4:]
-                    retry_slug_2 = f"{clean_lead_name[:24]}-{clean_city_slug}-{ts_code}"
-                    print(f"--> Auto-retrying with Emergency Unique Slug: '{retry_slug_2}'...")
-                    await page.evaluate('''async (args) => {
-                        const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
-                                  || window.Livewire?.all()?.[0]?.$wire;
-                        if (wire) {
-                            try { await wire.set('data.slug', args.slug); } catch(e) {}
-                        }
-                        const slugInp = document.getElementById('data.slug') || document.querySelector('input[name="data.slug"]');
-                        if (slugInp) {
-                            slugInp.value = args.slug;
-                            slugInp.dispatchEvent(new Event('input', { bubbles: true }));
-                            slugInp.dispatchEvent(new Event('change', { bubbles: true }));
-                            slugInp.dispatchEvent(new Event('blur', { bubbles: true }));
-                        }
-                    }''', {"slug": retry_slug_2})
-                    
-                    if await page.locator("input[id='data.slug']").count() > 0:
-                        try:
-                            await page.locator("input[id='data.slug']").fill(retry_slug_2)
-                        except Exception:
-                            pass
-                            
-                    await page.wait_for_timeout(800)
-                    await create_btn.first.click()
-                    await page.wait_for_timeout(5000)
-                    current_url = page.url
-                    errors = await page.evaluate('''() => {
-                        const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
-                        return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
-                    }''')
-                    
-        if errors:
-            slug_conflict = any("slug" in e.lower() or "url key" in e.lower() for e in errors)
-            if slug_conflict:
-                print(f"⚠️ [Portal Duplicate] Business [{lead['name']}] already exists on portal. Gracefully skipping.")
+            await page.wait_for_timeout(800)
+            await create_btn.first.click()
+            await page.wait_for_timeout(5000)
+            
+            current_url = page.url
+            errors = await page.evaluate('''() => {
+                const errs = Array.from(document.querySelectorAll('p.fi-fo-field-wrp-error-message, div.fi-no-notification-danger'));
+                return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
+            }''')
+        
+        # Verify if submission actually succeeded via real portal redirect
+        biz_num_match = re.search(r'/business-listings/(\d+)', current_url)
+        
+        if not biz_num_match:
+            # Did NOT redirect to edit page -> Form submission FAILED or firm is duplicate!
+            is_duplicate = (
+                server_500_detected
+                or any(any(k in e.lower() for k in ["already been taken", "already exists", "duplicate", "slug", "url key", "unique"]) for e in errors)
+                or "/create" in current_url
+            )
+            
+            if is_duplicate:
+                print(f"⚠️ [Portal Duplicate] Business [{lead['name']}] already exists on portal (Constraint/Slug Violation). Gracefully skipping.")
                 return {
                     "biz_id": "ALREADY_LISTED",
                     "profile_url": f"https://jainforjain.com/{initial_slug}",
                     "status": "Skipped - Already on Portal",
-                    "duplicate": True
+                    "duplicate": True,
+                    "error": ", ".join(errors) if errors else "Duplicate firm constraint violation on portal"
                 }
-            print(f"⚠️ Form validation warning for [{lead['name']}]: {', '.join(errors)}")
-            return {
-                "biz_id": "VALIDATION_SKIPPED",
-                "profile_url": "",
-                "status": f"Skipped: {errors[0][:30]}",
-                "duplicate": False,
-                "error": ", ".join(errors)
-            }
-            
-        # Extract ID from redirected edit URL: /member/business-listings/{id}/edit
-        biz_num_match = re.search(r'/business-listings/(\d+)', current_url)
-        if biz_num_match:
-            biz_id = f"JFJ-{int(biz_num_match.group(1)):05d}"
-        else:
-            biz_id = f"JFJ-{lead['row_idx']:05d}"
-            
+            else:
+                err_msg = ", ".join(errors) if errors else "Form submission did not redirect"
+                print(f"⚠️ Form validation warning for [{lead['name']}]: {err_msg}")
+                return {
+                    "biz_id": "VALIDATION_SKIPPED",
+                    "profile_url": "",
+                    "status": f"Skipped: {err_msg[:30]}",
+                    "duplicate": False,
+                    "error": err_msg
+                }
+
+        # 100% GENUINE PORTAL SUBMISSION: Extract real database ID
+        real_db_id = int(biz_num_match.group(1))
+        biz_id = f"JFJ-{real_db_id:05d}"
         profile_url = f"https://jainforjain.com/{initial_slug}"
-        
-        print(f"✓ Listing created successfully! Business ID: {biz_id}")
+        print(f"✓ Listing created successfully in portal database! Business ID: {biz_id}")
         print(f"✓ Profile URL: {profile_url}")
 
-        # If on edit page and 'Publish Listing' button is visible, click it!
+        # MANDATORY STEP: Click 'Publish Listing' button to make it 100% LIVE
+        published_live = False
         try:
             pub_btn = page.locator('button:has-text("Publish Listing")')
+            for _ in range(15):
+                if await pub_btn.count() > 0 and await pub_btn.first.is_visible():
+                    break
+                await page.wait_for_timeout(200)
+                
             if await pub_btn.count() > 0 and await pub_btn.first.is_visible():
-                print("--> Clicking 'Publish Listing' button to make it live...")
+                print(f"--> Clicking 'Publish Listing' button for {biz_id} to make it 100% LIVE...")
                 await pub_btn.first.click()
-                await page.wait_for_timeout(2000)
-                print("✓ Listing officially published live on JainForJain portal!")
+                await page.wait_for_timeout(2500)
+                notifs = await page.locator('.fi-no-notification').all_inner_texts()
+                print(f"✓ Publish notification: {notifs}")
+                published_live = True
+                print(f"🎉 Listing {biz_id} ('{lead['name']}') is now 100% OFFICIALLY LIVE on JainForJain portal!")
+            else:
+                print(f"Note: 'Publish Listing' button not found on {current_url}. Listing may already be live.")
         except Exception as pe:
             print(f"Publish note: {pe}")
         
         return {
             "status": "submitted_success",
             "biz_id": biz_id,
-            "profile_url": profile_url
+            "profile_url": profile_url,
+            "published_live": published_live
         }
 
 async def run_auto_entry_batch(
