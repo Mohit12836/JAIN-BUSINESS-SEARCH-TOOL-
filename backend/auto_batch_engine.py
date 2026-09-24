@@ -326,74 +326,90 @@ async def execute_pure_submitter_batch(
                 emit_log("❌ पोर्टल लॉगिन विफल! क्रेडेंशियल्स जांचें.", stage="LOGIN_ERR", badge="❌")
                 return {"status": "error", "message": "Portal login failed"}
 
-            emit_log("✅ पोर्टल लॉगिन 100% सफल! ऑटो-फिलिंग शुरू...", stage="PORTAL_OK", badge="✅", pct=15)
+            await portal_page.close()
+            emit_log("✅ पोर्टल लॉगिन 100% सफल! टर्बो पैरेलल ऑटो-फिलिंग शुरू...", stage="PORTAL_OK", badge="✅", pct=15)
 
+            # High-Speed Multi-Tab Parallel Worker Pool (Turbo 4x Speed)
+            from backend.config import MAX_PORTAL_CONCURRENCY
+            concurrency = min(MAX_PORTAL_CONCURRENCY or 4, len(targets))
+            emit_log(
+                f"⚡ [टर्बो पैरेलल इंजन] {concurrency} समानांतर टैब्स (Workers) सक्रिय! एक साथ {concurrency} लीड्स लाइव भरी जा रही हैं...",
+                stage="TURBO_START",
+                badge="⚡",
+                pct=18
+            )
+
+            queue = asyncio.Queue()
             for idx, lead in enumerate(targets, start=1):
-                if quota_reached:
-                    break
-                l_name = lead.get("name", "")
-                cur_row = lead.get("row_idx", 2)
-                owner_name = lead.get("owner", "Proprietor")
+                queue.put_nowait((idx, lead))
 
-                emit_log(f"📝 [{idx}/{len(targets)}] फॉर्म भरा जा रहा है: '{l_name}' ({owner_name})...", stage="SUBMITTING", badge="📝")
+            excel_lock = asyncio.Lock()
 
+            async def worker(worker_id: int):
+                nonlocal submitted_count, quota_reached
+                w_page = await portal_context.new_page()
                 try:
-                    res = await fill_listing_form(portal_page, lead, dry_run=False)
-                    b_id = res.get("biz_id", "")
-                    p_url = res.get("profile_url", "")
-                    status_txt = res.get("status", "")
-                    
-                    if res.get("duplicate") or "Skipped" in status_txt or "Already" in status_txt:
-                        update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", p_url, "Skipped - Already on Portal")
-                        lead["submission_status"] = "Skipped - Already on Portal"
+                    while not queue.empty() and not quota_reached:
                         try:
-                            await sync_excel_to_google_sheet(excel_path)
-                        except Exception:
-                            pass
-                        emit_log(
-                            f"⏭️ [स्किप] '{l_name}' पोर्टल पर पहले से मौजूद है! सुरक्षित स्किप कर अगली लीड पर जा रहे हैं...",
-                            stage="SKIPPED",
-                            badge="⏭️"
-                        )
-                    elif b_id and b_id.startswith("JFJ-") and res.get("status") == "submitted_success":
-                        update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
-                        submitted_count += 1
-                        lead["j4j_business_id"] = b_id
-                        lead["j4j_profile_url"] = p_url
-                        lead["submission_status"] = "Submitted - Live"
-                        try:
-                            await sync_excel_to_google_sheet(excel_path)
-                        except Exception:
-                            pass
-                        pct = min(15 + int((idx / len(targets)) * 80), 98)
-                        emit_log(
-                            f"🎉 [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर 100% लाइव! (ID: {b_id})",
-                            stage="LIVE_SUBMITTED",
-                            badge="🎉",
-                            pct=pct
-                        )
-                    else:
-                        update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {res.get('error', 'Validation')[:25]}")
-                        lead["submission_status"] = f"Skipped: {res.get('error', 'Validation')[:25]}"
-                        emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {res.get('error', 'फॉर्म सत्यापन चेतावनी')[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
-                except Exception as err:
-                    err_str = str(err)
-                    if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
-                        quota_reached = True
-                        emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
-                        break
-                    elif any(w in err_str.lower() for w in ["slug", "url key", "already been taken"]):
-                        update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
-                        lead["submission_status"] = "Skipped - Already on Portal"
-                        emit_log(f"⏭️ [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है! अगली लीड पर जा रहे हैं...", stage="SKIPPED", badge="⏭️")
-                    else:
-                        update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {err_str[:25]}")
-                        lead["submission_status"] = f"Skipped: {err_str[:25]}"
-                        emit_log(f"⚠️ सबमिशन स्किप [{l_name}]: {err_str[:60]} (अगली लीड जारी)", stage="WARN", badge="⚠️")
+                            item_idx, lead = queue.get_nowait()
+                        except asyncio.QueueEmpty:
+                            break
 
-                if delay_seconds > 0 and idx < len(targets) and not quota_reached:
-                    emit_log(f"⏱️ टाइमर पॉज़: {delay_seconds} सेकंड...", stage="TIMER", badge="⏱️")
-                    await asyncio.sleep(delay_seconds)
+                        l_name = lead.get("name", "")
+                        cur_row = lead.get("row_idx", 2)
+                        owner_name = lead.get("owner", "Proprietor")
+
+                        emit_log(f"📝 [टैब {worker_id}] [{item_idx}/{len(targets)}] फॉर्म भरा जा रहा है: '{l_name}' ({owner_name})...", stage="SUBMITTING", badge="📝")
+
+                        try:
+                            res = await fill_listing_form(w_page, lead, dry_run=False)
+                            b_id = res.get("biz_id", "")
+                            p_url = res.get("profile_url", "")
+                            status_txt = res.get("status", "")
+
+                            if res.get("duplicate") or "Skipped" in status_txt or "Already" in status_txt:
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", p_url, "Skipped - Already on Portal")
+                                    lead["submission_status"] = "Skipped - Already on Portal"
+                                emit_log(f"⏭️ [टैब {worker_id}] [स्किप] '{l_name}' पोर्टल पर पहले से मौजूद है! (सुरक्षित स्किप)", stage="SKIPPED", badge="⏭️")
+                            elif b_id and b_id.startswith("JFJ-") and res.get("status") == "submitted_success":
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
+                                    submitted_count += 1
+                                    lead["j4j_business_id"] = b_id
+                                    lead["j4j_profile_url"] = p_url
+                                    lead["submission_status"] = "Submitted - Live"
+                                pct = min(18 + int((submitted_count / len(targets)) * 80), 98)
+                                emit_log(f"🎉 [टैब {worker_id}] [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर 100% लाइव! (ID: {b_id})", stage="LIVE_SUBMITTED", badge="🎉", pct=pct)
+                            else:
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {res.get('error', 'Validation')[:25]}")
+                                    lead["submission_status"] = f"Skipped: {res.get('error', 'Validation')[:25]}"
+                                emit_log(f"⚠️ [टैब {worker_id}] सबमिशन स्किप [{l_name}]: {res.get('error', 'फॉर्म सत्यापन चेतावनी')[:60]}", stage="WARN", badge="⚠️")
+                        except Exception as err:
+                            err_str = str(err)
+                            if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
+                                quota_reached = True
+                                emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
+                                break
+                            elif any(w in err_str.lower() for w in ["slug", "url key", "already been taken"]):
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
+                                    lead["submission_status"] = "Skipped - Already on Portal"
+                                emit_log(f"⏭️ [टैब {worker_id}] [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है!", stage="SKIPPED", badge="⏭️")
+                            else:
+                                async with excel_lock:
+                                    update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {err_str[:25]}")
+                                    lead["submission_status"] = f"Skipped: {err_str[:25]}"
+                                emit_log(f"⚠️ [टैब {worker_id}] एरर [{l_name}]: {err_str[:60]}", stage="WARN", badge="⚠️")
+                        finally:
+                            queue.task_done()
+                            if delay_seconds > 0 and not quota_reached:
+                                await asyncio.sleep(delay_seconds)
+                finally:
+                    await w_page.close()
+
+            await asyncio.gather(*(worker(i+1) for i in range(concurrency)))
     finally:
         await safe_close_browser(portal_browser, portal_context)
         free_system_resources_completely()

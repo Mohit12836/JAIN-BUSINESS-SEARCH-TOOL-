@@ -41,7 +41,7 @@ def is_cloud_environment() -> bool:
 # PERMANENT SYSTEM RULES: CONCURRENCY & PORTAL INTEGRITY
 # ==============================================================================
 MAX_SCRAPING_CONCURRENCY = 5        # Max parallel tabs for read-only data extraction
-MAX_PORTAL_CONCURRENCY = 3          # Max parallel tabs for Livewire/Filament (Turbo 3x speed)
+MAX_PORTAL_CONCURRENCY = 4          # Max parallel worker tabs for Livewire/Filament (Turbo 4x speed)
 FILEPOND_TIMEOUT_SECONDS = 18       # Strict wait for file uploads to reach processing-complete
 LIVEWIRE_REDIRECT_TIMEOUT_SECONDS = 12 # Timeout to capture live business ID upon creation
 
