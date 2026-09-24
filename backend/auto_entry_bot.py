@@ -333,8 +333,9 @@ async def login_to_portal(page: Page, email: str, password: str) -> bool:
 async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = True) -> Dict[str, Any]:
     """Fills all 4 tabs of the create business listing form for a lead."""
     print(f"\n=======================================================")
-    print(f"Processing Lead [{lead['sl']}]: {lead['name']}")
-    print(f"Category: {lead['category']} | City: {lead['city']} | Phone: {lead['phone']}")
+    lead_idx = lead.get('sl') or lead.get('row_idx') or 1
+    print(f"Processing Lead [{lead_idx}]: {lead.get('name', 'Business')}")
+    print(f"Category: {lead.get('category', '')} | City: {lead.get('city', '')} | Phone: {lead.get('phone', '')}")
     print(f"=======================================================")
     
     if page.is_closed():
