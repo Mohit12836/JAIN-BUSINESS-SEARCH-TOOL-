@@ -146,7 +146,34 @@ def append_to_master_excel(records: List[Dict[str, Any]], excel_path: str):
         bottom=Side(border_style="thin", color="E2E8F0")
     )
     
-    for i, rec in enumerate(records):
+    existing_phones = set()
+    existing_names = set()
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, values_only=True):
+        if not row or not row[1]:
+            continue
+        p = ''.join(c for c in str(row[4] or '') if c.isdigit())[-10:]
+        if len(p) == 10:
+            existing_phones.add(p)
+        n = re.sub(r'[^a-zA-Z0-9]+', '', f"{row[1]}_{row[11] or ''}".lower())
+        if n:
+            existing_names.add(n)
+            
+    filtered_records = []
+    for rec in records:
+        p = ''.join(c for c in str(rec.get("phone", "") or '') if c.isdigit())[-10:]
+        n = re.sub(r'[^a-zA-Z0-9]+', '', f"{rec.get('name', '')}_{rec.get('city', '')}".lower())
+        if (len(p) == 10 and p in existing_phones) or (n and n in existing_names):
+            continue
+        if len(p) == 10:
+            existing_phones.add(p)
+        if n:
+            existing_names.add(n)
+        filtered_records.append(rec)
+        
+    if not filtered_records:
+        return
+        
+    for i, rec in enumerate(filtered_records):
         cur_row = start_row + i
         sl_no = cur_row - 1
         rec["row_idx"] = cur_row

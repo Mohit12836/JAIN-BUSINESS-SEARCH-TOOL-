@@ -248,21 +248,60 @@ async def execute_pure_submitter_batch(
     except Exception:
         pass
 
+    # 1. Run automatic deduplication so duplicate phone numbers / names in the sheet are safely skipped
+    try:
+        from backend.excel_builder import deduplicate_master_excel
+        dedup_res = deduplicate_master_excel(excel_path)
+        if dedup_res.get("duplicates_flagged", 0) > 0:
+            emit_log(f"🧹 [ऑटो-डीडुप्लिकेशन] शीट में {dedup_res['duplicates_flagged']} डुप्लिकेट एंट्रीज (समान डॉक्टर/फोन नंबर) पाई गईं! उन्हें स्वतः 'Skipped' मार्क किया गया।", stage="DEDUP", badge="🧹")
+    except Exception as d_err:
+        print(f"Dedup check: {d_err}")
+
     all_leads = load_leads_from_excel(excel_path)
-    unsubmitted = [l for l in all_leads if is_lead_pending(l)]
+    
+    # 2. Extract targets with on-the-fly deduplication to guarantee 100% unique firms
+    seen_batch_phones = set()
+    seen_batch_names = set()
+    targets = []
+    
+    # Pre-populate with already submitted leads
+    for l in all_leads:
+        st = str(l.get("submission_status", "")).lower()
+        if "submitted" in st or "live" in st:
+            p = "".join(c for c in str(l.get("phone", "")) if c.isdigit())[-10:]
+            if len(p) == 10:
+                seen_batch_phones.add(p)
+            n = re.sub(r'[^a-zA-Z0-9]+', '', f"{l.get('name', '')}_{l.get('city', '')}".lower())
+            if n:
+                seen_batch_names.add(n)
+
+    for l in all_leads:
+        if not is_lead_pending(l):
+            continue
+        p = "".join(c for c in str(l.get("phone", "")) if c.isdigit())[-10:]
+        n = re.sub(r'[^a-zA-Z0-9]+', '', f"{l.get('name', '')}_{l.get('city', '')}".lower())
+        if (len(p) == 10 and p in seen_batch_phones) or (n and n in seen_batch_names):
+            update_excel_lead_status(excel_path, l["row_idx"], "DUPLICATE", "", "Skipped - Duplicate Entry in Excel")
+            continue
+        if len(p) == 10:
+            seen_batch_phones.add(p)
+        if n:
+            seen_batch_names.add(n)
+        targets.append(l)
+        if len(targets) >= target_count:
+            break
 
     emit_log(
-        f"🏛️ [इंजन 2: पोर्टल ऑटो-सबमिटर] प्रारंभ | कुल लंबित लीड्स: {len(unsubmitted)} | सबमिट लक्ष्य: {min(target_count, len(unsubmitted))}",
+        f"🏛️ [इंजन 2: पोर्टल ऑटो-सबमिटर] प्रारंभ | कुल यूनिक लंबित लीड्स: {len(targets)} | सबमिट लक्ष्य: {min(target_count, len(targets))}",
         stage="INIT",
         badge="🏛️",
         pct=5
     )
 
-    if not unsubmitted:
+    if not targets:
         emit_log("✓ कोई लंबित लीड नहीं है! सभी लीड्स पहले से पोर्टल पर लाइव हैं।", stage="ALL_LIVE", badge="✅", pct=100)
         return {"status": "no_pending_leads", "submitted_count": 0}
 
-    targets = unsubmitted[:target_count]
     submitted_count = 0
     quota_reached = False
 
@@ -494,6 +533,12 @@ async def execute_streamed_live_pipeline(
     except Exception as dl_err:
         print(f"Note on Google Sheet auto-pull: {dl_err}")
 
+    try:
+        from backend.excel_builder import deduplicate_master_excel
+        deduplicate_master_excel(excel_path)
+    except Exception:
+        pass
+
     all_leads: List[Dict[str, Any]] = []
     if os.path.exists(excel_path):
         try:
@@ -501,10 +546,31 @@ async def execute_streamed_live_pipeline(
         except Exception:
             all_leads = []
 
-    unsubmitted_existing = [l for l in all_leads if is_lead_pending(l)]
+    seen_run_phones = set()
+    seen_run_names = set()
+    for l in all_leads:
+        st = str(l.get("submission_status", "")).lower()
+        if "submitted" in st or "live" in st:
+            p = "".join(c for c in str(l.get("phone", "")) if c.isdigit())[-10:]
+            if len(p) == 10: seen_run_phones.add(p)
+            n = re.sub(r'[^a-zA-Z0-9]+', '', f"{l.get('name', '')}_{l.get('city', '')}".lower())
+            if n: seen_run_names.add(n)
+
+    unsubmitted_existing = []
+    for l in all_leads:
+        if not is_lead_pending(l):
+            continue
+        p = "".join(c for c in str(l.get("phone", "")) if c.isdigit())[-10:]
+        n = re.sub(r'[^a-zA-Z0-9]+', '', f"{l.get('name', '')}_{l.get('city', '')}".lower())
+        if (len(p) == 10 and p in seen_run_phones) or (n and n in seen_run_names):
+            update_excel_lead_status(excel_path, l["row_idx"], "DUPLICATE", "", "Skipped - Duplicate Entry in Excel")
+            continue
+        if len(p) == 10: seen_run_phones.add(p)
+        if n: seen_run_names.add(n)
+        unsubmitted_existing.append(l)
     
     emit_log(
-        f"📊 शीट डेटाबेस स्थिति: कुल {len(all_leads)} लीड्स | {len(unsubmitted_existing)} पूर्व-सत्यापित अनसबमिटेड.",
+        f"📊 शीट डेटाबेस स्थिति: कुल {len(all_leads)} लीड्स | {len(unsubmitted_existing)} पूर्व-सत्यापित यूनिक अनसबमिटेड.",
         stage="AUDIT",
         badge="📊",
         pct=10

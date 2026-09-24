@@ -8,6 +8,7 @@ import os
 import re
 import urllib.parse
 from typing import List, Dict, Any
+import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -472,3 +473,86 @@ def generate_leads_excel(records: List[Dict[str, Any]], output_path: str, catego
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     wb.save(output_path)
     return output_path
+
+
+def deduplicate_master_excel(excel_path: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Scans the master Excel workbook and flags/skips duplicate entries.
+    Deduplication rules:
+    1. If 10-digit phone number is identical, only keep the first row (or the one that is Submitted).
+    2. If normalized business name + city is identical, only keep the first row.
+    3. Mark redundant rows as 'Skipped - Duplicate Entry in Sheet'.
+    """
+    if not excel_path:
+        from backend.config import get_master_excel_path
+        excel_path = get_master_excel_path()
+        
+    if not os.path.exists(excel_path):
+        return {"status": "not_found", "duplicates_flagged": 0}
+        
+    wb = openpyxl.load_workbook(excel_path)
+    ws = wb.active
+    rows = list(ws.iter_rows(values_only=False))
+    if len(rows) <= 1:
+        return {"status": "empty", "duplicates_flagged": 0}
+        
+    seen_phones = {}  # phone -> row_idx
+    seen_names = {}   # name_city -> row_idx
+    duplicates_flagged = 0
+    
+    # Pass 1: Prioritize rows that are already submitted
+    for idx, row in enumerate(rows[1:], start=2):
+        name = str(row[1].value or '').strip()
+        city = str(row[11].value or '').strip().lower()
+        phone = ''.join(c for c in str(row[4].value or '') if c.isdigit())[-10:]
+        status = str(row[25].value or '').strip()
+        clean_n = re.sub(r'[^a-zA-Z0-9]+', '', f"{name}_{city}".lower())
+        
+        if "submitted" in status.lower() or "live" in status.lower():
+            if len(phone) == 10 and phone not in seen_phones:
+                seen_phones[phone] = idx
+            if clean_n and clean_n not in seen_names:
+                seen_names[clean_n] = idx
+
+    # Pass 2: Inspect remaining rows
+    for idx, row in enumerate(rows[1:], start=2):
+        name = str(row[1].value or '').strip()
+        city = str(row[11].value or '').strip().lower()
+        phone = ''.join(c for c in str(row[4].value or '') if c.isdigit())[-10:]
+        status = str(row[25].value or '').strip()
+        clean_n = re.sub(r'[^a-zA-Z0-9]+', '', f"{name}_{city}".lower())
+        
+        # If already submitted, skip
+        if "submitted" in status.lower() or "live" in status.lower():
+            continue
+            
+        is_dup = False
+        orig_idx = None
+        if len(phone) == 10 and phone in seen_phones and seen_phones[phone] != idx:
+            is_dup = True
+            orig_idx = seen_phones[phone]
+        elif clean_n and clean_n in seen_names and seen_names[clean_n] != idx:
+            is_dup = True
+            orig_idx = seen_names[clean_n]
+            
+        if is_dup:
+            if "duplicate" not in status.lower() and "skipped" not in status.lower():
+                row[23].value = "DUPLICATE"
+                row[25].value = f"Skipped - Duplicate of Row {orig_idx}"
+                duplicates_flagged += 1
+        else:
+            if len(phone) == 10:
+                seen_phones[phone] = idx
+            if clean_n:
+                seen_names[clean_n] = idx
+                
+    if duplicates_flagged > 0:
+        wb.save(excel_path)
+        
+    return {
+        "status": "success",
+        "total_rows": len(rows) - 1,
+        "duplicates_flagged": duplicates_flagged,
+        "unique_firms": len(seen_names)
+    }
+
