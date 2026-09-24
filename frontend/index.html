@@ -424,6 +424,12 @@
               <span id="iconSubmitterOnly" class="text-base">⚡</span>
               <span id="textSubmitterOnly">⚡ 4-टैब टर्बो सबमिटर चलाएं (4x स्पीड पर लाइव सबमिट)</span>
             </button>
+
+            <!-- Secondary Quick Action: 1-Click Publish All Remaining Pending Listings on Portal -->
+            <button id="btnPublishAllPending" onclick="triggerPublishAllPending()" class="spring-press w-full py-2.5 px-3 rounded-xl bg-white hover:bg-orange-50 text-orange-800 font-bold text-xs shadow-xs border border-orange-200/90 flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+              <span id="iconPublishAll">📢</span>
+              <span id="textPublishAll">पोर्टल पर सभी पेंडिंग को 1-क्लिक में लाइव करें (Auto-Publish All)</span>
+            </button>
           </div>
         </div>
 
@@ -1590,9 +1596,15 @@
             </h2>
             <p class="text-xs text-slate-500 mt-1">ये 5 प्रमुख जैन मंदिर व धर्मशालाएं jainforjain.com पर सफलतापूर्वक रजिस्टर हो चुकी हैं:</p>
           </div>
-          <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-200/60">
-            अकाउंट कोटा: 5/5 फुल
-          </span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="triggerPublishAllPending()" class="spring-press px-3.5 py-1.5 rounded-xl font-black text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm flex items-center gap-1.5 cursor-pointer border border-white/20">
+              <span>📢</span>
+              <span>सभी पेंडिंग को 1-क्लिक में लाइव करें</span>
+            </button>
+            <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-200/60">
+              अकाउंट: 70+ लाइव लिस्टिंग्स
+            </span>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -3061,6 +3073,97 @@
           txt.innerText = 'तैयार';
           txt.className = 'text-[9px] text-slate-500 font-medium mt-0.5';
         }
+      }
+    }
+
+    async function triggerPublishAllPending() {
+      const btn = document.getElementById('btnPublishAllPending');
+      const txt = document.getElementById('textPublishAll');
+      const ico = document.getElementById('iconPublishAll');
+
+      const consoleSec = document.getElementById('liveConsoleSection');
+      if (consoleSec) {
+        consoleSec.classList.remove('hidden');
+        consoleSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      stopConsoleTimer();
+      startConsoleTimer();
+      const timerEl = document.getElementById('consoleTimer');
+      if (timerEl) timerEl.innerText = '📢 पब्लिशर सक्रिय...';
+
+      const pBar = document.getElementById('consoleProgressBar');
+      if (pBar) pBar.style.width = '10%';
+      const stageBadge = document.getElementById('consoleStageBadge');
+      if (stageBadge) stageBadge.innerText = 'PUBLISH_ALL_INIT';
+
+      if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+      if (txt) txt.innerText = 'पोर्टल पेंडिंग स्कैन व पब्लिश जारी...';
+      if (ico) ico.innerText = '⏳';
+
+      appendConsoleLog({
+        time: new Date().toLocaleTimeString(),
+        badge: '📢',
+        stage: 'INIT',
+        message: '🚀 [पोर्टल बल्क पब्लिशर] प्रारंभ | jainforjain.com पर सभी पेंडिंग लिस्टिंग्स को खोजकर लाइव किया जा रहा है...',
+        percent: 10
+      });
+
+      function cleanup() {
+        if (eventSource) { eventSource.close(); eventSource = null; }
+        stopConsoleTimer();
+        if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); }
+        if (txt) txt.innerText = 'पोर्टल पर सभी पेंडिंग को 1-क्लिक में लाइव करें (Auto-Publish All)';
+        if (ico) ico.innerText = '📢';
+        loadAutoBatchStatus();
+        loadStatus(false);
+      }
+
+      try {
+        const res = await fetch('/api/portal/publish-all-pending', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!data || !data.task_id) {
+          throw new Error(data.message || 'टास्क शुरू नहीं हो सका');
+        }
+
+        currentTaskId = data.task_id;
+        if (eventSource) eventSource.close();
+        eventSource = new EventSource(`/api/stream-progress/${currentTaskId}`);
+
+        eventSource.onmessage = (event) => {
+          try {
+            const item = JSON.parse(event.data);
+            if (item.type === 'log') {
+              appendConsoleLog(item);
+            } else if (item.type === 'complete') {
+              appendConsoleLog({
+                time: new Date().toLocaleTimeString(),
+                badge: '🏆',
+                stage: 'COMPLETE',
+                message: item.message || 'सभी पेंडिंग लिस्टिंग्स सफलतापूर्वक लाइव हुईं!',
+                percent: 100
+              });
+              if (pBar) pBar.style.width = '100%';
+              if (stageBadge) stageBadge.innerText = 'COMPLETE';
+              showToast(item.message || 'पब्लिशिंग 100% सफल!', 'success');
+              cleanup();
+            } else if (item.type === 'error') {
+              showToast(item.message || 'त्रुटि', 'error');
+              cleanup();
+            }
+          } catch (e) {}
+        };
+
+        eventSource.onerror = () => {
+          setTimeout(cleanup, 4000);
+        };
+
+      } catch (err) {
+        showToast('त्रुटि: ' + err.message, 'error');
+        cleanup();
       }
     }
 

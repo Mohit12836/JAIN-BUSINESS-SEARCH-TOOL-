@@ -444,6 +444,59 @@ async def start_portal_entry(req: EntryRequest, background_tasks: BackgroundTask
         "limit": req.limit
     }
 
+@app.post("/api/portal/publish-all-pending")
+async def api_publish_all_pending(background_tasks: BackgroundTasks):
+    """
+    1-Click Bulk Publisher Endpoint:
+    Scans all portal listings, finds any pending/draft items,
+    clicks Publish Listing, and verifies until 100% live.
+    Dispatches real-time SSE progress events to /api/stream-progress/{task_id}.
+    """
+    from backend.portal_publisher import scan_and_publish_all_pending
+    task_id = str(uuid.uuid4())
+    TASKS[task_id] = {
+        "status": "running",
+        "action": "publish_all_pending",
+        "events": []
+    }
+    TASK_LISTENERS[task_id] = []
+
+    def dispatch_event(event_data: Dict[str, Any]):
+        if task_id in TASKS:
+            TASKS[task_id].setdefault("events", []).append(event_data)
+        listeners = TASK_LISTENERS.get(task_id, [])
+        for q in listeners:
+            try:
+                q.put_nowait(event_data)
+            except Exception:
+                pass
+
+    async def runner():
+        try:
+            res = await scan_and_publish_all_pending(progress_callback=dispatch_event)
+            TASKS[task_id]["status"] = "completed"
+            TASKS[task_id]["result"] = res
+            dispatch_event({
+                "type": "complete",
+                "message": f"🏆 {res.get('published_count', 0)} लिस्टिंग्स सफलतापूर्वक लाइव पब्लिश हुईं!",
+                "percent": 100,
+                "summary": res
+            })
+        except Exception as e:
+            TASKS[task_id]["status"] = "failed"
+            dispatch_event({
+                "type": "error",
+                "message": f"पब्लिशिंग में त्रुटि: {str(e)}",
+                "percent": 100
+            })
+
+    background_tasks.add_task(runner)
+    return {
+        "status": "started",
+        "task_id": task_id,
+        "message": "पोर्टल पेंडिंग लिस्टिंग्स को लाइव करने की प्रक्रिया शुरू!"
+    }
+
 # ==================== NEXT BATCH & SEARCH TRACKER ENDPOINTS ====================
 class NextBatchRequest(BaseModel):
     batch_size: int = 50
