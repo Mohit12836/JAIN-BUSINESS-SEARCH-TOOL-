@@ -89,6 +89,10 @@
 
       <!-- Quick Action Badges -->
       <div class="flex flex-wrap items-center gap-2 text-xs w-full sm:w-auto justify-start sm:justify-end">
+        <button onclick="triggerQuickTurboSubmitter()" class="spring-press inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 via-orange-600 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white px-3.5 py-2 rounded-xl font-extrabold shadow-md shadow-orange-600/30 border border-white/20 cursor-pointer">
+          <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+          <span>⚡ 4-टैब टर्बो सबमिटर (4x)</span>
+        </button>
         <a href="https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing" target="_blank" class="spring-press inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-semibold shadow-sm shadow-emerald-600/20">
           <span>📊 लाइव Google Sheet</span>
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
@@ -337,21 +341,88 @@
             </button>
           </div>
 
-          <!-- Engine 2: Pure Submitter Only -->
-          <div class="bg-gradient-to-br from-emerald-50/90 to-teal-50/90 p-5 rounded-2xl border-2 border-emerald-300 shadow-md space-y-3 flex flex-col justify-between">
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">इंजन 2 • शुद्ध सबमिटर</span>
-                <span class="text-xs font-bold text-emerald-700">ऑटो-फिलिंग • 0s डिले</span>
+          <!-- Engine 2: Pure Submitter Only (Turbo 4-Tab High-Speed Parallel Submitter) -->
+          <div id="cardTurboSubmitter" class="bg-gradient-to-br from-amber-50/95 via-orange-50/90 to-rose-50/90 p-5 rounded-2xl border-2 border-orange-300 shadow-md space-y-3.5 flex flex-col justify-between relative overflow-hidden">
+            <!-- Subtle Glow -->
+            <div class="absolute -top-10 -right-10 w-28 h-28 bg-orange-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-1.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white uppercase tracking-wider shadow-xs">
+                    ⚡ 4-टैब टर्बो सबमिटर
+                  </span>
+                  <span class="text-xs font-black text-orange-700 bg-orange-100/90 px-2 py-0.5 rounded-md border border-orange-200">
+                    4x स्पीड • 0s डिले
+                  </span>
+                </div>
+                <span class="text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-300" id="panelUnsubmittedBadge">
+                  लंबित लीड्स...
+                </span>
               </div>
-              <h3 class="text-base font-extrabold text-slate-900">🏛️ सिर्फ पोर्टल पर सबमिट करें (Submitter Only)</h3>
+
+              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-1.5">
+                <span>🏛️ 4-टैब टर्बो पोर्टल सबमिटर (Multi-Tab Submitter)</span>
+              </h3>
+
               <p class="text-xs text-slate-600 leading-relaxed">
-                एक्सेल/शीट में जितनी भी <b class="text-amber-700 font-bold" id="panelUnsubmittedBadge">लंबित लीड्स</b> हैं, उन्हें सीधे <b>jainforjain.com पर फ़ोटो सहित लाइव सबमिट करेगा</b> और JFJ-ID कैप्चर करेगा। मैप्स स्क्रैप नहीं करेगा।
+                4 अलग-अलग क्रोमियम टैब्स एक साथ खुलेंगे और बिना किसी गलती के पूरी रो को तुरंत <b>jainforjain.com</b> पर फ़ोटो सहित लाइव सबमिट करेंगे। 400% तेज़, 0s डिले, सुरक्षित ऑटो-पब्लिश!
               </p>
+
+              <!-- 4 Parallel Worker Status Indicators -->
+              <div class="pt-0.5">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>4 पैरेलल वर्कर स्थिति (Browser Worker Pool):</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center">
+                  <div class="bg-white/90 p-1.5 rounded-xl border border-orange-200 shadow-xs">
+                    <div class="flex items-center justify-center gap-1">
+                      <span id="workerTabDot1" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                      <span class="text-[11px] font-bold text-slate-800">टैब 1</span>
+                    </div>
+                    <div id="workerTabText1" class="text-[9px] text-slate-500 font-medium mt-0.5">तैयार</div>
+                  </div>
+                  <div class="bg-white/90 p-1.5 rounded-xl border border-orange-200 shadow-xs">
+                    <div class="flex items-center justify-center gap-1">
+                      <span id="workerTabDot2" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                      <span class="text-[11px] font-bold text-slate-800">टैब 2</span>
+                    </div>
+                    <div id="workerTabText2" class="text-[9px] text-slate-500 font-medium mt-0.5">तैयार</div>
+                  </div>
+                  <div class="bg-white/90 p-1.5 rounded-xl border border-orange-200 shadow-xs">
+                    <div class="flex items-center justify-center gap-1">
+                      <span id="workerTabDot3" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                      <span class="text-[11px] font-bold text-slate-800">टैब 3</span>
+                    </div>
+                    <div id="workerTabText3" class="text-[9px] text-slate-500 font-medium mt-0.5">तैयार</div>
+                  </div>
+                  <div class="bg-white/90 p-1.5 rounded-xl border border-orange-200 shadow-xs">
+                    <div class="flex items-center justify-center gap-1">
+                      <span id="workerTabDot4" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                      <span class="text-[11px] font-bold text-slate-800">टैब 4</span>
+                    </div>
+                    <div id="workerTabText4" class="text-[9px] text-slate-500 font-medium mt-0.5">तैयार</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submitter Count Quick Selection -->
+              <div class="pt-0.5 flex items-center justify-between gap-2">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">सबमिट संख्या:</span>
+                <div class="inline-flex gap-1 bg-white/80 p-0.5 rounded-xl border border-orange-200">
+                  <button type="button" id="subCount5" onclick="setSubmitterCount(5)" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-700 hover:bg-orange-50 cursor-pointer border border-slate-200">5</button>
+                  <button type="button" id="subCount10" onclick="setSubmitterCount(10)" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-700 hover:bg-orange-50 cursor-pointer border border-slate-200">10</button>
+                  <button type="button" id="subCount20" onclick="setSubmitterCount(20)" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-xs cursor-pointer border border-orange-600">20</button>
+                  <button type="button" id="subCount50" onclick="setSubmitterCount(50)" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-700 hover:bg-orange-50 cursor-pointer border border-slate-200">50</button>
+                </div>
+              </div>
             </div>
-            <button id="btnRunSubmitterOnly" onclick="runEngineMode('submitter_only')" class="spring-press w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer border border-white/20">
-              <span id="iconSubmitterOnly">🚀</span>
-              <span id="textSubmitterOnly">लंबित लीड्स पोर्टल पर सबमिट करें</span>
+
+            <!-- Big High-Speed Submit Button -->
+            <button id="btnRunSubmitterOnly" onclick="runTurboSubmitter()" class="spring-press w-full py-4 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-orange-600 to-rose-600 hover:from-amber-600 hover:via-orange-700 hover:to-rose-700 text-white font-black text-sm shadow-xl shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer border border-white/20 transform hover:-translate-y-0.5 transition-all">
+              <span id="iconSubmitterOnly" class="text-base">⚡</span>
+              <span id="textSubmitterOnly">⚡ 4-टैब टर्बो सबमिटर चलाएं (4x स्पीड पर लाइव सबमिट)</span>
             </button>
           </div>
         </div>
@@ -2914,9 +2985,82 @@
           if (unsubEl) unsubEl.innerText = data.excel_unsubmitted || 0;
           const subEl = document.getElementById('metricSubmitted');
           if (subEl) subEl.innerText = data.excel_submitted || 0;
+
+          const panelUnsub = document.getElementById('panelUnsubmittedBadge');
+          if (panelUnsub) panelUnsub.innerText = `${data.excel_unsubmitted || 0} लंबित लीड्स`;
         }
       } catch (e) {
         console.warn('Auto batch status notice:', e);
+      }
+    }
+
+    // ==================== ⚡ 4-TAB TURBO SUBMITTER ENGINE LOGIC ====================
+    let selectedSubmitterCount = 20;
+
+    function setSubmitterCount(n) {
+      selectedSubmitterCount = n;
+      selectedAutoBatchCount = n;
+      const textSub = document.getElementById('textSubmitterOnly');
+      if (textSub) {
+        textSub.innerText = `⚡ 4-टैब टर्बो सबमिटर चलाएं (${n} लीड्स • 4x स्पीड)`;
+      }
+      [5, 10, 20, 50].forEach(num => {
+        const el = document.getElementById(`subCount${num}`);
+        if (!el) return;
+        if (num === n) {
+          el.className = 'px-2.5 py-1 rounded-lg text-[11px] font-black bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-xs cursor-pointer border border-orange-600';
+        } else {
+          el.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-700 hover:bg-orange-50 cursor-pointer border border-slate-200';
+        }
+      });
+    }
+
+    function runTurboSubmitter() {
+      selectedAutoBatchCount = selectedSubmitterCount || 20;
+      runEngineMode('submitter_only');
+    }
+
+    function triggerQuickTurboSubmitter() {
+      switchTab('tab-instant');
+      const card = document.getElementById('cardTurboSubmitter');
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      runTurboSubmitter();
+    }
+
+    function updateWorkerIndicators(msg) {
+      if (!msg) return;
+      for (let w = 1; w <= 4; w++) {
+        if (msg.includes(`[टैब ${w}]`)) {
+          const dot = document.getElementById(`workerTabDot${w}`);
+          const txt = document.getElementById(`workerTabText${w}`);
+          if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-ping';
+          if (txt) {
+            if (msg.includes('100% लाइव') || msg.includes('लाइव!')) {
+              txt.innerText = '✅ लाइव!';
+              txt.className = 'text-[9px] text-emerald-600 font-black mt-0.5';
+            } else if (msg.includes('फॉर्म भरा जा रहा')) {
+              txt.innerText = '📝 भर रहा है...';
+              txt.className = 'text-[9px] text-orange-600 font-bold mt-0.5';
+            } else if (msg.includes('स्किप') || msg.includes('मौजूद')) {
+              txt.innerText = '⏭️ मौजूद है';
+              txt.className = 'text-[9px] text-amber-600 font-semibold mt-0.5';
+            }
+          }
+        }
+      }
+    }
+
+    function resetWorkerIndicators() {
+      for (let w = 1; w <= 4; w++) {
+        const dot = document.getElementById(`workerTabDot${w}`);
+        const txt = document.getElementById(`workerTabText${w}`);
+        if (dot) dot.className = 'w-2 h-2 rounded-full bg-slate-400';
+        if (txt) {
+          txt.innerText = 'तैयार';
+          txt.className = 'text-[9px] text-slate-500 font-medium mt-0.5';
+        }
       }
     }
 
@@ -2943,7 +3087,7 @@
       const timerEl = document.getElementById('consoleTimer');
       if (timerEl) {
         if (mode === 'scraper_only') timerEl.innerText = '🔍 शुद्ध स्क्रैपर (0s डिले • 4-टैब)';
-        else if (mode === 'submitter_only') timerEl.innerText = '🏛️ पोर्टल सबमिटर (लाइव एंट्री)';
+        else if (mode === 'submitter_only') timerEl.innerText = '⚡ 4-टैब टर्बो सबमिटर (4x स्पीड)';
         else timerEl.innerText = '⚡ कंबाइंड 1-क्लिक ऑटो-बैच';
       }
       
@@ -2952,7 +3096,7 @@
       const stageBadge = document.getElementById('consoleStageBadge');
       if (stageBadge) {
         if (mode === 'scraper_only') stageBadge.innerText = 'SCRAPER_INIT';
-        else if (mode === 'submitter_only') stageBadge.innerText = 'SUBMITTER_INIT';
+        else if (mode === 'submitter_only') stageBadge.innerText = 'TURBO_SUBMIT_INIT';
         else stageBadge.innerText = 'AUTO_BATCH_INIT';
       }
 
@@ -2960,12 +3104,12 @@
       if (mode === 'scraper_only') {
         initMsg = `🔍 [इंजन 1: लीड स्क्रैपर] प्रारंभ | लक्ष्य: ${selectedAutoBatchCount} लीड्स | Maps ➔ Canva ➔ Master Excel ➔ Google Sheets (पोर्टल बंद)`;
       } else if (mode === 'submitter_only') {
-        initMsg = `🏛️ [इंजन 2: पोर्टल सबमिटर] प्रारंभ | लक्ष्य: ${selectedAutoBatchCount} लीड्स | Excel ➔ jainforjain.com लाइव (मैप्स बंद)`;
+        initMsg = `⚡ [4-टैब टर्बो सबमिटर] प्रारंभ | लक्ष्य: ${selectedAutoBatchCount} लीड्स | 4 पैरेलल टैब्स ➔ jainforjain.com लाइव (4x स्पीड)`;
       }
 
       appendConsoleLog({
         time: new Date().toLocaleTimeString(),
-        badge: mode === 'scraper_only' ? '🔍' : (mode === 'submitter_only' ? '🏛️' : '🚀'),
+        badge: mode === 'scraper_only' ? '🔍' : (mode === 'submitter_only' ? '⚡' : '🚀'),
         stage: 'INIT',
         message: initMsg,
         percent: 8
@@ -2977,10 +3121,10 @@
       if (btnBoth) { btnBoth.disabled = true; btnBoth.classList.add('opacity-60'); }
 
       if (mode === 'scraper_only' && textScraper) { textScraper.innerText = `🔍 स्क्रैपिंग जारी (${selectedAutoBatchCount} लीड्स)...`; if (iconScraper) iconScraper.innerText = '⏳'; }
-      if (mode === 'submitter_only' && textSubmitter) { textSubmitter.innerText = `🏛️ पोर्टल सबमिशन जारी...`; if (iconSubmitter) iconSubmitter.innerText = '⏳'; }
+      if (mode === 'submitter_only' && textSubmitter) { textSubmitter.innerText = `⚡ 4-टैब टर्बो सबमिशन जारी (${selectedAutoBatchCount} लीड्स)...`; if (iconSubmitter) iconSubmitter.innerText = '⏳'; }
       if (mode === 'both' && textBoth) { textBoth.innerText = `⚡ ऑटो-बैच जारी...`; }
 
-      showToast(mode === 'scraper_only' ? '🔍 सिर्फ लीड स्क्रैपर शुरू!' : (mode === 'submitter_only' ? '🏛️ सिर्फ पोर्टल सबमिटर शुरू!' : '🚀 मास्टर ऑटो-बैच शुरू!'), 'info');
+      showToast(mode === 'scraper_only' ? '🔍 सिर्फ लीड स्क्रैपर शुरू!' : (mode === 'submitter_only' ? '⚡ 4-टैब टर्बो सबमिटर शुरू!' : '🚀 मास्टर ऑटो-बैच शुरू!'), 'info');
 
       try {
         const resp = await fetch('/api/auto-batch/run-next', {
@@ -3029,8 +3173,9 @@
 
           // Reset buttons
           if (btnScraper) { btnScraper.disabled = false; btnScraper.classList.remove('opacity-60'); if (textScraper) textScraper.innerText = 'सिर्फ स्क्रैपर चलाएं (ताज़ा लीड्स खोजें)'; if (iconScraper) iconScraper.innerText = '🔍'; }
-          if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); if (textSubmitter) textSubmitter.innerText = 'लंबित लीड्स पोर्टल पर सबमिट करें'; if (iconSubmitter) iconSubmitter.innerText = '🚀'; }
+          if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); if (textSubmitter) textSubmitter.innerText = '⚡ 4-टैब टर्बो सबमिटर चलाएं (4x स्पीड पर लाइव सबमिट)'; if (iconSubmitter) iconSubmitter.innerText = '⚡'; }
           if (btnBoth) { btnBoth.disabled = false; btnBoth.classList.remove('opacity-60'); if (textBoth) textBoth.innerText = 'दोनों काम एक साथ करें (Combined Live Pipeline)'; }
+          resetWorkerIndicators();
 
           showToast(doneMsg, 'success');
           loadAutoBatchStatus();
@@ -3055,8 +3200,9 @@
           });
 
           if (btnScraper) { btnScraper.disabled = false; btnScraper.classList.remove('opacity-60'); if (textScraper) textScraper.innerText = 'सिर्फ स्क्रैपर चलाएं (ताज़ा लीड्स खोजें)'; if (iconScraper) iconScraper.innerText = '🔍'; }
-          if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); if (textSubmitter) textSubmitter.innerText = 'लंबित लीड्स पोर्टल पर सबमिट करें'; if (iconSubmitter) iconSubmitter.innerText = '🚀'; }
+          if (btnSubmitter) { btnSubmitter.disabled = false; btnSubmitter.classList.remove('opacity-60'); if (textSubmitter) textSubmitter.innerText = '⚡ 4-टैब टर्बो सबमिटर चलाएं (4x स्पीड पर लाइव सबमिट)'; if (iconSubmitter) iconSubmitter.innerText = '⚡'; }
           if (btnBoth) { btnBoth.disabled = false; btnBoth.classList.remove('opacity-60'); if (textBoth) textBoth.innerText = 'दोनों काम एक साथ करें (Combined Live Pipeline)'; }
+          resetWorkerIndicators();
 
           showToast('त्रुटि: ' + msg, 'error');
         }
@@ -4492,6 +4638,9 @@
         const stageBadge = document.getElementById('consoleStageBadge');
         if (stageBadge) stageBadge.innerText = logItem.stage;
         updateStepIndicators(logItem.stage);
+      }
+      if (typeof updateWorkerIndicators === 'function' && logItem.message) {
+        updateWorkerIndicators(logItem.message);
       }
       if (logItem.percent !== undefined) {
         const pBar = document.getElementById('consoleProgressBar');
