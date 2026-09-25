@@ -168,6 +168,9 @@ class Pipeline10xRequest(BaseModel):
     count: int = 10
     live_submit: bool = True
     area: Optional[str] = "auto"
+    portal_email: Optional[str] = None
+    portal_password: Optional[str] = None
+    account_id: Optional[str] = None
 
 @app.get("/api/markets/{city}")
 async def get_city_markets(city: str):
@@ -220,6 +223,9 @@ async def start_pipeline_10x(req: Pipeline10xRequest, background_tasks: Backgrou
                 count=req.count,
                 live_submit=req.live_submit,
                 area=req.area,
+                portal_email=req.portal_email,
+                portal_password=req.portal_password,
+                account_id=req.account_id,
                 progress_callback=dispatch_event
             )
             TASKS[task_id]["status"] = "completed"
@@ -911,12 +917,59 @@ async def api_matrix_5layer_queries(city: Optional[str] = "Indore", area: Option
     from backend.matrix import generate_5layer_queries
     return generate_5layer_queries(city=city or "Indore", area=area or "", limit=150)
 
+# ==================== PORTAL ACCOUNTS & MULTI-LOGIN MANAGEMENT ====================
+class PortalAccountSaveRequest(BaseModel):
+    email: str
+    password: str
+    label: Optional[str] = None
+    set_active: bool = False
+
+class PortalAccountSelectRequest(BaseModel):
+    account_id: str
+
+@app.get("/api/portal/accounts")
+async def api_get_portal_accounts():
+    """Returns saved portal accounts (masked passwords), active account, and lead stats."""
+    from backend.account_manager import get_public_accounts_view
+    excel_path = get_master_excel_path()
+    return get_public_accounts_view(excel_path)
+
+@app.post("/api/portal/accounts/save")
+async def api_save_portal_account(req: PortalAccountSaveRequest):
+    """Adds a new portal account or updates an existing one."""
+    from backend.account_manager import add_or_update_account
+    res = add_or_update_account(
+        email=req.email,
+        password=req.password,
+        label=req.label,
+        make_active=req.set_active
+    )
+    return res
+
+@app.post("/api/portal/accounts/select")
+async def api_select_portal_account(req: PortalAccountSelectRequest):
+    """Selects the active portal account for subsequent submissions."""
+    from backend.account_manager import set_active_account
+    ok = set_active_account(req.account_id)
+    return {"success": ok, "active_account_id": req.account_id}
+
+@app.post("/api/portal/accounts/delete")
+async def api_delete_portal_account(req: PortalAccountSelectRequest):
+    """Deletes a portal account (master account cannot be deleted)."""
+    from backend.account_manager import delete_account
+    ok = delete_account(req.account_id)
+    return {"success": ok}
+
 # ==================== 1-CLICK MASTER AUTO-BATCH (100-150 ENTRIES) ====================
 class AutoBatchRunRequest(BaseModel):
     count: int = 150
+    batch_size: Optional[int] = None
     city: Optional[str] = None
     category: Optional[str] = None
     mode: str = "both"  # "scraper_only", "submitter_only", "both"
+    portal_email: Optional[str] = None
+    portal_password: Optional[str] = None
+    account_id: Optional[str] = None
 
 @app.get("/api/auto-batch/status")
 async def api_auto_batch_status(city: Optional[str] = None):
@@ -934,9 +987,10 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
     """
     from backend.auto_batch_engine import execute_master_auto_batch
     task_id = str(uuid.uuid4())
+    effective_count = req.batch_size if req.batch_size is not None else req.count
     TASKS[task_id] = {
         "status": "running",
-        "batch_size": req.count,
+        "batch_size": effective_count,
         "city": req.city,
         "category": req.category,
         "mode": req.mode,
@@ -957,10 +1011,13 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
     async def runner():
         try:
             res = await execute_master_auto_batch(
-                target_count=req.count,
+                target_count=effective_count,
                 city=req.city,
                 category=req.category,
                 mode=req.mode,
+                portal_email=req.portal_email,
+                portal_password=req.portal_password,
+                account_id=req.account_id,
                 progress_callback=dispatch_event
             )
             TASKS[task_id]["status"] = "completed"
@@ -973,7 +1030,7 @@ async def api_auto_batch_run_next(req: AutoBatchRunRequest, background_tasks: Ba
             })
 
     background_tasks.add_task(runner)
-    return {"task_id": task_id, "status": "started", "batch_size": req.count}
+    return {"task_id": task_id, "status": "started", "batch_size": effective_count}
 
 # ==================== MULTI-PERIOD REPORT & ANALYTICS ENGINE ====================
 @app.get("/api/reports/query")

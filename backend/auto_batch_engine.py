@@ -26,6 +26,7 @@ from backend.config import get_master_excel_path, MAX_PORTAL_CONCURRENCY
 from backend.database import record_search_batch, get_search_history, save_scraped_lead
 from backend.canva_storefront_generator import generate_batch_assets
 from backend.excel_builder import generate_leads_excel
+from backend.account_manager import resolve_credentials
 from backend.auto_entry_bot import (
     load_leads_from_excel,
     login_to_portal,
@@ -46,13 +47,23 @@ from backend.saturation_engine import (
 )
 
 def is_lead_pending(lead: Dict[str, Any]) -> bool:
-    """Returns True only if lead is pending submission (excludes already submitted, live, or gracefully skipped/duplicate leads)."""
+    """
+    Returns True only if lead is pending submission.
+    STRICT CROSS-ACCOUNT DEDUPLICATION:
+    If a lead has EVER been submitted or assigned a j4j_business_id / j4j_profile_url on ANY account,
+    it is strictly excluded and will NEVER be re-submitted.
+    """
     status = str(lead.get("submission_status", "")).strip().lower()
     if not lead.get("name"):
         return False
     if "submitted" in status or "live" in status:
         return False
     if "skipped" in status or "already" in status or "duplicate" in status:
+        return False
+    # Cross-Account safety: If lead already has j4j_business_id or j4j_profile_url under ANY account
+    if str(lead.get("j4j_business_id", "")).strip():
+        return False
+    if str(lead.get("j4j_profile_url", "")).strip():
         return False
     return True
 
@@ -222,13 +233,18 @@ async def execute_pure_scraper_batch(
 async def execute_pure_submitter_batch(
     target_count: int = 50,
     delay_seconds: int = 0,
+    portal_email: Optional[str] = None,
+    portal_password: Optional[str] = None,
+    account_id: Optional[str] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Dict[str, Any]:
     """
     ENGINE 2 (PURE PORTAL SUBMITTER):
     100% focused on taking unsubmitted 'Ready to Submit' leads from Excel/Sheet
     and submitting them to jainforjain.com. Zero Google Maps scraping.
+    Strictly guarantees that leads already submitted under ANY account are NEVER re-submitted!
     """
+    auth_email, auth_pass, auth_tag = resolve_credentials(portal_email, portal_password, account_id)
     def emit_log(msg: str, stage: str = "INFO", badge: str = "ℹ️", pct: Optional[int] = None):
         print(f"[{stage}] {msg}")
         if progress_callback:
@@ -320,14 +336,14 @@ async def execute_pure_submitter_batch(
             await apply_turbo_routing(portal_context, block_images=False)
             portal_page = await portal_context.new_page()
 
-            emit_log("🔐 jainforjain.com पर लॉगिन किया जा रहा है...", stage="LOGIN", badge="🔐", pct=10)
-            logged = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
+            emit_log(f"🔐 jainforjain.com पर लॉगिन किया जा रहा है ({auth_email})...", stage="LOGIN", badge="🔐", pct=10)
+            logged = await login_to_portal(portal_page, auth_email, auth_pass)
             if not logged:
-                emit_log("❌ पोर्टल लॉगिन विफल! क्रेडेंशियल्स जांचें.", stage="LOGIN_ERR", badge="❌")
-                return {"status": "error", "message": "Portal login failed"}
+                emit_log(f"❌ पोर्टल लॉगिन विफल ({auth_email})! क्रेडेंशियल्स जांचें.", stage="LOGIN_ERR", badge="❌")
+                return {"status": "error", "message": f"Portal login failed for {auth_email}"}
 
             await portal_page.close()
-            emit_log("✅ पोर्टल लॉगिन 100% सफल! टर्बो पैरेलल ऑटो-फिलिंग शुरू...", stage="PORTAL_OK", badge="✅", pct=15)
+            emit_log(f"✅ पोर्टल लॉगिन 100% सफल ({auth_email})! टर्बो पैरेलल ऑटो-फिलिंग शुरू...", stage="PORTAL_OK", badge="✅", pct=15)
 
             # High-Speed Multi-Tab Parallel Worker Pool (Turbo 4x Speed)
             from backend.config import MAX_PORTAL_CONCURRENCY
@@ -373,14 +389,15 @@ async def execute_pure_submitter_batch(
                                     lead["submission_status"] = "Skipped - Already on Portal"
                                 emit_log(f"⏭️ [टैब {worker_id}] [स्किप] '{l_name}' पोर्टल पर पहले से मौजूद है! (सुरक्षित स्किप)", stage="SKIPPED", badge="⏭️")
                             elif b_id and b_id.startswith("JFJ-") and res.get("status") == "submitted_success":
+                                status_label = f"Submitted - Live [{auth_email}]"
                                 async with excel_lock:
-                                    update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
+                                    update_excel_lead_status(excel_path, cur_row, b_id, p_url, status_label)
                                     submitted_count += 1
                                     lead["j4j_business_id"] = b_id
                                     lead["j4j_profile_url"] = p_url
-                                    lead["submission_status"] = "Submitted - Live"
+                                    lead["submission_status"] = status_label
                                 pct = min(18 + int((submitted_count / len(targets)) * 80), 98)
-                                emit_log(f"🎉 [टैब {worker_id}] [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर 100% लाइव! (ID: {b_id})", stage="LIVE_SUBMITTED", badge="🎉", pct=pct)
+                                emit_log(f"🎉 [टैब {worker_id}] [{submitted_count}/{len(targets)}] '{l_name}' ➔ पोर्टल पर 100% लाइव! (ID: {b_id} | {auth_email})", stage="LIVE_SUBMITTED", badge="🎉", pct=pct)
                             else:
                                 async with excel_lock:
                                     update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {res.get('error', 'Validation')[:25]}")
@@ -450,6 +467,9 @@ async def execute_master_auto_batch(
     city: Optional[str] = None,
     category: Optional[str] = None,
     mode: str = "both",
+    portal_email: Optional[str] = None,
+    portal_password: Optional[str] = None,
+    account_id: Optional[str] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Dict[str, Any]:
     """
@@ -469,6 +489,9 @@ async def execute_master_auto_batch(
         return await execute_pure_submitter_batch(
             target_count=target_count,
             delay_seconds=0,
+            portal_email=portal_email,
+            portal_password=portal_password,
+            account_id=account_id,
             progress_callback=progress_callback
         )
     else:
@@ -476,6 +499,9 @@ async def execute_master_auto_batch(
             target_count=target_count,
             city=city,
             category=category,
+            portal_email=portal_email,
+            portal_password=portal_password,
+            account_id=account_id,
             progress_callback=progress_callback
         )
 
@@ -484,6 +510,9 @@ async def execute_streamed_live_pipeline(
     target_count: int = 20,
     city: Optional[str] = None,
     category: Optional[str] = None,
+    portal_email: Optional[str] = None,
+    portal_password: Optional[str] = None,
+    account_id: Optional[str] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Dict[str, Any]:
     """
@@ -497,6 +526,7 @@ async def execute_streamed_live_pipeline(
     6. Dispatches real-time SSE progress events to the frontend.
     Zero waiting for batch completion!
     """
+    auth_email, auth_pass, auth_tag = resolve_credentials(portal_email, portal_password, account_id)
     def emit_log(msg: str, stage: str = "INFO", badge: str = "ℹ️", pct: Optional[int] = None):
         print(f"[{stage}] {msg}")
         if progress_callback:
@@ -623,13 +653,13 @@ async def execute_streamed_live_pipeline(
             await apply_turbo_routing(portal_context, block_images=False)
             portal_page = await portal_context.new_page()
 
-            logged = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
+            logged = await login_to_portal(portal_page, auth_email, auth_pass)
             if not logged:
-                emit_log("❌ jainforjain.com पोर्टल लॉगिन विफल! क्रेडेंशियल्स जांचें.", stage="PORTAL_ERR", badge="❌")
+                emit_log(f"❌ jainforjain.com पोर्टल लॉगिन विफल ({auth_email})! क्रेडेंशियल्स जांचें.", stage="PORTAL_ERR", badge="❌")
                 await safe_close_browser(portal_browser, portal_context)
-                return {"status": "error", "message": "Portal login failed"}
+                return {"status": "error", "message": f"Portal login failed for {auth_email}"}
 
-            emit_log("✅ पोर्टल लॉगिन 100% सफल! लाइव एंट्री वर्कर तैयार...", stage="PORTAL_OK", badge="✅", pct=15)
+            emit_log(f"✅ पोर्टल लॉगिन 100% सफल ({auth_email})! लाइव एंट्री वर्कर तैयार...", stage="PORTAL_OK", badge="✅", pct=15)
 
             # 1. Process any unsubmitted leads from Excel first (on-the-fly)
             if unsubmitted_existing:
@@ -660,11 +690,12 @@ async def execute_streamed_live_pipeline(
                                 badge="⏭️"
                             )
                         elif b_id and b_id.startswith("JFJ-") and res.get("status") == "submitted_success":
-                            update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
+                            status_label = f"Submitted - Live [{auth_email}]"
+                            update_excel_lead_status(excel_path, cur_row, b_id, p_url, status_label)
                             submitted_count += 1
                             lead["j4j_business_id"] = b_id
                             lead["j4j_profile_url"] = p_url
-                            lead["submission_status"] = "Submitted - Live"
+                            lead["submission_status"] = status_label
                             try:
                                 await sync_excel_to_google_sheet(excel_path)
                             except Exception:
@@ -709,8 +740,8 @@ async def execute_streamed_live_pipeline(
                                 portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
                                 await apply_turbo_routing(portal_context, block_images=False)
                                 portal_page = await portal_context.new_page()
-                                await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
-                                emit_log("✅ नया ब्राउज़र सत्र तैयार! पुनः सबमिशन जारी...", stage="RECONNECT_OK", badge="✅")
+                                await login_to_portal(portal_page, auth_email, auth_pass)
+                                emit_log(f"✅ नया ब्राउज़र सत्र तैयार ({auth_email})! पुनः सबमिशन जारी...", stage="RECONNECT_OK", badge="✅")
                             except Exception as rec_err:
                                 emit_log(f"❌ रीकनेक्शन त्रुटि: {rec_err}", stage="RECONNECT_FAIL", badge="❌")
                         else:
@@ -767,18 +798,19 @@ async def execute_streamed_live_pipeline(
                                 badge="⏭️"
                             )
                         elif b_id and "VALIDATION_SKIPPED" not in b_id:
-                            update_excel_lead_status(excel_path, cur_row, b_id, p_url, "Submitted - Live")
+                            status_label = f"Submitted - Live [{auth_email}]"
+                            update_excel_lead_status(excel_path, cur_row, b_id, p_url, status_label)
                             submitted_count += 1
                             rec["j4j_business_id"] = b_id
                             rec["j4j_profile_url"] = p_url
-                            rec["submission_status"] = "Submitted - Live"
+                            rec["submission_status"] = status_label
                             try:
                                 await sync_excel_to_google_sheet(excel_path)
                             except Exception:
                                 pass
                             pct = min(15 + int((submitted_count / target_count) * 80), 98)
                             emit_log(
-                                f"🎉 [{submitted_count}/{target_count}] '{l_name}' ({owner_name}) ➔ jainforjain.com पर 100% लाइव! (ID: {b_id})",
+                                f"🎉 [{submitted_count}/{target_count}] '{l_name}' ({owner_name}) ➔ jainforjain.com पर 100% लाइव! (ID: {b_id} | {auth_email})",
                                 stage="LIVE_SUBMITTED",
                                 badge="🎉",
                                 pct=pct

@@ -35,6 +35,7 @@ from backend.auto_entry_bot import (
     DEFAULT_USER,
     DEFAULT_PASS
 )
+from backend.account_manager import resolve_credentials
 from backend.google_sheets_sync import sync_excel_to_google_sheet
 from playwright.async_api import async_playwright
 
@@ -45,6 +46,9 @@ async def run_autonomous_10x_pipeline(
     count: int = 10,
     live_submit: bool = True,
     area: Optional[str] = "auto",
+    portal_email: Optional[str] = None,
+    portal_password: Optional[str] = None,
+    account_id: Optional[str] = None,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Dict[str, Any]:
     """
@@ -357,8 +361,9 @@ async def run_autonomous_10x_pipeline(
     quota_reached = False
 
     if live_submit:
-        emit_log(f"🔐 पोर्टल सबमिशन प्रारंभ: jainforjain.com पर लॉगिन किया जा रहा है ({DEFAULT_USER})...", stage="PORTAL_AUTH", badge="🔐", percent=55)
-        emit_progress(58, "jainforjain.com पोर्टल से कनेक्ट हो रहा है...")
+        auth_email, auth_pass, auth_tag = resolve_credentials(portal_email, portal_password, account_id)
+        emit_log(f"🔐 पोर्टल सबमिशन प्रारंभ: jainforjain.com पर लॉगिन किया जा रहा है ({auth_email})...", stage="PORTAL_AUTH", badge="🔐", percent=55)
+        emit_progress(58, f"jainforjain.com पोर्टल से कनेक्ट हो रहा है ({auth_email})...")
 
         portal_browser = None
         portal_context = None
@@ -372,11 +377,11 @@ async def run_autonomous_10x_pipeline(
                 await apply_turbo_routing(portal_context, block_images=False)
                 portal_page = await portal_context.new_page()
 
-                logged_in = await login_to_portal(portal_page, DEFAULT_USER, DEFAULT_PASS)
+                logged_in = await login_to_portal(portal_page, auth_email, auth_pass)
                 if not logged_in:
-                    emit_log("❌ jainforjain.com पोर्टल पर लॉगिन विफल। कृपया क्रेडेंशियल्स जांचें।", stage="PORTAL_ERR", badge="❌", percent=70)
+                    emit_log(f"❌ jainforjain.com पोर्टल पर लॉगिन विफल ({auth_email})। कृपया क्रेडेंशियल्स जांचें।", stage="PORTAL_ERR", badge="❌", percent=70)
                 else:
-                    emit_log("✅ jainforjain.com पोर्टल पर लॉगिन सफल!", stage="PORTAL_OK", badge="✅", percent=60)
+                    emit_log(f"✅ jainforjain.com पोर्टल पर लॉगिन सफल ({auth_email})!", stage="PORTAL_OK", badge="✅", percent=60)
 
                     for p_idx, lead in enumerate(mined_records, start=1):
                         if quota_reached:
@@ -395,13 +400,14 @@ async def run_autonomous_10x_pipeline(
                             profile_url = res.get("profile_url", "")
 
                             if biz_id:
-                                update_excel_lead_status(excel_path, lead_row, biz_id, profile_url, "Submitted - Live")
+                                status_label = f"Submitted - Live [{auth_email}]"
+                                update_excel_lead_status(excel_path, lead_row, biz_id, profile_url, status_label)
                                 submitted_count += 1
-                                emit_log(f"🎉 [{p_idx}/{len(mined_records)}] सफलतापूर्वक सबमिट! ID: {biz_id} | 🔗 {profile_url}", stage="PORTAL_SUBMITTED", badge="🎉")
+                                emit_log(f"🎉 [{p_idx}/{len(mined_records)}] सफलतापूर्वक सबमिट! ID: {biz_id} | 🔗 {profile_url} | {auth_email}", stage="PORTAL_SUBMITTED", badge="🎉")
                                 
                                 lead["j4j_business_id"] = biz_id
                                 lead["j4j_profile_url"] = profile_url
-                                lead["submission_status"] = "Submitted - Live"
+                                lead["submission_status"] = status_label
 
                         except Exception as sub_err:
                             err_str = str(sub_err)

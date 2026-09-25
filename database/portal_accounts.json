@@ -1,0 +1,13 @@
+{
+  "active_account_id": "master_1",
+  "accounts": [
+    {
+      "id": "master_1",
+      "email": "mohit12836@gmail.com",
+      "password": "223034000",
+      "label": "Account 1 (Master): mohit12836@gmail.com",
+      "is_active": true,
+      "created_at": "2026-09-26 02:07:43"
+    }
+  ]
+}
