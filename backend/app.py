@@ -164,7 +164,7 @@ async def start_scan(req: ScanRequest, background_tasks: BackgroundTasks):
 
 class Pipeline10xRequest(BaseModel):
     city: str = "Indore"
-    category: str = "Jewellers"
+    category: str = "All"
     count: int = 10
     live_submit: bool = True
     area: Optional[str] = "auto"

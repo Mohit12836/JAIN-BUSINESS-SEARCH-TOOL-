@@ -111,15 +111,40 @@ async def run_autonomous_10x_pipeline(
     # =========================================================================
     # PHASE 1: LEAD SEARCH & DEEP MINING
     # =========================================================================
-    emit_log(f"🔍 Google Maps सर्च इंजन प्रारंभ: '{category} in {active_area}, {active_city}'...", stage="SCRAPE", badge="🔍", percent=8)
-
-    queries = [
-        {"query": f"Jain {category} in {active_area}, {active_city}", "vector_type": "Direct Market Search"},
-        {"query": f"{active_area} {active_city} Jain {category}", "vector_type": "Hyperlocal Area Vector"},
-        {"query": f"Jain business in {active_area}, {active_city}", "vector_type": "Commercial Market Anchor"},
-        {"query": f"Navkar {category} in {active_area}, {active_city}", "vector_type": "Sacred Trademark in Market"},
-        {"query": f"Shah {category} in {active_area}, {active_city}", "vector_type": "Community Lineage in Market"}
-    ]
+    is_all_cats = category.lower() in ["all", "all categories", "all categories & businesses", "jewellers & all commercial", "all jain categories", "all jain businesses"]
+    
+    if is_all_cats:
+        cat_display = "🌟 सभी श्रेणियां (All Jain Businesses & Categories)"
+        emit_log(f"🔍 Google Maps ऑल-कैटेगरी सर्च प्रारंभ: [सभी जैन व्यापार] in [{active_area}, {active_city}] (17 वेक्टर्स)...", stage="SCRAPE", badge="🌟", percent=8)
+        queries = [
+            {"query": f"Jain in {active_area}, {active_city}", "vector_type": "Direct Jain Anchor"},
+            {"query": f"Jain business in {active_area}, {active_city}", "vector_type": "All Jain Commercial"},
+            {"query": f"Jain Jewellers in {active_area}, {active_city}", "vector_type": "Jewellers & Bullion"},
+            {"query": f"Jain Sarees Textiles in {active_area}, {active_city}", "vector_type": "Textiles & Sarees"},
+            {"query": f"Jain Sweets Namkeen in {active_area}, {active_city}", "vector_type": "Sweets & Food"},
+            {"query": f"Jain Kirana Dry Fruits in {active_area}, {active_city}", "vector_type": "Kirana & Dry Fruits"},
+            {"query": f"Jain Mandir Derasar in {active_area}, {active_city}", "vector_type": "Mandir & Derasar"},
+            {"query": f"Jain Dharamshala Trust in {active_area}, {active_city}", "vector_type": "Trust & Dharamshala"},
+            {"query": f"Jain Medical Chemist Doctor in {active_area}, {active_city}", "vector_type": "Medical & Clinic"},
+            {"query": f"Jain Hardware Steel Sanitary in {active_area}, {active_city}", "vector_type": "Hardware & Steel"},
+            {"query": f"Navkar in {active_area}, {active_city}", "vector_type": "Navkar Trademark Anchor"},
+            {"query": f"Nakoda in {active_area}, {active_city}", "vector_type": "Nakoda Trademark Anchor"},
+            {"query": f"Arihant in {active_area}, {active_city}", "vector_type": "Arihant Trademark Anchor"},
+            {"query": f"Paras in {active_area}, {active_city}", "vector_type": "Paras Trademark Anchor"},
+            {"query": f"Shah in {active_area}, {active_city}", "vector_type": "Shah Community Lineage"},
+            {"query": f"Kothari in {active_area}, {active_city}", "vector_type": "Kothari Community Lineage"},
+            {"query": f"Mehta in {active_area}, {active_city}", "vector_type": "Mehta Community Lineage"}
+        ]
+    else:
+        cat_display = category
+        emit_log(f"🔍 Google Maps सर्च इंजन प्रारंभ: '{category} in {active_area}, {active_city}'...", stage="SCRAPE", badge="🔍", percent=8)
+        queries = [
+            {"query": f"Jain {category} in {active_area}, {active_city}", "vector_type": "Direct Market Search"},
+            {"query": f"{active_area} {active_city} Jain {category}", "vector_type": "Hyperlocal Area Vector"},
+            {"query": f"Jain business in {active_area}, {active_city}", "vector_type": "Commercial Market Anchor"},
+            {"query": f"Navkar {category} in {active_area}, {active_city}", "vector_type": "Sacred Trademark in Market"},
+            {"query": f"Shah {category} in {active_area}, {active_city}", "vector_type": "Community Lineage in Market"}
+        ]
 
     from backend.system_guard import (
         CHROMIUM_TURBO_ARGS,
