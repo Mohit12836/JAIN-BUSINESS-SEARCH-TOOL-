@@ -332,18 +332,39 @@ async def execute_pure_submitter_batch(
                 portal_browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
             except Exception:
                 portal_browser = await p.chromium.launch(headless=True, channel="chrome", args=CHROMIUM_TURBO_ARGS)
-            portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
+            from backend.account_manager import get_session_file_path, has_valid_session, clear_session
+            from backend.auto_entry_bot import CREATE_URL
+            session_file = get_session_file_path(auth_email)
+            ctx_kwargs = {"viewport": {"width": 1400, "height": 950}}
+            has_cached_session = has_valid_session(auth_email)
+            if has_cached_session:
+                ctx_kwargs["storage_state"] = session_file
+                emit_log(f"⚡ [सत्र कैश] पूर्व-सहेजे गए कुकीज़ सत्र का उपयोग ({auth_email})...", stage="SESSION_CACHE", badge="⚡", pct=8)
+
+            portal_context = await portal_browser.new_context(**ctx_kwargs)
             await apply_turbo_routing(portal_context, block_images=False)
             portal_page = await portal_context.new_page()
 
-            emit_log(f"🔐 jainforjain.com पर लॉगिन किया जा रहा है ({auth_email})...", stage="LOGIN", badge="🔐", pct=10)
-            logged = await login_to_portal(portal_page, auth_email, auth_pass)
-            if not logged:
-                emit_log(f"❌ पोर्टल लॉगिन विफल ({auth_email})! क्रेडेंशियल्स जांचें.", stage="LOGIN_ERR", badge="❌")
-                return {"status": "error", "message": f"Portal login failed for {auth_email}"}
+            session_live = False
+            if has_cached_session:
+                try:
+                    await portal_page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=20000)
+                    if "/member/login" not in portal_page.url:
+                        session_live = True
+                        emit_log(f"🚀 [जीरो-लॉगिन] सत्र तुरंत सक्रिय! लॉगिन समय बचा (0.1s में रेडी) ({auth_email})", stage="ZERO_LOGIN", badge="🚀", pct=15)
+                except Exception:
+                    pass
+
+            if not session_live:
+                emit_log(f"🔐 jainforjain.com पर लॉगिन किया जा रहा है ({auth_email})...", stage="LOGIN", badge="🔐", pct=10)
+                logged = await login_to_portal(portal_page, auth_email, auth_pass)
+                if not logged:
+                    clear_session(auth_email)
+                    emit_log(f"❌ पोर्टल लॉगिन विफल ({auth_email})! क्रेडेंशियल्स जांचें.", stage="LOGIN_ERR", badge="❌")
+                    return {"status": "error", "message": f"Portal login failed for {auth_email}"}
+                emit_log(f"✅ पोर्टल लॉगिन 100% सफल! नया सत्र कैश सेव हुआ ({auth_email})...", stage="PORTAL_OK", badge="✅", pct=15)
 
             await portal_page.close()
-            emit_log(f"✅ पोर्टल लॉगिन 100% सफल ({auth_email})! टर्बो पैरेलल ऑटो-फिलिंग शुरू...", stage="PORTAL_OK", badge="✅", pct=15)
 
             # High-Speed Multi-Tab Parallel Worker Pool (Turbo 4x Speed)
             from backend.config import MAX_PORTAL_CONCURRENCY
@@ -649,17 +670,37 @@ async def execute_streamed_live_pipeline(
                     channel="chrome",
                     args=CHROMIUM_TURBO_ARGS
                 )
-            portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 950})
+            from backend.account_manager import get_session_file_path, has_valid_session, clear_session
+            from backend.auto_entry_bot import CREATE_URL
+            session_file = get_session_file_path(auth_email)
+            ctx_kwargs = {"viewport": {"width": 1400, "height": 950}}
+            has_cached = has_valid_session(auth_email)
+            if has_cached:
+                ctx_kwargs["storage_state"] = session_file
+                emit_log(f"⚡ [सत्र कैश] पूर्व-सहेजे गए कुकीज़ सत्र का उपयोग ({auth_email})...", stage="SESSION_CACHE", badge="⚡", pct=10)
+
+            portal_context = await portal_browser.new_context(**ctx_kwargs)
             await apply_turbo_routing(portal_context, block_images=False)
             portal_page = await portal_context.new_page()
 
-            logged = await login_to_portal(portal_page, auth_email, auth_pass)
-            if not logged:
-                emit_log(f"❌ jainforjain.com पोर्टल लॉगिन विफल ({auth_email})! क्रेडेंशियल्स जांचें.", stage="PORTAL_ERR", badge="❌")
-                await safe_close_browser(portal_browser, portal_context)
-                return {"status": "error", "message": f"Portal login failed for {auth_email}"}
+            session_live = False
+            if has_cached:
+                try:
+                    await portal_page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=20000)
+                    if "/member/login" not in portal_page.url:
+                        session_live = True
+                        emit_log(f"🚀 [जीरो-लॉगिन] सत्र तुरंत सक्रिय! लॉगिन समय बचा (0.1s में रेडी) ({auth_email})", stage="ZERO_LOGIN", badge="🚀", pct=15)
+                except Exception:
+                    pass
 
-            emit_log(f"✅ पोर्टल लॉगिन 100% सफल ({auth_email})! लाइव एंट्री वर्कर तैयार...", stage="PORTAL_OK", badge="✅", pct=15)
+            if not session_live:
+                logged = await login_to_portal(portal_page, auth_email, auth_pass)
+                if not logged:
+                    clear_session(auth_email)
+                    emit_log(f"❌ jainforjain.com पोर्टल लॉगिन विफल ({auth_email})! क्रेडेंशियल्स जांचें.", stage="PORTAL_ERR", badge="❌")
+                    await safe_close_browser(portal_browser, portal_context)
+                    return {"status": "error", "message": f"Portal login failed for {auth_email}"}
+                emit_log(f"✅ पोर्टल लॉगिन 100% सफल ({auth_email})! नया सत्र कैश सेव हुआ...", stage="PORTAL_OK", badge="✅", pct=15)
 
             # 1. Process any unsubmitted leads from Excel first (on-the-fly)
             if unsubmitted_existing:

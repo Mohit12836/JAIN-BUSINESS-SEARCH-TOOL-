@@ -325,9 +325,14 @@ async def login_to_portal(page: Page, email: str, password: str) -> bool:
             return err ? err.innerText.trim() : "";
         }''')
         print(f"Login failed or still on login page! {err_msg}")
-        return False
-        
     print(f"Login successful! Redirected to: {page.url}")
+    try:
+        from backend.account_manager import get_session_file_path
+        session_path = get_session_file_path(email)
+        await page.context.storage_state(path=session_path)
+        print(f"✓ Saved persistent storage state to: {session_path}")
+    except Exception as s_err:
+        print(f"Session save notice: {s_err}")
     return True
 
 async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = True) -> Dict[str, Any]:

@@ -13,6 +13,7 @@ from typing import Dict, Any, List, Optional, Tuple
 
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database")
 ACCOUNTS_FILE = os.path.join(DB_DIR, "portal_accounts.json")
+SESSION_DIR = os.path.join(DB_DIR, "sessions")
 
 DEFAULT_MASTER_EMAIL = "mohit12836@gmail.com"
 DEFAULT_MASTER_PASS = "223034000"
@@ -20,6 +21,27 @@ DEFAULT_MASTER_PASS = "223034000"
 def get_portal_accounts_file_path() -> str:
     os.makedirs(DB_DIR, exist_ok=True)
     return ACCOUNTS_FILE
+
+def get_session_file_path(email_or_id: str) -> str:
+    """Returns persistent browser storage state file path for account."""
+    os.makedirs(SESSION_DIR, exist_ok=True)
+    import re
+    clean = re.sub(r'[^a-zA-Z0-9_.-]+', '_', (email_or_id or "default").strip().lower())
+    return os.path.join(SESSION_DIR, f"storage_state_{clean}.json")
+
+def has_valid_session(email_or_id: str) -> bool:
+    """Checks if a saved storage state file exists for this account."""
+    path = get_session_file_path(email_or_id)
+    return os.path.exists(path) and os.path.getsize(path) > 50
+
+def clear_session(email_or_id: str):
+    """Deletes cached session file if session expired."""
+    path = get_session_file_path(email_or_id)
+    if os.path.exists(path):
+        try:
+            os.remove(path)
+        except Exception:
+            pass
 
 def load_portal_accounts() -> Dict[str, Any]:
     """Loads accounts from disk or initializes with default master account."""

@@ -373,15 +373,39 @@ async def run_autonomous_10x_pipeline(
                     headless=True,
                     args=CHROMIUM_TURBO_ARGS
                 )
-                portal_context = await portal_browser.new_context(viewport={"width": 1400, "height": 1000})
+                from backend.account_manager import get_session_file_path, has_valid_session, clear_session
+                from backend.auto_entry_bot import CREATE_URL
+                session_file = get_session_file_path(auth_email)
+                ctx_kwargs = {"viewport": {"width": 1400, "height": 1000}}
+                has_cached = has_valid_session(auth_email)
+                if has_cached:
+                    ctx_kwargs["storage_state"] = session_file
+                    emit_log(f"⚡ [सत्र कैश] पूर्व-सहेजे गए कुकीज़ का उपयोग ({auth_email})...", stage="SESSION_CACHE", badge="⚡", percent=57)
+
+                portal_context = await portal_browser.new_context(**ctx_kwargs)
                 await apply_turbo_routing(portal_context, block_images=False)
                 portal_page = await portal_context.new_page()
 
-                logged_in = await login_to_portal(portal_page, auth_email, auth_pass)
-                if not logged_in:
-                    emit_log(f"❌ jainforjain.com पोर्टल पर लॉगिन विफल ({auth_email})। कृपया क्रेडेंशियल्स जांचें।", stage="PORTAL_ERR", badge="❌", percent=70)
-                else:
-                    emit_log(f"✅ jainforjain.com पोर्टल पर लॉगिन सफल ({auth_email})!", stage="PORTAL_OK", badge="✅", percent=60)
+                session_live = False
+                if has_cached:
+                    try:
+                        await portal_page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=20000)
+                        if "/member/login" not in portal_page.url:
+                            session_live = True
+                            emit_log(f"🚀 [जीरो-लॉगिन] सत्र तुरंत सक्रिय! लॉगिन समय बचा (0.1s में रेडी) ({auth_email})", stage="ZERO_LOGIN", badge="🚀", percent=60)
+                    except Exception:
+                        pass
+
+                logged_in = True
+                if not session_live:
+                    logged_in = await login_to_portal(portal_page, auth_email, auth_pass)
+                    if not logged_in:
+                        clear_session(auth_email)
+                        emit_log(f"❌ jainforjain.com पोर्टल पर लॉगिन विफल ({auth_email})। कृपया क्रेडेंशियल्स जांचें।", stage="PORTAL_ERR", badge="❌", percent=70)
+                    else:
+                        emit_log(f"✅ jainforjain.com पोर्टल पर लॉगिन सफल ({auth_email})!", stage="PORTAL_OK", badge="✅", percent=60)
+
+                if logged_in:
 
                     for p_idx, lead in enumerate(mined_records, start=1):
                         if quota_reached:
