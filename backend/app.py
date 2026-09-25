@@ -76,6 +76,32 @@ async def api_sync_google_sheets():
         "sheet_url": "https://docs.google.com/spreadsheets/d/1QjY6a_D64dGWAn0VApB8xgqwsygqXHctOQaa7AFAjQw/edit?usp=sharing"
     }
 
+@app.post("/api/system/git-pull-restart")
+async def system_git_pull_restart(background_tasks: BackgroundTasks):
+    """
+    Pulls the latest code from GitHub main branch and auto-restarts the service.
+    Works automatically on Hostinger VPS under systemd (Restart=always).
+    """
+    import subprocess
+    
+    async def trigger_update():
+        await asyncio.sleep(1)
+        app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        try:
+            subprocess.run(["git", "stash"], cwd=app_dir, capture_output=True)
+            pull_res = subprocess.run(["git", "pull", "origin", "main"], cwd=app_dir, capture_output=True, text=True)
+            print(f"[SYSTEM_UPDATE] git pull: {pull_res.stdout} / {pull_res.stderr}")
+            await asyncio.sleep(1)
+            os._exit(0)
+        except Exception as e:
+            print(f"[SYSTEM_UPDATE ERROR] {e}")
+
+    background_tasks.add_task(trigger_update)
+    return {
+        "status": "success",
+        "message": "Git pull triggered! VPS service will auto-restart with latest code in 5 seconds."
+    }
+
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard():
     """Serves the main frontend dashboard."""

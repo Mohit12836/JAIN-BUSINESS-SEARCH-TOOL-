@@ -6,8 +6,12 @@
 
 set -e
 
+# Auto-locate project directory if executed from outside
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 echo "=================================================================="
-echo "🔄 UPDATING JAINBIZ TO LATEST VERSION FROM GITHUB..."
+echo "🔄 UPDATING JAINBIZ IN $SCRIPT_DIR FROM GITHUB..."
 echo "=================================================================="
 
 # 1. Clean any stuck chromium background processes
