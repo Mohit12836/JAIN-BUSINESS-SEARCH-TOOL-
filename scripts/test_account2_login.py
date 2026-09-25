@@ -28,5 +28,29 @@ async def test_account2():
         finally:
             await browser.close()
 
+async def test_zero_login():
+    import time
+    from backend.account_manager import get_session_file_path
+    from backend.auto_entry_bot import CREATE_URL
+    session_file = get_session_file_path("mohit12836+1@gmail.com")
+    print(f"\n--- Testing Zero-Login with session cache: {session_file} ---")
+    start = time.time()
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
+        ctx = await browser.new_context(storage_state=session_file, viewport={"width": 1400, "height": 950})
+        page = await ctx.new_page()
+        try:
+            await page.goto(CREATE_URL, wait_until="domcontentloaded", timeout=20000)
+            dur = round(time.time() - start, 2)
+            print(f"Time to load create form directly: {dur}s")
+            print("Current page URL:", page.url)
+            if "/business-listings/create" in page.url:
+                print("⚡ SUCCESS: Direct Zero-Login Confirmed! Landed directly on Create form in zero seconds flat!")
+            else:
+                print("Notice: Redirected to", page.url)
+        finally:
+            await browser.close()
+
 if __name__ == "__main__":
     asyncio.run(test_account2())
+    asyncio.run(test_zero_login())
