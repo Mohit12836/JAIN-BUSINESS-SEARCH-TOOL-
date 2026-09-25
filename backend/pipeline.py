@@ -20,7 +20,14 @@ from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, for
 from backend.photo_engine import process_firm_media
 from backend.database import is_already_scraped, save_scraped_lead
 from backend.scraper import extract_lat_long, get_state_and_district, parse_maps_b_record
-from backend.saturation_engine import append_to_master_excel
+from backend.saturation_engine import (
+    append_to_master_excel,
+    load_progress,
+    save_progress,
+    CITY_MICRO_ZONES,
+    is_within_target_city,
+    advance_market_in_state
+)
 from backend.auto_entry_bot import (
     login_to_portal,
     fill_listing_form,
@@ -37,15 +44,18 @@ async def run_autonomous_10x_pipeline(
     category: str = "Jewellers",
     count: int = 10,
     live_submit: bool = True,
+    area: Optional[str] = "auto",
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None
 ) -> Dict[str, Any]:
     """
     Executes the entire end-to-end autonomous 10X pipeline:
-    1. Stealth Google Maps search for `count` fresh Jain businesses in `city`.
-    2. Deep enrichment: Owner extraction, HD signboard photo, Pincode, 3-para SEO description.
-    3. Master Excel 26-column insertion.
-    4. Autonomous jainforjain.com Playwright login & form entry.
-    5. Real-time Google Sheet synchronization.
+    1. Hyperlocal Google Maps search for `count` fresh Jain businesses in specific market `area` of `city`.
+    2. Strict city-boundary verification (never leaks listings from other cities).
+    3. Deep enrichment: Owner extraction, HD signboard photo, Pincode, 3-para SEO description.
+    4. Master Excel 26-column insertion.
+    5. Autonomous jainforjain.com Playwright login & form entry.
+    6. Real-time Google Sheet synchronization.
+    7. Sequential checkpoint advance to the next market/bazar!
     All steps stream live to the UI console via progress_callback.
     """
     excel_path = get_master_excel_path()
@@ -75,8 +85,24 @@ async def run_autonomous_10x_pipeline(
                 data["stats"] = stats
             progress_callback(data)
 
-    emit_log(f"🚀 10X सुपर ऑटोनोमस पाइपलाइन प्रारंभ | शहर: {city} | ट्रेड: {category} | लक्ष्य: {count} बिज़नेस", stage="INIT", badge="🚀", percent=3)
-    emit_progress(5, f"[{city}] सर्च इंजन तैयार हो रहा है...")
+    state = load_progress()
+    active_city = city or state.get("current_city", "Indore")
+    areas = CITY_MICRO_ZONES.get(active_city, ["Main Market"])
+    area_idx = state.get("area_idx", 0)
+    
+    if area and area != "auto":
+        active_area = area
+        try:
+            m_pos = areas.index(area) + 1
+        except ValueError:
+            m_pos = 1
+        market_label = f"{active_area} ({m_pos}/{len(areas)})"
+    else:
+        active_area = areas[area_idx % len(areas)]
+        market_label = f"{active_area} ({area_idx + 1}/{len(areas)})"
+
+    emit_log(f"🚀 10X ऑटोनोमस पाइपलाइन प्रारंभ | शहर: {active_city} | 📍 बाजार: {market_label} | ट्रेड: {category} | लक्ष्य: {count} बिज़नेस", stage="INIT", badge="🚀", percent=3)
+    emit_progress(5, f"[{active_city} - {active_area}] सर्च इंजन तैयार हो रहा है...")
 
     mined_records: List[Dict[str, Any]] = []
     seen_keys = set()
@@ -85,11 +111,15 @@ async def run_autonomous_10x_pipeline(
     # =========================================================================
     # PHASE 1: LEAD SEARCH & DEEP MINING
     # =========================================================================
-    emit_log(f"🔍 Google Maps सर्च इंजन प्रारंभ: '{category} in {city}'...", stage="SCRAPE", badge="🔍", percent=8)
+    emit_log(f"🔍 Google Maps सर्च इंजन प्रारंभ: '{category} in {active_area}, {active_city}'...", stage="SCRAPE", badge="🔍", percent=8)
 
-    queries = build_query_batch(category, city, include_sacred=True, include_surnames=True)
-    if not queries:
-        queries = [{"query": f"Jain {category} in {city}", "vector_type": "Direct Search"}]
+    queries = [
+        {"query": f"Jain {category} in {active_area}, {active_city}", "vector_type": "Direct Market Search"},
+        {"query": f"{active_area} {active_city} Jain {category}", "vector_type": "Hyperlocal Area Vector"},
+        {"query": f"Jain business in {active_area}, {active_city}", "vector_type": "Commercial Market Anchor"},
+        {"query": f"Navkar {category} in {active_area}, {active_city}", "vector_type": "Sacred Trademark in Market"},
+        {"query": f"Shah {category} in {active_area}, {active_city}", "vector_type": "Community Lineage in Market"}
+    ]
 
     from backend.system_guard import (
         CHROMIUM_TURBO_ARGS,
@@ -186,7 +216,13 @@ async def run_autonomous_10x_pipeline(
                                 continue
                             seen_phones.add(norm_phone)
 
-                        address = raw.get("address") or f"{city}, Madhya Pradesh, India"
+                        address = raw.get("address") or f"{active_area}, {active_city}, India"
+                        
+                        # Strict City Boundary Enforcement
+                        if not is_within_target_city(address, active_city):
+                            emit_log(f"🚫 अन्य शहर का रिकॉर्ड छोड़ा गया: '{title}' ({address[:35]})", stage="OUT_OF_BOUNDS", badge="🚫")
+                            continue
+
                         rating = raw.get("rating")
                         website = raw.get("website", "")
                         raw_photos = raw.get("photos", [])
@@ -197,11 +233,11 @@ async def run_autonomous_10x_pipeline(
                         j4j_cat = map_to_j4j_category(category, title)
                         pincode = extract_pincode(address)
                         whatsapp = format_clean_whatsapp(phone)
-                        description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
+                        description = generate_j4j_description(title, owner_name, j4j_cat, active_city, phone, address)
 
                         lat = raw.get("latitude", "")
                         lng = raw.get("longitude", "")
-                        district, state_val = get_state_and_district(city, address, city)
+                        district, state_val = get_state_and_district(active_city, address, active_city)
 
                         media = process_firm_media(title, raw_photos, website, href)
 
@@ -213,7 +249,7 @@ async def run_autonomous_10x_pipeline(
                             "whatsapp": whatsapp,
                             "email": "",
                             "address": address,
-                            "city": city,
+                            "city": active_city,
                             "district": district,
                             "state": state_val,
                             "pincode": pincode,
@@ -278,10 +314,16 @@ async def run_autonomous_10x_pipeline(
     if mined_records:
         append_to_master_excel(mined_records, excel_path)
         emit_log("✅ Master Excel (26 कॉलम्स) सफलतापूर्वक अपडेट हो गई!", stage="EXCEL_SUCCESS", badge="✅", percent=53)
+        
+        # Auto-advance to next market in the city
+        adv_res = advance_market_in_state(active_city, active_area, len(mined_records))
+        emit_log(f"📍 {adv_res.get('message', '')}", stage="MARKET_PROGRESS", badge="🗺️", percent=54)
 
     if not mined_records:
-        emit_log("❌ इस सर्च में कोई नए रिकॉर्ड्स नहीं मिले। कृपया अन्य श्रेणी या शहर चुनें।", stage="DONE", badge="⚠️", percent=100)
-        return {"mined": 0, "submitted": 0, "status": "no_leads_found"}
+        # Also advance checkpoint so system doesn't get stuck on empty market
+        adv_res = advance_market_in_state(active_city, active_area, 0)
+        emit_log(f"ℹ️ [{active_city} - {active_area}] में नए रिकॉर्ड्स पूरे हो चुके हैं। {adv_res.get('message', '')}", stage="DONE", badge="⚠️", percent=100)
+        return {"mined": 0, "submitted": 0, "status": "area_exhausted", "next_market": adv_res.get("next_market")}
 
     # =========================================================================
     # PHASE 2: AUTONOMOUS PORTAL SUBMISSION (jainforjain.com)

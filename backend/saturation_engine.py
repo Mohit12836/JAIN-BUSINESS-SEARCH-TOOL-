@@ -35,6 +35,25 @@ if sys.platform == "win32":
 
 # Comprehensive Commercial Markets & Micro-zones across major Jain hubs
 CITY_MICRO_ZONES: Dict[str, List[str]] = {
+    "Indore": [
+        "Sarafa Bazar", "Bada Sarafa", "Chhota Sarafa", "Rajwada", "Marothia Bazar", "Sitlamata Bazar",
+        "MT Cloth Market", "Siya Ganj", "Jail Road", "Malharganj", "Ranipura", "Topkhana", "Kothari Market",
+        "Chhavani", "Dawa Bazar", "Palasia", "New Palasia", "Old Palasia", "Vijay Nagar", "Scheme 54",
+        "Sapna Sangeeta", "Bhawarkua", "Tower Chouraha", "Annapurna Road", "Sudama Nagar",
+        "Gommatgiri", "Sanwer Road Industrial Area", "Pologround", "Laxmibai Nagar", "Rau", "Mhow", "Pithampur"
+    ],
+    "Ujjain": [
+        "Freeganj", "Sarafa Bazar", "Gopal Mandir", "Daulat Ganj", "Nai Sadak", "Patni Bazar", "Dewas Gate"
+    ],
+    "Bhopal": [
+        "New Market", "Chowk Bazar", "MP Nagar Zone 1", "MP Nagar Zone 2", "Bairagarh", "Bittan Market", "Marwari Road", "Jumerati"
+    ],
+    "Ratlam": [
+        "Manek Chowk", "Chandni Chowk", "Ghas Bazar", "Station Road", "Dalumodi Bazar", "Kothari Market"
+    ],
+    "Jabalpur": [
+        "Lordganj", "Sarafa Bazar", "Kotwali", "Wright Town", "Gorakhpur", "Civic Center"
+    ],
     "Jaipur": [
         "Johari Bazar", "MI Road", "Bapu Bazar", "Tripolia Bazar", "Chaura Rasta",
         "Chandpole Bazar", "Kishanpole Bazar", "Raja Park", "Mansarovar",
@@ -42,11 +61,17 @@ CITY_MICRO_ZONES: Dict[str, List[str]] = {
         "Gopalpura Bypass", "Tonk Road", "Sanganer", "Sitapura Industrial Area",
         "Vishwakarma Industrial Area (VKI)", "Jhotwara", "Ajmer Road", "Bani Park"
     ],
-    "Indore": [
-        "Sarafa Bazar", "Rajwada", "Marothia Bazar", "Sitlamata Bazar",
-        "MT Cloth Market", "Siya Ganj", "Jail Road", "Malharganj",
-        "Chhavani", "Palasia", "Vijay Nagar", "Sapna Sangeeta",
-        "Annapurna", "Gommatgiri", "Sanwer Road Industrial Area", "Rau"
+    "Jodhpur": [
+        "Sojati Gate", "Nai Sarak", "Sardarpura", "Tripolia Bazar", "Shastri Nagar", "Clock Tower Market", "Katla Bazar"
+    ],
+    "Udaipur": [
+        "Bapu Bazar", "Delhi Gate", "Hiran Magri", "Surajpole", "Chetak Circle", "Fatehpura", "Maldas Street", "Bada Bazar"
+    ],
+    "Kota": [
+        "Rampura Bazar", "Gumanpura", "Aerodrome Circle", "Vigyan Nagar", "Chawani", "Bajrang Nagar"
+    ],
+    "Bhilwara": [
+        "Bhopal Ganj", "Gol Pyau", "Subhash Nagar", "Nagori Garden", "Pur Road", "Gandhi Nagar"
     ],
     "Ahmedabad": [
         "Manek Chowk", "Ratanpole", "Relief Road", "CG Road", "Ashram Road",
@@ -60,17 +85,153 @@ CITY_MICRO_ZONES: Dict[str, List[str]] = {
     "Mumbai": [
         "Zaveri Bazar", "Kalbadevi", "Bhuleshwar", "Opera House", "Bandra West",
         "Ghatkopar East", "Borivali West", "Mulund West", "Vile Parle East", "Andheri West", "Girgaon"
-    ],
-    "Udaipur": [
-        "Bapu Bazar", "Delhi Gate", "Hiran Magri", "Surajpole", "Chetak Circle", "Fatehpura", "Maldas Street"
-    ],
-    "Jodhpur": [
-        "Sojati Gate", "Nai Sarak", "Sardarpura", "Tripolia Bazar", "Shastri Nagar", "Clock Tower Market"
-    ],
-    "Kota": [
-        "Rampura Bazar", "Gumanpura", "Aerodrome Circle", "Vigyan Nagar", "Chawani"
     ]
 }
+
+# Regional Sequential City Transition Chains (A city is completely exhausted before jumping to the next!)
+REGIONAL_CITY_CHAINS: Dict[str, List[str]] = {
+    "Madhya Pradesh": [
+        "Indore", "Ujjain", "Dewas", "Dhar", "Mhow", "Ratlam", "Mandsaur", "Neemuch",
+        "Bhopal", "Sehore", "Vidisha", "Hoshangabad", "Jabalpur", "Katni", "Sagar", "Damoh", "Gwalior"
+    ],
+    "Rajasthan": [
+        "Jaipur", "Jodhpur", "Udaipur", "Bhilwara", "Kota", "Pali", "Sumerpur",
+        "Beawar", "Ajmer", "Bikaner", "Alwar", "Nagaur", "Chittorgarh"
+    ],
+    "Gujarat": [
+        "Ahmedabad", "Surat", "Rajkot", "Vadodara", "Bhavnagar", "Jamnagar",
+        "Mehsana", "Palanpur", "Morbi", "Gandhinagar", "Anand", "Navsari", "Valsad"
+    ],
+    "Maharashtra": [
+        "Mumbai", "Pune", "Kolhapur", "Solapur", "Nashik", "Nagpur", "Sangli", "Chhatrapati Sambhajinagar", "Thane"
+    ]
+}
+
+ALL_KNOWN_CITIES = [
+    "indore", "jaipur", "ahmedabad", "surat", "mumbai", "udaipur", "jodhpur", "kota",
+    "bhopal", "ujjain", "delhi", "pune", "bengaluru", "kolkata", "chennai", "hyderabad",
+    "vadodara", "rajkot", "nagpur", "lucknow", "kanpur", "agra", "varanasi", "gwalior",
+    "jabalpur", "ratlam", "dewas", "bhilwara", "bikaner", "ajmer", "pali"
+]
+
+def is_within_target_city(address: str, target_city: str) -> bool:
+    """
+    Guarantees strict geographic boundary lock.
+    Prevents Google Maps ads/algorithm from leaking listings from other cities.
+    e.g. If scraping Indore, rejects addresses in Ahmedabad, Jaipur, Mumbai, etc.
+    """
+    if not address or not target_city:
+        return True
+        
+    addr_lower = address.lower()
+    city_lower = target_city.lower().strip()
+    
+    # 1. Direct positive match: address explicitly has target city
+    if city_lower in addr_lower:
+        return True
+        
+    # Check if any micro-zone of target city is in address
+    micro_zones = CITY_MICRO_ZONES.get(target_city, [])
+    for mz in micro_zones:
+        if mz.lower() in addr_lower:
+            return True
+
+    # 2. Check if address explicitly mentions ANY OTHER major city
+    for other_city in ALL_KNOWN_CITIES:
+        if other_city != city_lower and other_city in addr_lower:
+            return False
+            
+    # 3. Check regional pincode prefix
+    pin_match = re.search(r'\b([1-9][0-9]{5})\b', address)
+    if pin_match:
+        pin = pin_match.group(1)
+        if city_lower == "indore" and not (pin.startswith("452") or pin.startswith("453")):
+            return False
+        if city_lower == "ahmedabad" and not (pin.startswith("380") or pin.startswith("382")):
+            return False
+        if city_lower == "jaipur" and not (pin.startswith("302") or pin.startswith("303")):
+            return False
+        if city_lower == "surat" and not (pin.startswith("394") or pin.startswith("395")):
+            return False
+        if city_lower == "mumbai" and not pin.startswith("400"):
+            return False
+
+    return True
+
+def advance_market_in_state(city: str, current_area: str, leads_mined_count: int = 0) -> Dict[str, Any]:
+    """
+    Exhaustively advances the market checkpoint for a city.
+    Once all markets in a city are exhausted, auto-transitions to the next city in the chain!
+    """
+    state = load_progress()
+    areas = CITY_MICRO_ZONES.get(city, ["Main Market"])
+    
+    try:
+        cur_idx = areas.index(current_area)
+    except ValueError:
+        cur_idx = state.get("area_idx", 0)
+        
+    next_idx = cur_idx + 1
+    area_key = f"{city} - {current_area}"
+    if area_key not in state.get("completed_areas", []):
+        state.setdefault("completed_areas", []).append(area_key)
+        
+    state["total_mined"] = state.get("total_mined", 0) + leads_mined_count
+    
+    if next_idx < len(areas):
+        # Move to next market in the same city
+        state["current_city"] = city
+        state["area_idx"] = next_idx
+        next_market = areas[next_idx]
+        msg = f"✓ [{city} - {current_area}] पूर्ण! अगला बाजार: [{city} - {next_market}] ({next_idx + 1}/{len(areas)})"
+        state["next_action"] = msg
+        save_progress(state)
+        return {
+            "advanced": True,
+            "city": city,
+            "completed_market": current_area,
+            "next_market": next_market,
+            "market_index": next_idx,
+            "total_markets": len(areas),
+            "city_completed": False,
+            "message": msg
+        }
+    else:
+        # All markets in this city are completely exhausted!
+        # Find next city in the regional chain
+        next_city = None
+        for region, chain in REGIONAL_CITY_CHAINS.items():
+            if city in chain:
+                c_idx = chain.index(city)
+                if c_idx + 1 < len(chain):
+                    next_city = chain[c_idx + 1]
+                break
+                
+        if not next_city:
+            all_cities = list(CITY_MICRO_ZONES.keys())
+            try:
+                city_pos = all_cities.index(city)
+                next_city = all_cities[(city_pos + 1) % len(all_cities)]
+            except ValueError:
+                next_city = all_cities[0]
+                
+        state["current_city"] = next_city
+        state["area_idx"] = 0
+        first_next_market = CITY_MICRO_ZONES.get(next_city, ["Main Market"])[0]
+        msg = f"🏆 बधाई! {city} शहर के सभी {len(areas)} बाजार 100% सैचुरेट हो चुके हैं! अब अगला शहर [{next_city} - {first_next_market}] शुरू हो रहा है!"
+        state["next_action"] = msg
+        save_progress(state)
+        return {
+            "advanced": True,
+            "city": next_city,
+            "completed_market": current_area,
+            "next_market": first_next_market,
+            "market_index": 0,
+            "total_markets": len(CITY_MICRO_ZONES.get(next_city, ["Main Market"])),
+            "city_completed": True,
+            "previous_city": city,
+            "message": msg
+        }
 
 # Essential Commercial Sectors
 CORE_CATEGORIES = [
@@ -92,11 +253,13 @@ def load_progress() -> Dict[str, Any]:
     if os.path.exists(PROGRESS_FILE):
         try:
             with open(PROGRESS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if data and isinstance(data, dict) and "current_city" in data:
+                    return data
         except Exception:
             pass
     return {
-        "current_city": "Jaipur",
+        "current_city": "Indore",
         "area_idx": 0,
         "category_idx": 0,
         "total_mined": 0,

@@ -24,3 +24,8 @@ $RECYCLE.BIN/
 *.png
 *.exe
 cloudflared.exe
+
+.vps_config.json
+*.vps_config.json
+vps_credentials.json
+

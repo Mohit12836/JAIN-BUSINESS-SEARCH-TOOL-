@@ -167,6 +167,25 @@ class Pipeline10xRequest(BaseModel):
     category: str = "Jewellers"
     count: int = 10
     live_submit: bool = True
+    area: Optional[str] = "auto"
+
+@app.get("/api/markets/{city}")
+async def get_city_markets(city: str):
+    """Returns all commercial markets for the given city and active progression index."""
+    from backend.saturation_engine import CITY_MICRO_ZONES, load_progress
+    state = load_progress()
+    markets = CITY_MICRO_ZONES.get(city, ["Main Market", "City Center"])
+    cur_idx = state.get("area_idx", 0) if state.get("current_city") == city else 0
+    cur_m = markets[cur_idx % len(markets)]
+    next_m = markets[(cur_idx + 1) % len(markets)]
+    return {
+        "city": city,
+        "markets": markets,
+        "current_market": cur_m,
+        "current_index": cur_idx,
+        "next_market": next_m,
+        "total_markets": len(markets)
+    }
 
 @app.post("/api/start-pipeline-10x")
 async def start_pipeline_10x(req: Pipeline10xRequest, background_tasks: BackgroundTasks):
@@ -178,6 +197,7 @@ async def start_pipeline_10x(req: Pipeline10xRequest, background_tasks: Backgrou
         "status": "running",
         "city": req.city,
         "category": req.category,
+        "area": req.area,
         "count": req.count,
         "records": []
     }
@@ -199,6 +219,7 @@ async def start_pipeline_10x(req: Pipeline10xRequest, background_tasks: Backgrou
                 category=req.category,
                 count=req.count,
                 live_submit=req.live_submit,
+                area=req.area,
                 progress_callback=dispatch_event
             )
             TASKS[task_id]["status"] = "completed"

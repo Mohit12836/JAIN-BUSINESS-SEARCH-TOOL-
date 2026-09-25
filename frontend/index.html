@@ -341,26 +341,34 @@
               </span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-3">
               <div>
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">शहर चुनें (City)</label>
-                <select id="mineCitySelect" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-semibold">
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">1. शहर (City)</label>
+                <select id="mineCitySelect" onchange="loadCityMarkets(this.value)" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-semibold">
                   <option value="Indore" selected>Indore (इंदौर)</option>
+                  <option value="Ujjain">Ujjain (उज्जैन)</option>
+                  <option value="Bhopal">Bhopal (भोपाल)</option>
+                  <option value="Ratlam">Ratlam (रतलाम)</option>
+                  <option value="Jabalpur">Jabalpur (जबलपुर)</option>
                   <option value="Jaipur">Jaipur (जयपुर)</option>
+                  <option value="Jodhpur">Jodhpur (जोधपुर)</option>
+                  <option value="Udaipur">Udaipur (उदयपुर)</option>
+                  <option value="Kota">Kota (कोटा)</option>
                   <option value="Ahmedabad">Ahmedabad (अहमदाबाद)</option>
                   <option value="Surat">Surat (सूरत)</option>
                   <option value="Mumbai">Mumbai (मुंबई)</option>
-                  <option value="Udaipur">Udaipur (उदयपुर)</option>
-                  <option value="Jodhpur">Jodhpur (जोधपुर)</option>
-                  <option value="Bhopal">Bhopal (भोपाल)</option>
-                  <option value="Delhi">Delhi (दिल्ली)</option>
-                  <option value="Pune">Pune (पुणे)</option>
-                  <option value="Bengaluru">Bengaluru (बैंगलोर)</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">कैटेगरी (Category)</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">2. बाजार / इलाका (Market)</label>
+                <select id="mineAreaSelect" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-semibold text-indigo-300">
+                  <option value="auto" selected>🔄 ऑटो-क्रमिक (बाजार दर बाजार)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">3. कैटेगरी (Category)</label>
                 <select id="mineCatSelect" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-semibold">
                   <option value="Jewellers" selected>Jewellers (ज्वैलरी)</option>
                   <option value="Textiles">Textiles & Sarees (कपड़ा)</option>
@@ -374,14 +382,25 @@
               </div>
 
               <div>
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">लक्ष्य संख्या (Count)</label>
+                <label class="block text-[11px] font-medium text-slate-400 mb-1">4. लक्ष्य संख्या (Count)</label>
                 <select id="mineCountSelect" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-semibold font-mono">
-                  <option value="10">10 Leads (सुपर-फास्ट ~12s)</option>
+                  <option value="10">10 Leads (~12s)</option>
                   <option value="20" selected>20 Leads (~24s)</option>
                   <option value="50">50 Leads (~55s)</option>
                   <option value="100">100 Leads (~2 min)</option>
                 </select>
               </div>
+            </div>
+
+            <!-- Saturation Market Roadmap Indicator -->
+            <div id="activeMarketBadge" class="my-2.5 px-3.5 py-2 rounded-xl text-xs font-medium bg-indigo-950/40 border border-indigo-500/20 text-slate-300 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>सक्रिय बाजार: <b id="activeMarketName" class="text-white font-bold">Sarafa Bazar</b> (<span id="activeMarketStep" class="font-mono text-indigo-300">1/32</span>) &rarr; अगला: <b id="nextMarketName" class="text-indigo-200">Bada Sarafa</b></span>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                🔒 Zero-Skip City Lock (पूरी सिटी कवर होगी)
+              </span>
             </div>
 
             <div class="flex items-center gap-3 pt-2">
@@ -937,9 +956,39 @@
       document.getElementById('terminalProgressBar').style.width = `${p}%`;
     }
 
+    // --- Dynamic Market Loader & Saturation Tracker ---
+    async function loadCityMarkets(city) {
+      const areaSelect = document.getElementById('mineAreaSelect');
+      if (!areaSelect) return;
+      try {
+        const res = await fetch(`/api/markets/${encodeURIComponent(city)}`);
+        if (res.ok) {
+          const data = await res.json();
+          areaSelect.innerHTML = `<option value="auto" selected>🔄 ऑटो-क्रमिक (बाजार दर बाजार)</option>`;
+          data.markets.forEach((m, idx) => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.innerText = `${idx + 1}. ${m}`;
+            areaSelect.appendChild(opt);
+          });
+
+          // Update Roadmap badge
+          const actM = document.getElementById('activeMarketName');
+          const actStep = document.getElementById('activeMarketStep');
+          const nextM = document.getElementById('nextMarketName');
+          if (actM) actM.innerText = data.current_market;
+          if (actStep) actStep.innerText = `${data.current_index + 1}/${data.total_markets}`;
+          if (nextM) nextM.innerText = data.next_market;
+        }
+      } catch (e) {
+        console.warn("Market load error:", e);
+      }
+    }
+
     // --- Action: 10X Autonomous Miner ---
     async function start10xMining() {
       const city = document.getElementById('mineCitySelect').value;
+      const area = document.getElementById('mineAreaSelect')?.value || "auto";
       const cat = document.getElementById('mineCatSelect').value;
       const count = parseInt(document.getElementById('mineCountSelect').value) || 20;
 
@@ -948,18 +997,20 @@
       if (spinner) spinner.classList.remove('hidden');
       if (btn) btn.disabled = true;
 
-      appendTerminalLog(`🚀 10X माइनिंग प्रारंभ: ${cat} in ${city} (लक्ष्य: ${count})...`, "START", "text-indigo-400");
+      const areaText = area === "auto" ? "ऑटो-क्रमिक बाजार" : area;
+      appendTerminalLog(`🚀 10X माइनिंग प्रारंभ: ${cat} in [${areaText}, ${city}] (लक्ष्य: ${count})...`, "START", "text-indigo-400");
 
       try {
         const res = await fetch('/api/start-pipeline-10x', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ city, category: cat, count, live_submit: false })
+          body: JSON.stringify({ city, area, category: cat, count, live_submit: false })
         });
         const data = await res.json();
         if (data.task_id) {
-          connectSSEProgress(data.task_id, `10X Miner (${cat} - ${city})`);
-          showToast(`माइनिंग प्रारंभ हुई (${city})!`, "success");
+          connectSSEProgress(data.task_id, `10X Miner (${cat} - ${areaText})`);
+          showToast(`माइनिंग प्रारंभ हुई (${areaText}, ${city})!`, "success");
+          setTimeout(() => loadCityMarkets(city), 5000);
         } else {
           showToast("टास्क शुरू नहीं हो सका", "error");
         }
@@ -1267,6 +1318,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       refreshDashboardStats();
       fetchMasterLeads();
+      loadCityMarkets('Indore');
       setInterval(refreshDashboardStats, 30000); // 30s auto sync
     });
   </script>
