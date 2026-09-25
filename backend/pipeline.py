@@ -6,6 +6,7 @@ Streams real-time step-by-step logs and progress to the live UI console.
 import os
 import sys
 import re
+import json
 import asyncio
 import datetime
 import urllib.parse
@@ -18,7 +19,7 @@ from backend.matrix import build_query_batch, classify_firm, extract_owner_name
 from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, format_clean_whatsapp, generate_j4j_description
 from backend.photo_engine import process_firm_media
 from backend.database import is_already_scraped, save_scraped_lead
-from backend.scraper import extract_lat_long, get_state_and_district
+from backend.scraper import extract_lat_long, get_state_and_district, parse_maps_b_record
 from backend.saturation_engine import append_to_master_excel
 from backend.auto_entry_bot import (
     login_to_portal,
@@ -113,115 +114,95 @@ async def run_autonomous_10x_pipeline(
             )
             await apply_turbo_routing(context, block_images=False)
             search_page = await context.new_page()
-            detail_page = await context.new_page()
 
-        for q_idx, q_item in enumerate(queries):
-            if len(mined_records) >= count:
-                break
+            pending_queue = asyncio.Queue()
 
-            q_text = q_item.get("query", f"Jain {category} in {city}")
-            v_type = q_item.get("vector_type", "Vector Search")
-            pct = 12 + int((len(mined_records) / count) * 35)
-
-            emit_log(f"🔎 क्वेरी निष्पादित हो रही है: '{q_text}' ({v_type})", stage="SEARCH_QUERY", badge="🔎", percent=pct)
-            emit_progress(pct, f"खोज जारी है: {q_text}")
-
-            try:
-                search_url = f"https://www.google.com/maps/search/{urllib.parse.quote(q_text)}"
-                await search_page.goto(search_url, wait_until="domcontentloaded", timeout=20000)
-                
-                try:
-                    await search_page.wait_for_selector('a.hfpxzc, div[role="feed"]', timeout=7000)
-                except Exception:
-                    pass
-
-                # Scroll to reveal cards
-                await search_page.evaluate("""() => {
-                    const feed = document.querySelector('div[role="feed"]');
-                    if (feed) feed.scrollTop += 1400;
-                }""")
-                await asyncio.sleep(1.0)
-
-                cards_data = await search_page.evaluate("""() => {
-                    const results = [];
-                    const links = document.querySelectorAll('a.hfpxzc');
-                    links.forEach(a => {
-                        const title = a.getAttribute('aria-label') || '';
-                        const href = a.href || '';
-                        if (title && href) results.push({ title, href });
-                    });
-                    return results;
-                }""")
-
-                emit_log(f"📍 फीड में {len(cards_data)} व्यापारिक प्रतिष्ठान पाए गए", stage="FEED", badge="📍")
-
-                for card in cards_data:
-                    if len(mined_records) >= count:
-                        break
-
-                    title = card.get("title", "").strip()
-                    href = card.get("href", "")
-                    if not title or not href:
-                        continue
-
-                    norm_title = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
-                    if norm_title in seen_keys or is_already_scraped("", title):
-                        continue
-                    seen_keys.add(norm_title)
-
+            async def on_maps_response(response):
+                url = response.url
+                if "/search?tbm=map" in url:
                     try:
-                        await detail_page.goto(href, wait_until="domcontentloaded", timeout=15000)
-                        await detail_page.wait_for_timeout(1200)
+                        body = await response.text()
+                        if body.startswith(")]}'"):
+                            clean_json = body[4:].strip()
+                            data = json.loads(clean_json)
+                            if len(data) > 64 and isinstance(data[64], list):
+                                for item in data[64]:
+                                    if item and len(item) > 1 and item[1]:
+                                        parsed = parse_maps_b_record(item[1])
+                                        if parsed:
+                                            await pending_queue.put(parsed)
+                    except Exception:
+                        pass
 
-                        details = await detail_page.evaluate(r"""() => {
-                            const phoneBtn = document.querySelector('button[data-item-id^="phone:tel:"]');
-                            const addrBtn = document.querySelector('button[data-item-id="address"]');
-                            const webBtn = document.querySelector('a[data-item-id="authority"]');
-                            const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
-                            
-                            const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
-                            const extraText = textContainers.map(c => c.innerText).join(' ');
+            search_page.on("response", on_maps_response)
 
-                            let phone = phoneBtn ? phoneBtn.getAttribute('data-item-id').replace('phone:tel:', '').trim() : '';
-                            let address = addrBtn ? addrBtn.getAttribute('aria-label').replace('Address:', '').trim() : '';
-                            let website = webBtn ? webBtn.href : '';
-                            let rating = ratingEl ? ratingEl.innerText.trim() : '';
+            for q_idx, q_item in enumerate(queries):
+                if len(mined_records) >= count:
+                    break
 
-                            const rawPhotoList = [];
-                            document.querySelectorAll('button[jsaction*="heroHeaderImage"] img, button[aria-label*="Photo of" i] img, div.RZ66Rb img, img').forEach(img => {
-                                const s = img.src || img.getAttribute('src') || '';
-                                if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
-                            });
+                q_text = q_item.get("query", f"Jain {category} in {city}")
+                v_type = q_item.get("vector_type", "Vector Search")
+                pct = 12 + int((len(mined_records) / count) * 35)
 
-                            return { phone, address, website, rawPhotoList, rating, extraText };
-                        }""")
+                emit_log(f"🔎 क्वेरी निष्पादित हो रही है: '{q_text}' ({v_type})", stage="SEARCH_QUERY", badge="🔎", percent=pct)
+                emit_progress(pct, f"खोज जारी है: {q_text}")
 
-                        phone = details.get("phone", "")
+                try:
+                    search_url = f"https://www.google.com/maps/search/{urllib.parse.quote(q_text)}"
+                    await search_page.goto(search_url, wait_until="domcontentloaded", timeout=15000)
+                    
+                    # Quick wait for Google Maps initial JSON response
+                    await asyncio.sleep(1.8)
+
+                    # Smooth scroll feed to trigger additional batches
+                    for _ in range(2):
+                        if len(mined_records) >= count:
+                            break
+                        try:
+                            await search_page.evaluate("""() => {
+                                const feed = document.querySelector('div[role="feed"]');
+                                if (feed) feed.scrollTop += 1800;
+                            }""")
+                        except Exception:
+                            pass
+                        await asyncio.sleep(1.0)
+
+                    # Drain the pending queue
+                    while not pending_queue.empty() and len(mined_records) < count:
+                        raw = await pending_queue.get()
+                        title = raw["name"].strip()
+                        if not title:
+                            continue
+
+                        norm_title = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
+                        if norm_title in seen_keys or is_already_scraped("", title):
+                            continue
+                        seen_keys.add(norm_title)
+
+                        phone = raw.get("phone", "")
                         if phone:
                             norm_phone = re.sub(r'\D', '', phone)
                             if norm_phone in seen_phones or is_already_scraped(phone, title):
                                 continue
                             seen_phones.add(norm_phone)
 
-                        address = details.get("address") or f"{city}, Madhya Pradesh, India"
-                        rating = details.get("rating")
-                        website = details.get("website", "")
-                        extra_text = details.get("extraText", "")
-                        raw_photos = details.get("rawPhotoList", [])
+                        address = raw.get("address") or f"{city}, Madhya Pradesh, India"
+                        rating = raw.get("rating")
+                        website = raw.get("website", "")
+                        raw_photos = raw.get("photos", [])
+                        href = raw.get("maps_url", "")
 
-                        # Intelligence classification
-                        classification = classify_firm(title, address, extra_text)
-                        owner_name = extract_owner_name(title, extra_text)
+                        classification = classify_firm(title, address, raw.get("category", ""))
+                        owner_name = extract_owner_name(title, "")
                         j4j_cat = map_to_j4j_category(category, title)
                         pincode = extract_pincode(address)
                         whatsapp = format_clean_whatsapp(phone)
                         description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
 
-                        current_nav_url = detail_page.url or href
-                        lat, lng = extract_lat_long(current_nav_url, extra_text)
+                        lat = raw.get("latitude", "")
+                        lng = raw.get("longitude", "")
                         district, state_val = get_state_and_district(city, address, city)
 
-                        # Authentic HD photos
                         media = process_firm_media(title, raw_photos, website, href)
 
                         rec = {
@@ -264,7 +245,6 @@ async def run_autonomous_10x_pipeline(
                             emit_log(f"   📸 HD साइनबोर्ड फ़ोटो सत्यापित: {media['storefront_photo'][:65]}...", stage="PHOTO_VERIFIED", badge="📸")
                         emit_log(f"   ✍️ ऑटो-जनरेटेड SEO विवरण व पिनकोड: {pincode}", stage="SEO_READY", badge="✍️")
 
-                        # Dispatch record to live table
                         if progress_callback:
                             progress_callback({
                                 "type": "new_record",
@@ -279,12 +259,14 @@ async def run_autonomous_10x_pipeline(
                             "accuracy": 95
                         })
 
-                    except Exception as det_err:
-                        emit_log(f"⚠️ विवरण निष्कर्षण त्रुटि [{title}]: {str(det_err)[:60]}", stage="WARN", badge="⚠️")
+                except Exception as q_err:
+                    emit_log(f"⚠️ क्वेरी त्रुटि: {str(q_err)[:60]}", stage="WARN", badge="⚠️")
 
-            except Exception as q_err:
-                emit_log(f"⚠️ क्वेरी त्रुटि: {str(q_err)[:60]}", stage="WARN", badge="⚠️")
-
+            if search_page:
+                try:
+                    await search_page.close()
+                except Exception:
+                    pass
             await safe_close_browser(browser, context)
             browser = None
             context = None

@@ -9,13 +9,98 @@ import asyncio
 import urllib.parse
 import re
 import os
-from typing import Callable, Dict, Any, List
+import json
+from typing import Callable, Dict, Any, List, Optional
 from playwright.async_api import async_playwright
 from backend.matrix import build_query_batch, classify_firm, extract_owner_name, INDIA_HUBS, get_all_cities
 from backend.jainforjain_mapper import map_to_j4j_category, extract_pincode, format_clean_whatsapp, generate_j4j_description
 from backend.excel_builder import generate_leads_excel
 from backend.database import is_already_scraped, save_scraped_lead
 from backend.photo_engine import process_firm_media
+
+def extract_photo_urls(obj) -> List[str]:
+    """Recursively extracts Google Maps photo URLs and formats them into high-res 1200x800."""
+    photos = []
+    if isinstance(obj, str):
+        if "googleusercontent.com" in obj and "photo.jpg" not in obj and "s44-p" not in obj:
+            base_url = obj.split("=")[0]
+            hd_url = f"{base_url}=w1200-h800-k-no"
+            photos.append(hd_url)
+    elif isinstance(obj, list):
+        for item in obj:
+            photos.extend(extract_photo_urls(item))
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            photos.extend(extract_photo_urls(v))
+    return list(dict.fromkeys(photos))
+
+def parse_maps_b_record(b) -> Optional[Dict[str, Any]]:
+    """Parses a single Google Maps business record from internal JSON array."""
+    try:
+        if not b or len(b) < 15:
+            return None
+        name = b[11]
+        if not name or not isinstance(name, str):
+            return None
+            
+        address = b[18] if len(b) > 18 and isinstance(b[18], str) else ""
+        if not address and len(b) > 39 and isinstance(b[39], str):
+            address = b[39]
+            
+        lat, lng = "", ""
+        if len(b) > 9 and isinstance(b[9], list) and len(b[9]) > 3:
+            lat = str(b[9][2]) if b[9][2] is not None else ""
+            lng = str(b[9][3]) if b[9][3] is not None else ""
+            
+        phone = ""
+        if len(b) > 178 and isinstance(b[178], list) and len(b[178]) > 0:
+            first_p = b[178][0]
+            if isinstance(first_p, list):
+                if len(first_p) > 3 and first_p[3]:
+                    phone = str(first_p[3])
+                elif len(first_p) > 0 and first_p[0]:
+                    phone = str(first_p[0])
+                    
+        website = ""
+        if len(b) > 7 and isinstance(b[7], list) and len(b[7]) > 0 and b[7][0]:
+            website = str(b[7][0])
+            
+        rating = ""
+        reviews = 0
+        if len(b) > 4 and isinstance(b[4], list):
+            if len(b[4]) > 7 and b[4][7] is not None:
+                rating = str(b[4][7])
+            if len(b[4]) > 8 and b[4][8] is not None:
+                try:
+                    reviews = int(b[4][8])
+                except Exception:
+                    pass
+                    
+        photos = extract_photo_urls(b)
+        
+        category_str = ""
+        if len(b) > 13 and isinstance(b[13], list):
+            cats = [str(c) for c in b[13] if isinstance(c, str)]
+            category_str = ", ".join(cats)
+            
+        place_id = b[78] if len(b) > 78 and b[78] else ""
+        maps_url = f"https://www.google.com/maps/place/?q=place_id:{place_id}" if place_id else f"https://www.google.com/maps/search/{urllib.parse.quote(name)}"
+            
+        return {
+            "name": name,
+            "phone": phone,
+            "address": address,
+            "rating": rating,
+            "reviews": reviews,
+            "website": website,
+            "latitude": lat,
+            "longitude": lng,
+            "category": category_str,
+            "photos": photos,
+            "maps_url": maps_url
+        }
+    except Exception:
+        return None
 
 def extract_lat_long(url: str, text: str = "") -> tuple:
     """Extracts exact decimal latitude and longitude from Google Maps URL or page text."""
@@ -117,7 +202,7 @@ async def scrape_google_maps_task(
                 }
             })
 
-    emit_progress(5, "प्लेराइट स्टेल्थ ब्राउज़र प्रारंभ हो रहा है...")
+    emit_progress(5, "अल्ट्रा-फास्ट स्टेल्थ टर्बो इंजन प्रारंभ हो रहा है...")
 
     from backend.system_guard import (
         CHROMIUM_TURBO_ARGS,
@@ -130,7 +215,6 @@ async def scrape_google_maps_task(
     context = None
     playwright_instance = None
     search_page = None
-    worker_pages = []
     try:
         playwright_instance = await async_playwright().start()
         try:
@@ -146,7 +230,7 @@ async def scrape_google_maps_task(
             )
             
         context = await browser.new_context(
-            viewport={"width": 1280, "height": 800},
+            viewport={"width": 1440, "height": 900},
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             locale="en-IN"
         )
@@ -155,148 +239,28 @@ async def scrape_google_maps_task(
         await apply_turbo_routing(context, block_images=False)
         
         search_page = await context.new_page()
-        
-        # 4 Parallel Worker Pages for Concurrent Deep Inspection (5x - 8x Faster)
-        NUM_WORKERS = 4
-        worker_pages = [await context.new_page() for _ in range(NUM_WORKERS)]
-        page_pool = asyncio.Queue()
-        for wp in worker_pages:
-            await page_pool.put(wp)
 
-        async def inspect_single_card(item: Dict[str, str], current_city: str, sub_pct: int) -> Optional[Dict[str, Any]]:
-            nonlocal seen_phones
-            title = item.get("title", "").strip()
-            href = item.get("href", "")
-            if not title or not href:
-                return None
+        # In-Memory Queue for intercepted Google Maps JSON payloads
+        pending_queue = asyncio.Queue()
 
-            page = await page_pool.get()
-            try:
-                await page.goto(href, wait_until="domcontentloaded", timeout=10000)
+        async def on_maps_response(response):
+            url = response.url
+            if "/search?tbm=map" in url:
                 try:
-                    await page.wait_for_selector('button[data-item-id^="phone:tel:"], button[data-item-id="address"], div[role="main"]', timeout=2000)
+                    body = await response.text()
+                    if body.startswith(")]}'"):
+                        clean_json = body[4:].strip()
+                        data = json.loads(clean_json)
+                        if len(data) > 64 and isinstance(data[64], list):
+                            for item in data[64]:
+                                if item and len(item) > 1 and item[1]:
+                                    parsed = parse_maps_b_record(item[1])
+                                    if parsed:
+                                        await pending_queue.put(parsed)
                 except Exception:
                     pass
 
-                # Quick scroll to trigger lazy photos
-                try:
-                    await page.evaluate("""() => {
-                        const pane = document.querySelector('div[role="main"]');
-                        if (pane) pane.scrollTop += 600;
-                    }""")
-                    await asyncio.sleep(0.3)
-                except Exception:
-                    pass
-
-                details = await page.evaluate(r"""() => {
-                    const phoneBtn = document.querySelector('button[data-item-id^="phone:tel:"]');
-                    const addrBtn = document.querySelector('button[data-item-id="address"]');
-                    const webBtn = document.querySelector('a[data-item-id="authority"]');
-                    const ratingEl = document.querySelector('div.F7nice span[aria-hidden="true"], span.ceNzKf');
-                    
-                    const textContainers = Array.from(document.querySelectorAll('div.PYvSYb, div.m6QErb, div.Io6YTe'));
-                    const extraText = textContainers.map(c => c.innerText).join(' ');
-
-                    let phone = phoneBtn ? phoneBtn.getAttribute('data-item-id').replace('phone:tel:', '').trim() : '';
-                    let address = addrBtn ? addrBtn.getAttribute('aria-label').replace('Address:', '').trim() : '';
-                    let website = webBtn ? webBtn.href : '';
-                    let rating = ratingEl ? ratingEl.innerText.trim() : '';
-
-                    const rawPhotoList = [];
-                    const heroImgs = document.querySelectorAll('button[jsaction*="heroHeaderImage"] img, button[aria-label*="Photo of" i] img, div.RZ66Rb img, button.aoRNLd img, div.Z36tef img, div.lMbq3e img');
-                    heroImgs.forEach(img => {
-                        const s = img.src || img.getAttribute('src') || '';
-                        if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
-                    });
-
-                    document.querySelectorAll('img').forEach(img => {
-                        const s = img.src || img.getAttribute('src') || img.getAttribute('data-src') || '';
-                        if (s && s.includes('/p/AF1Qip')) rawPhotoList.push(s);
-                    });
-
-                    document.querySelectorAll('button, div[data-photo-index], div.RZ66Rb').forEach(el => {
-                        const bg = window.getComputedStyle(el).backgroundImage || '';
-                        const m = bg.match(/https:\/\/[^"'\)]+\/p\/AF1Qip[^"'\)]+/);
-                        if (m) rawPhotoList.push(m[0]);
-                    });
-
-                    return { phone, address, website, rawPhotoList, rating, extraText };
-                }""")
-
-                phone = details.get("phone", "")
-                if phone:
-                    norm_phone = re.sub(r'\D', '', phone)
-                    if norm_phone in seen_phones or is_already_scraped(phone, title):
-                        return None
-                    seen_phones.add(norm_phone)
-
-                address = details.get("address") or f"{current_city}, India"
-                rating = details.get("rating")
-                website = details.get("website", "")
-                extra_text = details.get("extraText", "")
-                raw_photos = details.get("rawPhotoList", []) if include_photos else []
-
-                media = process_firm_media(title, raw_photos, website, href)
-                storefront_photo = media["storefront_photo"]
-                showcase_photo = media["showcase_photo"]
-                web_logo = media["website_logo"]
-                gallery_url = media["gallery_url"]
-                photos_count = media["all_photos_count"]
-
-                classification = classify_firm(title, address, extra_text)
-                owner_name = extract_owner_name(title, extra_text)
-
-                j4j_cat = map_to_j4j_category(category, title)
-                pincode = extract_pincode(address)
-                whatsapp = format_clean_whatsapp(phone)
-                description = generate_j4j_description(title, owner_name, j4j_cat, current_city, phone, address)
-
-                current_nav_url = ""
-                try:
-                    current_nav_url = page.url
-                except Exception:
-                    current_nav_url = href
-
-                lat, lng = extract_lat_long(current_nav_url or href, extra_text)
-                district, state_val = get_state_and_district(current_city, address, location_scope)
-
-                record = {
-                    "name": title,
-                    "j4j_category": j4j_cat,
-                    "owner": owner_name,
-                    "phone": phone if phone else "Not Listed",
-                    "whatsapp": whatsapp,
-                    "email": "",
-                    "address": address,
-                    "city": current_city,
-                    "district": district,
-                    "state": state_val,
-                    "pincode": pincode,
-                    "latitude": lat,
-                    "longitude": lng,
-                    "rating": f"★ {rating}" if rating else "★ 4.8",
-                    "storefront_photo": storefront_photo,
-                    "showcase_photo": showcase_photo,
-                    "gallery_url": gallery_url,
-                    "website_logo": web_logo,
-                    "photos_count": photos_count,
-                    "website": website,
-                    "maps_url": href,
-                    "description": description,
-                    "tier": classification["tier"],
-                    "score": classification["score"],
-                    "reason": classification["reason"],
-                    "j4j_business_id": "",
-                    "j4j_profile_url": "",
-                    "submission_status": "Ready to Submit"
-                }
-
-                save_scraped_lead(record)
-                return record
-            except Exception:
-                return None
-            finally:
-                await page_pool.put(page)
+        search_page.on("response", on_maps_response)
 
         for city in target_cities:
             if len(collected_records) >= max_firms_target:
@@ -320,72 +284,111 @@ async def scrape_google_maps_task(
                     search_url = f"https://www.google.com/maps/search/{urllib.parse.quote(query_str)}"
                     await search_page.goto(search_url, wait_until="domcontentloaded", timeout=12000)
                     
-                    try:
-                        await search_page.wait_for_selector('a.hfpxzc, div[role="feed"]', timeout=4000)
-                    except Exception:
-                        pass
+                    # Quick wait for initial JSON payload response
+                    await asyncio.sleep(1.8)
 
-                    # Quick smooth scroll feed
-                    await search_page.evaluate("""() => {
-                        const feed = document.querySelector('div[role="feed"]');
-                        if (feed) feed.scrollTop += 1400;
-                    }""")
-                    await asyncio.sleep(0.4)
-
-                    # Collect listing cards
-                    cards_data = await search_page.evaluate("""() => {
-                        const results = [];
-                        const links = document.querySelectorAll('a.hfpxzc');
-                        links.forEach(a => {
-                            const title = a.getAttribute('aria-label') || '';
-                            const href = a.href || '';
-                            if (title && href) {
-                                results.push({ title, href });
-                            }
-                        });
-                        return results;
-                    }""")
-
-                    # Instant pre-filtering of already seen/scraped leads
-                    unseen_items = []
-                    for item in cards_data:
-                        t = item.get("title", "").strip()
-                        h = item.get("href", "")
-                        if not t or not h:
-                            continue
-                        nt = re.sub(r'[^a-zA-Z0-9]', '', t.lower())
-                        if nt in seen_keys or is_already_scraped("", t):
-                            continue
-                        seen_keys.add(nt)
-                        unseen_items.append(item)
-
-                    # Process unseen cards in parallel chunks of NUM_WORKERS
-                    for chunk_idx in range(0, len(unseen_items), NUM_WORKERS):
+                    # Smooth scroll feed 2 times to trigger additional batches
+                    for _ in range(2):
                         if len(collected_records) >= max_firms_target:
                             break
-                        chunk = unseen_items[chunk_idx:chunk_idx + NUM_WORKERS]
-                        tasks = [inspect_single_card(it, city, sub_pct) for it in chunk]
-                        results = await asyncio.gather(*tasks, return_exceptions=True)
-                        for res in results:
-                            if isinstance(res, dict) and res:
-                                collected_records.append(res)
-                                if progress_callback:
-                                    progress_callback({
-                                        "type": "new_record",
-                                        "record": res
-                                    })
-                                emit_progress(sub_pct, f"✓ [{city}] {res['name']} ({res.get('owner', '')})")
-                                if len(collected_records) >= max_firms_target:
-                                    break
+                        try:
+                            await search_page.evaluate("""() => {
+                                const feed = document.querySelector('div[role="feed"]');
+                                if (feed) feed.scrollTop += 1800;
+                            }""")
+                        except Exception:
+                            pass
+                        await asyncio.sleep(1.0)
+
+                    # Process all intercepted leads in pending queue
+                    while not pending_queue.empty() and len(collected_records) < max_firms_target:
+                        raw = await pending_queue.get()
+                        title = raw["name"].strip()
+                        if not title:
+                            continue
+                        norm_title = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
+                        if norm_title in seen_keys or is_already_scraped("", title):
+                            continue
+                        seen_keys.add(norm_title)
+
+                        phone = raw.get("phone", "")
+                        if phone:
+                            norm_phone = re.sub(r'\D', '', phone)
+                            if norm_phone in seen_phones or is_already_scraped(phone, title):
+                                continue
+                            seen_phones.add(norm_phone)
+
+                        address = raw.get("address") or f"{city}, India"
+                        rating = raw.get("rating")
+                        website = raw.get("website", "")
+                        raw_photos = raw.get("photos", []) if include_photos else []
+                        href = raw.get("maps_url", "")
+
+                        media = process_firm_media(title, raw_photos, website, href)
+                        storefront_photo = media["storefront_photo"]
+                        showcase_photo = media["showcase_photo"]
+                        web_logo = media["website_logo"]
+                        gallery_url = media["gallery_url"]
+                        photos_count = media["all_photos_count"]
+
+                        classification = classify_firm(title, address, raw.get("category", ""))
+                        owner_name = extract_owner_name(title, "")
+
+                        j4j_cat = map_to_j4j_category(category, title)
+                        pincode = extract_pincode(address)
+                        whatsapp = format_clean_whatsapp(phone)
+                        description = generate_j4j_description(title, owner_name, j4j_cat, city, phone, address)
+
+                        lat = raw.get("latitude", "")
+                        lng = raw.get("longitude", "")
+                        district, state_val = get_state_and_district(city, address, location_scope)
+
+                        record = {
+                            "name": title,
+                            "j4j_category": j4j_cat,
+                            "owner": owner_name,
+                            "phone": phone if phone else "Not Listed",
+                            "whatsapp": whatsapp,
+                            "email": "",
+                            "address": address,
+                            "city": city,
+                            "district": district,
+                            "state": state_val,
+                            "pincode": pincode,
+                            "latitude": lat,
+                            "longitude": lng,
+                            "rating": f"★ {rating}" if rating else "★ 4.8",
+                            "storefront_photo": storefront_photo,
+                            "showcase_photo": showcase_photo,
+                            "gallery_url": gallery_url,
+                            "website_logo": web_logo,
+                            "photos_count": photos_count,
+                            "website": website,
+                            "maps_url": href,
+                            "description": description,
+                            "tier": classification["tier"],
+                            "score": classification["score"],
+                            "reason": classification["reason"],
+                            "j4j_business_id": "",
+                            "j4j_profile_url": "",
+                            "submission_status": "Ready to Submit"
+                        }
+
+                        save_scraped_lead(record)
+                        collected_records.append(record)
+                        if progress_callback:
+                            progress_callback({
+                                "type": "new_record",
+                                "record": record
+                            })
+                        emit_progress(sub_pct, f"✓ [{city}] {record['name']} ({record.get('owner', '')})")
+                        if len(collected_records) >= max_firms_target:
+                            break
+
                 except Exception as q_err:
                     print(f"Error on query '{query_str}': {q_err}")
 
     finally:
-        for wp in worker_pages:
-            try:
-                await wp.close()
-            except Exception:
-                pass
         if search_page:
             try:
                 await search_page.close()
