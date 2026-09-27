@@ -28,11 +28,17 @@ async def run_live_test():
     excel_path = get_master_excel_path()
     leads = load_leads_from_excel(excel_path)
     pending = [l for l in leads if is_lead_pending(l)]
-    if not pending:
-        print("No pending leads found to submit!")
-        return
+    target_row = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else None
+    if target_row:
+        matches = [l for l in leads if l.get("row_idx") == target_row]
+        test_lead = matches[0] if matches else (pending[0] if pending else None)
+    else:
+        test_lead = pending[0] if pending else None
 
-    test_lead = pending[0]
+    if not test_lead:
+        print("No pending or target lead found!")
+        return
+        
     row_idx = test_lead.get("row_idx", 2)
     print(f"\nTargeting Lead [Row {row_idx}]: {test_lead.get('name')}")
     print(f"Category: {test_lead.get('category')} | City: {test_lead.get('city')} | Phone: {test_lead.get('phone')}")
