@@ -398,6 +398,14 @@ async def execute_pure_submitter_batch(
 
                         emit_log(f"📝 [टैब {worker_id}] [{item_idx}/{len(targets)}] फॉर्म भरा जा रहा है: '{l_name}' ({owner_name})...", stage="SUBMITTING", badge="📝")
 
+                        # Re-open page if previously closed or crashed
+                        if w_page.is_closed():
+                            try:
+                                w_page = await portal_context.new_page()
+                            except Exception:
+                                emit_log(f"⚠️ [टैब {worker_id}] ब्राउज़र सत्र बंद हो गया। वर्कर समाप्त।", stage="WARN", badge="⚠️")
+                                break
+
                         try:
                             res = await fill_listing_form(w_page, lead, dry_run=False)
                             b_id = res.get("biz_id", "")
@@ -426,6 +434,16 @@ async def execute_pure_submitter_batch(
                                 emit_log(f"⚠️ [टैब {worker_id}] सबमिशन स्किप [{l_name}]: {res.get('error', 'फॉर्म सत्यापन चेतावनी')[:60]}", stage="WARN", badge="⚠️")
                         except Exception as err:
                             err_str = str(err)
+                            is_fatal_browser_close = any(w in err_str.lower() for w in [
+                                "target page is closed",
+                                "browser has been closed",
+                                "target closed",
+                                "connection closed",
+                                "context closed",
+                                "destroyed",
+                                "disconnected"
+                            ])
+
                             if any(w in err_str.lower() for w in ["limit", "package", "quota"]):
                                 quota_reached = True
                                 emit_log("⚠️ पोर्टल कोटा अलर्ट: अधिकतम लिस्टिंग सीमा पूर्ण!", stage="QUOTA", badge="⚠️")
@@ -435,6 +453,16 @@ async def execute_pure_submitter_batch(
                                     update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
                                     lead["submission_status"] = "Skipped - Already on Portal"
                                 emit_log(f"⏭️ [टैब {worker_id}] [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है!", stage="SKIPPED", badge="⏭️")
+                            elif is_fatal_browser_close:
+                                # Transient browser crash/restart: DO NOT mark lead as Skipped in Excel! Keep pending!
+                                emit_log(f"⚠️ [टैब {worker_id}] ब्राउज़र/टैब रुकावट [{l_name}]: {err_str[:40]} (लीड सुरक्षित पेंडिंग रखी गई)", stage="WARN", badge="⚠️")
+                                try:
+                                    if not portal_context.is_closed():
+                                        w_page = await portal_context.new_page()
+                                    else:
+                                        break
+                                except Exception:
+                                    break
                             else:
                                 async with excel_lock:
                                     update_excel_lead_status(excel_path, cur_row, "", "", f"Skipped: {err_str[:25]}")
@@ -445,7 +473,11 @@ async def execute_pure_submitter_batch(
                             if delay_seconds > 0 and not quota_reached:
                                 await asyncio.sleep(delay_seconds)
                 finally:
-                    await w_page.close()
+                    try:
+                        if not w_page.is_closed():
+                            await w_page.close()
+                    except Exception:
+                        pass
 
             await asyncio.gather(*(worker(i+1) for i in range(concurrency)))
     finally:
@@ -762,7 +794,7 @@ async def execute_streamed_live_pipeline(
                             update_excel_lead_status(excel_path, cur_row, "ALREADY_LISTED", "", "Skipped - Already on Portal")
                             lead["submission_status"] = "Skipped - Already on Portal"
                             emit_log(f"⏭️ [स्किप] '{l_name}' (डुप्लीकेट स्लग) पोर्टल पर पहले से लिस्टेड है! अगली लीड पर जा रहे हैं...", stage="SKIPPED", badge="⏭️")
-                        elif any(w in err_str.lower() for w in ["connection closed", "target closed", "browser has been closed", "session closed"]):
+                        elif any(w in err_str.lower() for w in ["connection closed", "target closed", "browser has been closed", "session closed", "target page is closed", "context closed", "destroyed", "disconnected"]):
                             emit_log("🔄 ब्राउज़र डिस्कनेक्ट हुआ! नया सत्र शुरू किया जा रहा है...", stage="RECONNECT", badge="🔄")
                             try:
                                 if portal_page and not portal_page.is_closed():

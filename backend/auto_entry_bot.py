@@ -974,8 +974,11 @@ async def run_auto_entry_batch(
                         except Exception as e:
                             print(f"[Worker {worker_id}] ❌ Error processing lead [{lead['name']}]: {e}")
                             if not dry_run:
-                                async with excel_lock:
-                                    update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Skipped: {str(e)[:25]}")
+                                err_str = str(e).lower()
+                                is_browser_error = any(w in err_str for w in ["target page is closed", "browser has been closed", "target closed", "connection closed", "context closed", "destroyed"])
+                                if not is_browser_error:
+                                    async with excel_lock:
+                                        update_excel_lead_status(excel_path, lead["row_idx"], "", "", f"Skipped: {str(e)[:25]}")
                         finally:
                             queue.task_done()
                 finally:
