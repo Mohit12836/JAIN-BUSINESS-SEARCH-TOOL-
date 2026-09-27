@@ -51,9 +51,21 @@ async def run_inspection():
             if "livewire" in response.url or response.status >= 400:
                 try:
                     body = await response.text()
-                    print(f"\n[HTTP {response.status}] {response.url}")
-                    if response.status >= 400 or "error" in body.lower() or "exception" in body.lower():
-                        print(f"  Response Body snippet: {body[:300]}")
+                    if response.status >= 400:
+                        print(f"\n🔥 [CRITICAL HTTP {response.status}] {response.url}")
+                        with open("error_500_response.html", "w", encoding="utf-8") as ef:
+                            ef.write(body)
+                        # Extract readable exception text from Laravel Ignition / Whoops / standard error page
+                        import re
+                        title_m = re.search(r'<title>(.*?)</title>', body, re.IGNORECASE)
+                        if title_m:
+                            print(f"  Error Title: {title_m.group(1)}")
+                        # Look for class name or exception message
+                        exc_m = re.findall(r'(?:exception|error|SQLSTATE|QueryException|IntegrityConstraintViolationException)[^<]{0,200}', body, re.IGNORECASE)
+                        if exc_m:
+                            print("  Exception matches:")
+                            for em in exc_m[:5]:
+                                print(f"    - {em.strip()}")
                 except Exception:
                     pass
         page.on("response", on_response)
