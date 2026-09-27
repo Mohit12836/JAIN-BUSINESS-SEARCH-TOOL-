@@ -5,15 +5,21 @@ import openpyxl
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.account_manager import get_all_portal_accounts, get_active_portal_account, get_session_file_path, has_valid_session
+from backend.account_manager import (
+    load_portal_accounts,
+    get_active_account,
+    get_session_file_path,
+    has_valid_session
+)
 from backend.config import get_master_excel_path
 from backend.auto_batch_engine import is_lead_pending, load_leads_from_excel
 
 def main():
     print("=== 1. PORTAL ACCOUNTS CHECK ===")
-    accounts = get_all_portal_accounts()
-    active_acc = get_active_portal_account()
+    data = load_portal_accounts()
+    active_acc = get_active_account()
     print("Active Account:", json.dumps(active_acc, indent=2))
+    accounts = data.get("accounts", [])
     print(f"Total Accounts: {len(accounts)}")
     for a in accounts:
         has_sess = has_valid_session(a['email'])
