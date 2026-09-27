@@ -11,7 +11,6 @@ from backend.auto_entry_bot import (
     fill_listing_form,
     login_to_portal,
     CREATE_URL,
-    apply_turbo_routing,
     load_leads_from_excel
 )
 from backend.system_guard import CHROMIUM_TURBO_ARGS
