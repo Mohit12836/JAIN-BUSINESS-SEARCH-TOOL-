@@ -11,10 +11,10 @@ from backend.auto_entry_bot import (
     fill_listing_form,
     login_to_portal,
     CREATE_URL,
-    CHROMIUM_TURBO_ARGS,
     apply_turbo_routing,
     load_leads_from_excel
 )
+from backend.system_guard import CHROMIUM_TURBO_ARGS
 from backend.config import get_master_excel_path
 from backend.auto_batch_engine import is_lead_pending
 
