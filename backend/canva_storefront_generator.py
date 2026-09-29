@@ -55,13 +55,22 @@ HINDI_NAME_MAP = {
 
 THEMES = {
     "jewellery": {
-        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFFFF 0%, #FFFDF8 45%, #F8F2E2 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFFDF8 45%, #F7F1DF 100%)",
-        "gold_glow": "rgba(212, 175, 55, 0.12)",
+        "id": "jewellery",
+        "is_dark": True,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #0B132B 0%, #070D1E 45%, #020612 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #0F172A 0%, #0A1128 50%, #030712 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(15,23,42,0.85) 100%)",
+        "gold_glow": "rgba(212, 175, 55, 0.28)",
         "accent": "#D4AF37",
-        "crest_type": "diamond",
+        "border_color": "#D4AF37",
+        "text_primary": "#FFFFFF",
+        "text_secondary": "#FEF3C7",
+        "title_hi_color": "#FDE68A",
+        "title_en_color": "#FFFFFF",
+        "monogram_grad": "linear-gradient(180deg, #FFF9D2 0%, #F5CE62 45%, #D4AF37 75%, #9A7B1C 100%)",
+        "crest_shape": "diamond",
         "prefix": "॥ 卐 श्री नवकाराय नमः 卐 ॥",
-        "badge": "VERIFIED 100% PURE JAIN ENTERPRISE",
+        "badge": "100% PURE JAIN 24K HALLMARKED JEWELLERY",
         "deals_default": "EXCLUSIVE 22K/24K HALLMARKED GOLD • POLKI • NATURAL DIAMONDS • KUNDAN JEWELLERY",
         "pillars": [
             "100% Certified Purity",
@@ -70,12 +79,96 @@ THEMES = {
             "Direct Manufacturing"
         ]
     },
+    "food": {
+        "id": "food",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFDF5 0%, #FFFBEB 45%, #FEF3C7 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(217,119,6,0.12) 0%, rgba(255,255,255,0.9) 100%)",
+        "gold_glow": "rgba(217, 119, 6, 0.22)",
+        "accent": "#B45309",
+        "border_color": "#D97706",
+        "text_primary": "#78350F",
+        "text_secondary": "#92400E",
+        "title_hi_color": "#78350F",
+        "title_en_color": "#92400E",
+        "monogram_grad": "linear-gradient(180deg, #D97706 0%, #B45309 50%, #78350F 100%)",
+        "crest_shape": "artisan",
+        "prefix": "॥ 卐 शुद्ध सात्विक जैन परंपरा 卐 ॥",
+        "badge": "100% PURE SATVIK TASTE & TRADITION",
+        "deals_default": "AUTHENTIC INDORI NAMKEEN • TRADITIONAL SWEETS • SATVIK PURITY • PREMIUM TASTE",
+        "pillars": [
+            "100% Pure Satvik Prep",
+            "Traditional Jain Taste",
+            "Finest Quality Ingredients",
+            "Hygienic Craftsmanship"
+        ]
+    },
+    "fashion": {
+        "id": "fashion",
+        "is_dark": True,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #25103E 0%, #1A0B2C 45%, #0E0517 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #2E1065 0%, #1E1035 50%, #0F051D 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(244,114,182,0.15) 0%, rgba(30,16,53,0.85) 100%)",
+        "gold_glow": "rgba(244, 114, 182, 0.25)",
+        "accent": "#F472B6",
+        "border_color": "#E0A96D",
+        "text_primary": "#FFFFFF",
+        "text_secondary": "#FCE7F3",
+        "title_hi_color": "#FBCFE8",
+        "title_en_color": "#FFFFFF",
+        "monogram_grad": "linear-gradient(180deg, #FFF1F2 0%, #F472B6 45%, #E0A96D 80%, #9D174D 100%)",
+        "crest_shape": "hexagon",
+        "prefix": "॥ 卐 रॉयल हेरिटेज स्टाइल 卐 ॥",
+        "badge": "HAUTE COUTURE LUXURY COLLECTION",
+        "deals_default": "BRIDAL WEAR • DESIGNER SAREES • EXCLUSIVE BOUTIQUE APPAREL • FINE FABRICS",
+        "pillars": [
+            "Handcrafted Luxury",
+            "Bespoke Bridal Elegance",
+            "Premium Heritage Fabrics",
+            "Signature Designer Cuts"
+        ]
+    },
+    "medical": {
+        "id": "medical",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #F0FDF4 0%, #DCFCE7 45%, #BBF7D0 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #F0FDF4 0%, #DCFCE7 50%, #A7F3D0 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(255,255,255,0.9) 100%)",
+        "gold_glow": "rgba(5, 150, 105, 0.20)",
+        "accent": "#059669",
+        "border_color": "#047857",
+        "text_primary": "#064E3B",
+        "text_secondary": "#065F46",
+        "title_hi_color": "#064E3B",
+        "title_en_color": "#065F46",
+        "monogram_grad": "linear-gradient(180deg, #10B981 0%, #059669 50%, #064E3B 100%)",
+        "crest_shape": "shield",
+        "prefix": "॥ 卐 सर्वे सन्तु निरामयाः 卐 ॥",
+        "badge": "EXCELLENCE IN HEALTHCARE & WELLNESS",
+        "deals_default": "EXPERT CLINICAL CARE • ADVANCED DIAGNOSTICS • PATIENT WELLNESS • DEDICATED HEALING",
+        "pillars": [
+            "Advanced Clinical Expertise",
+            "Compassionate Patient Care",
+            "Modern Diagnostic Tech",
+            "Ethical Medical Practice"
+        ]
+    },
     "religious": {
-        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFFFF 0%, #FFFBF5 45%, #FBF0DF 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFFFF 0%, #FFFBF5 45%, #FBF0DF 100%)",
-        "gold_glow": "rgba(245, 180, 70, 0.15)",
-        "accent": "#D4AF37",
-        "crest_type": "temple",
+        "id": "religious",
+        "is_dark": True,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #4C0505 0%, #300202 45%, #180000 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #7F1D1D 0%, #450A0A 50%, #1C0303 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(69,10,10,0.85) 100%)",
+        "gold_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#F59E0B",
+        "border_color": "#F59E0B",
+        "text_primary": "#FFFFFF",
+        "text_secondary": "#FEF3C7",
+        "title_hi_color": "#FDE68A",
+        "title_en_color": "#FFFFFF",
+        "monogram_grad": "linear-gradient(180deg, #FEF08A 0%, #F59E0B 45%, #D97706 75%, #78350F 100%)",
+        "crest_shape": "temple",
         "prefix": "॥ 卐 अहिंसा परमो धर्मः 卐 ॥",
         "badge": "SACRED DIGAMBER JAIN TIRTH & TRUST",
         "deals_default": "पवित्र तीर्थ क्षेत्र • प्राचीन जिनालय • शांति निकेतन • दर्शन एवं भक्ति",
@@ -86,15 +179,49 @@ THEMES = {
             "जैन समाज धरोहर"
         ]
     },
+    "professional": {
+        "id": "professional",
+        "is_dark": True,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #0B1329 0%, #060A17 45%, #010308 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #0F172A 0%, #020617 55%, #000000 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(56,189,248,0.15) 0%, rgba(15,23,42,0.85) 100%)",
+        "gold_glow": "rgba(56, 189, 248, 0.25)",
+        "accent": "#38BDF8",
+        "border_color": "#38BDF8",
+        "text_primary": "#FFFFFF",
+        "text_secondary": "#E0F2FE",
+        "title_hi_color": "#BAE6FD",
+        "title_en_color": "#FFFFFF",
+        "monogram_grad": "linear-gradient(180deg, #FFFFFF 0%, #38BDF8 45%, #0284C7 80%, #0369A1 100%)",
+        "crest_shape": "pillar",
+        "prefix": "॥ 卐 सत्यं वद धर्मं चर 卐 ॥",
+        "badge": "PREMIER PROFESSIONAL ADVISORY & CONSULTING",
+        "deals_default": "CHARTERED ACCOUNTANCY • TAX ADVISORY • CORPORATE LEGAL • AUDIT & COMPLIANCE",
+        "pillars": [
+            "Decades of Trust",
+            "Flawless Legal Compliance",
+            "Strategic Tax Planning",
+            "Confidential Advisory"
+        ]
+    },
     "industry": {
-        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFFFF 0%, #F9FAFB 45%, #F1F5F9 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFFFF 0%, #F9FAFB 45%, #F1F5F9 100%)",
-        "gold_glow": "rgba(212, 175, 55, 0.10)",
-        "accent": "#D4AF37",
-        "crest_type": "diamond",
+        "id": "industry",
+        "is_dark": True,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #172554 0%, #0F172A 45%, #050814 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 35%, #1E3A8A 0%, #172554 55%, #0F172A 100%)",
+        "card_bg": "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(23,37,84,0.85) 100%)",
+        "gold_glow": "rgba(245, 158, 11, 0.22)",
+        "accent": "#F59E0B",
+        "border_color": "#F59E0B",
+        "text_primary": "#FFFFFF",
+        "text_secondary": "#FEF3C7",
+        "title_hi_color": "#FDE68A",
+        "title_en_color": "#FFFFFF",
+        "monogram_grad": "linear-gradient(180deg, #FDE68A 0%, #F59E0B 45%, #D97706 75%, #92400E 100%)",
+        "crest_shape": "octagon",
         "prefix": "॥ 卐 ॐ अर्हं नमः 卐 ॥",
-        "badge": "VERIFIED 100% JAIN ENTERPRISE",
-        "deals_default": "MANUFACTURING • TRADING • PREMIUM INDUSTRIAL EXCELLENCE",
+        "badge": "VERIFIED 100% JAIN INDUSTRIAL ENTERPRISE",
+        "deals_default": "MANUFACTURING • WHOLESALE TRADING • PREMIUM INDUSTRIAL EXCELLENCE",
         "pillars": [
             "100% Certified Quality",
             "Ethical Jain Trade Values",
@@ -104,12 +231,48 @@ THEMES = {
     }
 }
 
+def extract_firm_monogram(name: str) -> str:
+    """Extracts 2 high-impact monogram letters from business name."""
+    if not name:
+        return "JB"
+    cleaned = re.sub(r'^(dr\.|dr|shri|shree|the|m/s)\s+', '', name.strip(), flags=re.IGNORECASE)
+    cleaned = re.sub(r'[^a-zA-Z0-9\s]', ' ', cleaned)
+    words = [w for w in cleaned.split() if w.lower() not in {"and", "sons", "co", "pvt", "ltd", "by", "of", "in"}]
+    if len(words) >= 2:
+        return (words[0][0] + words[1][0]).upper()
+    elif len(words) == 1:
+        w = words[0].upper()
+        return w[:2] if len(w) >= 2 else (w + "J")
+    return "JB"
+
 def resolve_theme(cat_str: str, firm_name: str = "") -> dict:
     text = f"{cat_str} {firm_name}".lower()
-    if any(k in text for k in ["mandir", "temple", "trust", "dharamshala", "dharmshala", "ashram", "atithi", "tirth", "derasar"]):
+    
+    # 1. Religious / Mandir / Trust / Dharmashala
+    if any(k in text for k in ["mandir", "temple", "trust", "dharamshala", "dharmshala", "ashram", "atithi", "tirth", "derasar", "chaityalaya", "bhavan", "bhawan", "dharmarth"]):
         return THEMES["religious"]
-    if any(k in text for k in ["jewel", "gold", "silver", "diamond", "gems", "bullion", "zaveri", "palmonas"]):
+        
+    # 2. Jewellery / Gems / Bullion
+    if any(k in text for k in ["jewel", "gold", "silver", "diamond", "gems", "bullion", "zaveri", "palmonas", "kundan", "ornament"]):
         return THEMES["jewellery"]
+        
+    # 3. Medical / Doctor / Healthcare / Clinic / Pharma
+    if any(k in text for k in ["dr.", "dr ", "doctor", "hospital", "clinic", "dental", "endoscopic", "eye", "ent", "pharma", "chemist", "medical", "surgical", "health", "care"]):
+        return THEMES["medical"]
+        
+    # 4. Fashion / Boutique / Saree / Textile / Clothing
+    if any(k in text for k in ["boutique", "fashion", "saree", "textile", "clothing", "apparel", "designer", "tailor", "garment", "dresses", "collection", "fabrics"]):
+        return THEMES["fashion"]
+        
+    # 5. Food / Namkeen / Sweets / Bakery / Restaurant
+    if any(k in text for k in ["food", "namkeen", "sweet", "mithai", "everfresh", "bakery", "restaurant", "cafe", "bhojanalaya", "dining", "snack", "masala", "spices", "dairy", "fruit", "caterer"]):
+        return THEMES["food"]
+        
+    # 6. Professional / CA / Legal / Associates / Finance
+    if any(k in text for k in ["associates", "advocate", "ca ", "consultant", "advisory", "legal", "chartered", "tax", "finance", "audit", "solicitor"]):
+        return THEMES["professional"]
+        
+    # 7. Industry / Trading / Manufacturing (Default)
     return THEMES["industry"]
 
 def clean_display_title(name: str) -> tuple:
@@ -498,26 +661,230 @@ def get_luxury_logo_html(firm: dict) -> str:
     theme = resolve_theme(firm.get("j4j_category", firm.get("category", "")), firm.get("name", ""))
     raw_name = firm.get("name", "Jain Enterprise")
     name_hi, name_en = clean_display_title(raw_name)
+    monogram = extract_firm_monogram(raw_name)
     phone = format_phone(firm.get("phone"))
     city = firm.get("city", "INDORE").upper()
     state = firm.get("state", "MADHYA PRADESH").upper()
     badge = firm.get("badge") or theme["badge"]
     prefix = theme["prefix"]
+    crest_shape = theme.get("crest_shape", "diamond")
+    is_dark = theme.get("is_dark", True)
     
+    # Shape styling classes & clip-paths
+    shape_css = ""
+    if crest_shape == "diamond":
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 155px;
+            height: 155px;
+            transform: rotate(45deg);
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px solid #D4AF37;
+            box-shadow: 0 0 35px rgba(212, 175, 55, 0.35), inset 0 0 20px rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 135px;
+            height: 135px;
+            transform: rotate(45deg);
+            border: 1.5px dashed #F5CE62;
+            border-radius: 4px;
+        }
+        """
+    elif crest_shape == "artisan":
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 210px;
+            height: 210px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 4px solid #D97706;
+            box-shadow: 0 8px 30px rgba(217, 119, 6, 0.25);
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            border: 2px dashed #B45309;
+        }
+        """
+    elif crest_shape == "hexagon":
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 210px;
+            height: 210px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: linear-gradient(135deg, rgba(244, 114, 182, 0.2) 0%, rgba(224, 169, 109, 0.3) 100%);
+            box-shadow: 0 0 35px rgba(244, 114, 182, 0.35);
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 184px;
+            height: 184px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: rgba(30, 16, 53, 0.85);
+            border: 2px solid #E0A96D;
+        }
+        """
+    elif crest_shape == "shield":
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 210px;
+            height: 220px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 190px;
+            height: 200px;
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+            background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+            box-shadow: 0 8px 30px rgba(5, 150, 105, 0.25);
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 174px;
+            height: 184px;
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+            background: #FFFFFF;
+            border: 2px solid #059669;
+        }
+        """
+    elif crest_shape == "temple":
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 210px;
+            height: 220px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 190px;
+            height: 200px;
+            border-radius: 95px 95px 16px 16px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(127, 29, 29, 0.8) 100%);
+            border: 3.5px solid #F59E0B;
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.35);
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 170px;
+            height: 180px;
+            border-radius: 85px 85px 10px 10px;
+            border: 1.5px dashed #FEF08A;
+        }
+        """
+    elif crest_shape == "pillar":
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 210px;
+            height: 210px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 3px solid #38BDF8;
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 172px;
+            height: 172px;
+            clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
+            border: 1.5px solid #E2E8F0;
+        }
+        """
+    else:  # octagon / default
+        shape_css = """
+        .monogram-badge-wrap {
+            width: 210px;
+            height: 210px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .badge-geom-bg {
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(23, 37, 84, 0.9) 100%);
+            border: 3px solid #F59E0B;
+            box-shadow: 0 0 35px rgba(245, 158, 11, 0.3);
+        }
+        .badge-geom-inner {
+            position: absolute;
+            width: 172px;
+            height: 172px;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            border: 1.5px dashed #FDE68A;
+        }
+        """
+
     return f"""<!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cormorant+Garamond:wght@700;800&family=Montserrat:wght@500;600;700;800&family=Rozha+One&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Montserrat:wght@500;600;700;800&family=Rozha+One&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
     width: 1080px;
     height: 1080px;
     background: {theme['bg_logo']};
-    color: #1E293B;
+    color: {theme['text_primary']};
     font-family: 'Outfit', 'Montserrat', sans-serif;
     position: relative;
     overflow: hidden;
@@ -528,28 +895,21 @@ def get_luxury_logo_html(firm: dict) -> str:
     padding: 40px;
   }}
 
-  /* Circular Medallion Frame */
-  .seal-outer-ring {{
+  /* Outer Decorative Frame */
+  .logo-outer-border {{
     position: absolute;
-    width: 980px;
-    height: 980px;
-    border-radius: 50%;
-    border: 3px solid #D4AF37;
-    box-shadow: inset 0 0 60px rgba(212, 175, 55, 0.12), 0 10px 40px rgba(180, 83, 9, 0.08);
+    inset: 24px;
+    border-radius: 40px;
+    border: 3px solid {theme['border_color']};
+    box-shadow: inset 0 0 70px {theme['gold_glow']}, 0 12px 40px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
   }}
-  .seal-mid-ring {{
+  .logo-inner-border {{
     position: absolute;
-    width: 940px;
-    height: 940px;
-    border-radius: 50%;
-    border: 1.5px dashed #B45309;
-  }}
-  .seal-inner-ring {{
-    position: absolute;
-    width: 900px;
-    height: 900px;
-    border-radius: 50%;
-    border: 2px solid rgba(212, 175, 55, 0.6);
+    inset: 34px;
+    border-radius: 30px;
+    border: 1.5px dashed rgba(255, 255, 255, 0.25);
+    pointer-events: none;
   }}
 
   /* Center Content Container */
@@ -560,76 +920,84 @@ def get_luxury_logo_html(firm: dict) -> str:
     flex-direction: column;
     align-items: center;
     text-align: center;
-    max-width: 820px;
+    max-width: 860px;
   }}
 
   .motto-top {{
     font-family: 'Rozha One', serif;
-    font-size: 28px;
+    font-size: 26px;
     letter-spacing: 3px;
-    color: #991B1B;
-    margin-bottom: 20px;
+    color: {theme['accent']};
+    margin-bottom: 18px;
     font-weight: 700;
   }}
 
-  /* Crest Logo SVG */
-  .center-crest {{
-    width: 130px;
-    height: 130px;
-    margin-bottom: 18px;
-    filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.3));
+  {shape_css}
+
+  .monogram-text {{
+    position: relative;
+    z-index: 10;
+    font-family: 'Cinzel', serif;
+    font-size: 88px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    background: {theme['monogram_grad']};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+    line-height: 1;
   }}
 
   .hallmark-badge {{
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    border: 1.5px solid #D97706;
-    padding: 6px 28px;
+    background: {theme['card_bg']};
+    border: 1.5px solid {theme['accent']};
+    padding: 6px 26px;
     border-radius: 9999px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
     letter-spacing: 2px;
-    color: #92400E;
+    color: {theme['text_secondary']};
     text-transform: uppercase;
-    margin-bottom: 22px;
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.12);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   }}
 
-  /* --- FOCUS DESIGN RULE: 1-2-3 HIERARCHY & 3-EFFECT MAX --- */
-  /* ① PRIMARY FOCUS (100% Attention): Size 80px, ExtraBold, Velvet Crimson, Subtle Depth */
+  /* ① PRIMARY FOCUS: Brand Name (Hindi) */
   .brand-title-hi {{
     font-family: 'Rozha One', serif;
-    font-size: 80px;
-    line-height: 1.12;
-    color: #7F1D1D;
+    font-size: 74px;
+    line-height: 1.14;
+    color: {theme['title_hi_color']};
     letter-spacing: 1px;
-    margin-bottom: 8px;
-    text-shadow: 0 3px 8px rgba(127, 29, 29, 0.16);
+    margin-bottom: 6px;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
   }}
 
-  /* ② SECONDARY FOCUS (60% Scale: 48px = 60% of 80px): Cinzel 900, Slate, Flat Contrast */
+  /* ② SECONDARY FOCUS: Brand Name (English) */
   .brand-title-en {{
     font-family: 'Cinzel', serif;
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 900;
-    letter-spacing: 5px;
-    color: #1E293B;
-    margin-bottom: 16px;
+    letter-spacing: 4px;
+    color: {theme['title_en_color']};
+    margin-bottom: 14px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }}
 
   .divider-wrap {{
     display: flex;
     align-items: center;
     gap: 16px;
-    width: 380px;
-    margin: 6px 0 18px;
+    width: 360px;
+    margin: 4px 0 16px;
   }}
   .div-line {{
     flex: 1;
     height: 1.5px;
-    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    background: linear-gradient(90deg, transparent, {theme['accent']}, transparent);
   }}
   .div-star {{
-    color: #B45309;
+    color: {theme['accent']};
     font-size: 16px;
   }}
 
@@ -638,50 +1006,46 @@ def get_luxury_logo_html(firm: dict) -> str:
     font-size: 17px;
     font-weight: 700;
     letter-spacing: 4px;
-    color: #78350F;
+    color: {theme['text_secondary']};
     text-transform: uppercase;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
   }}
 
   .contact-pill-logo {{
-    background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%);
-    border: 2px solid #F59E0B;
+    background: {theme['card_bg']};
+    border: 2px solid {theme['accent']};
     border-radius: 12px;
-    padding: 10px 36px;
+    padding: 8px 34px;
     font-family: 'Cinzel', serif;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     letter-spacing: 2px;
-    color: #FFFFFF;
-    box-shadow: 0 8px 24px rgba(127, 29, 29, 0.25);
+    color: {theme['text_primary']};
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }}
 
   .watermark {{
     position: absolute;
-    bottom: 24px;
-    font-size: 12px;
-    color: #94A3B8;
+    bottom: 20px;
+    font-size: 11px;
+    color: rgba(148, 163, 184, 0.8);
     letter-spacing: 1px;
     font-weight: 600;
   }}
 </style>
 </head>
 <body>
-  <div class="seal-outer-ring"></div>
-  <div class="seal-mid-ring"></div>
-  <div class="seal-inner-ring"></div>
+  <div class="logo-outer-border"></div>
+  <div class="logo-inner-border"></div>
 
   <div class="seal-content">
     <div class="motto-top">{prefix}</div>
 
-    <div class="center-crest">
-      <svg viewBox="0 0 120 120" fill="none">
-        <circle cx="60" cy="60" r="56" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="3 3"/>
-        <path d="M60 18 L94 48 L60 102 L26 48 Z" stroke="#B45309" stroke-width="3.5" fill="rgba(212, 175, 55, 0.18)"/>
-        <path d="M26 48 L94 48" stroke="#B45309" stroke-width="2"/>
-        <path d="M38 48 L50 24 L70 24 L82 48" stroke="#B45309" stroke-width="2"/>
-        <circle cx="60" cy="65" r="14" stroke="#D4AF37" stroke-width="2" fill="#FEF3C7"/>
-      </svg>
+    <!-- Dynamic Category Monogram Emblem -->
+    <div class="monogram-badge-wrap">
+      <div class="badge-geom-bg"></div>
+      <div class="badge-geom-inner"></div>
+      <div class="monogram-text">{monogram}</div>
     </div>
 
     <div class="hallmark-badge">★ {badge} ★</div>

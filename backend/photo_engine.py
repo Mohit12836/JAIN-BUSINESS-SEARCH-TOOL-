@@ -12,7 +12,7 @@ import urllib.request
 from typing import Dict, Any, List, Optional, Tuple
 
 try:
-    from PIL import Image, ImageFilter, ImageOps, ImageDraw, ImageStat
+    from PIL import Image, ImageFilter, ImageOps, ImageDraw, ImageStat, ImageEnhance
     HAS_PIL = True
 except ImportError:
     HAS_PIL = False
@@ -21,6 +21,7 @@ except ImportError:
     ImageOps = None
     ImageDraw = None
     ImageStat = None
+    ImageEnhance = None
 
 GENERIC_DOMAINS = {
     'facebook.com', 'instagram.com', 'wa.me', 'api.whatsapp.com',
@@ -229,6 +230,92 @@ def create_smart_storefront_banner(orig_img: Any, output_path: str, target_size=
         print(f"Error creating smart storefront banner: {e}")
         return False
 
+def create_smart_storefront_logo(orig_img: Any, output_path: str, target_size=(1080, 1080)) -> bool:
+    """
+    TRICK 1: Transforms genuine storefront/signboard photo into a studio-grade 1080x1080 avatar logo:
+    1. Background: Zoomed, Gaussian-blurred ambient halo sampled from the authentic photo.
+    2. Foreground: Pristine, sharp, uncropped original signboard placed in center with rounded corners,
+       subtle 24K gold architectural border, and soft drop-shadow.
+    3. Visual Enhancement: Contrast (+15%) & Sharpness (+20%) boosted so signboards are crystal clear.
+    Guarantees 100% authentic, distinctive shop identity on jainforjain.com!
+    """
+    if not HAS_PIL or orig_img is None:
+        return False
+    try:
+        w_target, h_target = target_size
+        img = orig_img.convert("RGBA")
+        
+        # 1. Background: Blurred & darkened ambient glow from original storefront colors
+        ratio_w = w_target / img.width
+        ratio_h = h_target / img.height
+        scale_bg = max(ratio_w, ratio_h) * 1.25
+        bg_w = int(img.width * scale_bg)
+        bg_h = int(img.height * scale_bg)
+        bg_resized = img.resize((bg_w, bg_h), Image.Resampling.LANCZOS)
+        
+        left = (bg_w - w_target) // 2
+        top = (bg_h - h_target) // 2
+        bg_cropped = bg_resized.crop((left, top, left + w_target, top + h_target))
+        bg_blurred = bg_cropped.filter(ImageFilter.GaussianBlur(radius=32))
+        
+        # Darken ambient background for high contrast
+        overlay = Image.new("RGBA", (w_target, h_target), (0, 0, 0, 95))
+        bg_final = Image.alpha_composite(bg_blurred, overlay)
+        
+        # 2. Foreground: The genuine storefront photo with contrast & sharpness boost
+        scale_fg = min(w_target * 0.90 / img.width, h_target * 0.90 / img.height)
+        fg_w = int(img.width * scale_fg)
+        fg_h = int(img.height * scale_fg)
+        fg_resized = img.resize((fg_w, fg_h), Image.Resampling.LANCZOS)
+        
+        # Enhance foreground contrast and sharpness if ImageEnhance is available
+        if ImageEnhance:
+            rgb_fg = fg_resized.convert("RGB")
+            enhancer_c = ImageEnhance.Contrast(rgb_fg)
+            rgb_fg = enhancer_c.enhance(1.15)
+            enhancer_s = ImageEnhance.Sharpness(rgb_fg)
+            rgb_fg = enhancer_s.enhance(1.20)
+            fg_enhanced = rgb_fg.convert("RGBA")
+        else:
+            fg_enhanced = fg_resized
+        
+        # Rounded corners mask for foreground
+        mask = Image.new("L", (fg_w, fg_h), 0)
+        mask_draw = ImageDraw.Draw(mask)
+        mask_draw.rounded_rectangle([0, 0, fg_w, fg_h], radius=28, fill=255)
+        
+        # Foreground border (24K Gold luxury frame)
+        border_canvas = Image.new("RGBA", (fg_w, fg_h), (0, 0, 0, 0))
+        border_draw = ImageDraw.Draw(border_canvas)
+        border_draw.rounded_rectangle([2, 2, fg_w - 2, fg_h - 2], radius=28, outline=(212, 175, 55, 200), width=4)
+        
+        # Drop shadow behind foreground
+        shadow = Image.new("RGBA", (fg_w + 30, fg_h + 30), (0, 0, 0, 0))
+        shadow_draw = ImageDraw.Draw(shadow)
+        shadow_draw.rounded_rectangle([6, 6, fg_w + 20, fg_h + 20], radius=32, fill=(0, 0, 0, 140))
+        shadow = shadow.filter(ImageFilter.GaussianBlur(radius=8))
+        
+        # Assemble composite
+        canvas = bg_final.copy()
+        fg_x = (w_target - fg_w) // 2
+        fg_y = (h_target - fg_h) // 2
+        
+        canvas.paste(shadow, (fg_x - 12, fg_y - 8), shadow)
+        canvas.paste(fg_enhanced, (fg_x, fg_y), mask)
+        canvas.paste(border_canvas, (fg_x, fg_y), border_canvas)
+        
+        # Add outer luxury gold border to canvas
+        outer_draw = ImageDraw.Draw(canvas)
+        outer_draw.rounded_rectangle([16, 16, w_target - 16, h_target - 16], radius=36, outline=(212, 175, 55, 180), width=3)
+        outer_draw.rounded_rectangle([24, 24, w_target - 24, h_target - 24], radius=30, outline=(245, 206, 98, 90), width=1)
+        
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        canvas.convert("RGB").save(output_path, "PNG", quality=95)
+        return True
+    except Exception as e:
+        print(f"Error creating smart storefront logo: {e}")
+        return False
+
 def create_smart_logo_canvas(orig_logo: Any, output_path: str, target_size=(1080, 1080)) -> bool:
     """
     Places the original brand logo/favicon centered on a pristine 1080x1080 luxury canvas
@@ -267,17 +354,17 @@ def create_smart_logo_canvas(orig_logo: Any, output_path: str, target_size=(1080
 
 async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
     """
-    MASTER ASSET RESOLUTION ENGINE:
-    Implements the user's strict priority rule:
+    MASTER ASSET RESOLUTION ENGINE (Trick 1 + Trick 4):
     1. Check for authentic Original Storefront Banner -> Smart Gaussian Fit (1200x500).
-    2. Check for authentic Original Brand Logo -> Smart Logo Canvas (1080x1080).
-    3. If not available or low quality -> Seamless fallback to Canva Pro 24K Gold Haute-Couture!
+    2. Check for authentic Original Brand Logo -> Official Website Logo (1080x1080).
+    3. TRICK 1: If no website logo, check authentic Storefront Photo -> Smart Storefront Avatar (1080x1080).
+    4. TRICK 4: If no photo or low quality -> Dynamic Bespoke Monogram & Category Theme Engine.
     
     Returns:
     - banner_file: Local path to ready-to-upload 1200x500 banner
     - banner_source: 'ORIGINAL_SMART_FIT' or 'CANVA_BESPOKE'
     - logo_file: Local path to ready-to-upload 1080x1080 logo
-    - logo_source: 'ORIGINAL_BRAND_LOGO' or 'CANVA_BESPOKE'
+    - logo_source: 'ORIGINAL_BRAND_LOGO', 'ORIGINAL_STOREFRONT_AVATAR', or 'CANVA_BESPOKE'
     """
     from backend.canva_storefront_generator import get_firm_asset_slug, generate_single_firm_assets
     
@@ -286,6 +373,7 @@ async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
     
     orig_banner_path = os.path.join(DATA_ASSETS_DIR, f"{slug}_orig_smart_banner_1200x500.png")
     orig_logo_path = os.path.join(DATA_ASSETS_DIR, f"{slug}_orig_smart_logo_1080x1080.png")
+    storefront_logo_path = os.path.join(DATA_ASSETS_DIR, f"{slug}_orig_storefront_logo_1080x1080.png")
     canva_banner_path = os.path.join(DATA_ASSETS_DIR, f"{slug}_banner_1200x500.png")
     canva_logo_path = os.path.join(DATA_ASSETS_DIR, f"{slug}_logo_1080x1080.png")
     
@@ -295,6 +383,8 @@ async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
     logo_file = None
     logo_source = "CANVA_BESPOKE"
     
+    verified_storefront_img = None
+    
     # ------------------ STEP 1: CHECK ORIGINAL STOREFRONT BANNER ------------------
     raw_photo_url = lead.get("storefront_photo") or lead.get("photo_url") or ""
     if raw_photo_url and not is_streetview_or_junk(raw_photo_url) and not "canva-asset" in raw_photo_url:
@@ -303,13 +393,14 @@ async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
         print(f"--> [Original Asset Engine] Verifying storefront photo for [{firm_name}]: {hd_url[:65]}...")
         verified_img = download_and_verify_image(hd_url, min_size_kb=8, min_dim=200)
         if verified_img:
+            verified_storefront_img = verified_img
             success = create_smart_storefront_banner(verified_img, orig_banner_path)
             if success and os.path.exists(orig_banner_path) and os.path.getsize(orig_banner_path) > 10000:
                 banner_file = orig_banner_path
                 banner_source = "ORIGINAL_SMART_FIT"
                 print(f"✓ [Original Asset Engine] Using AUTHENTIC Storefront Banner for [{firm_name}] (1200x500 Smart Fit)")
                 
-    # ------------------ STEP 2: CHECK ORIGINAL BRAND LOGO ------------------
+    # ------------------ STEP 2A: CHECK ORIGINAL BRAND LOGO (WEBSITE FAVICON) ------------------
     website = lead.get("website", "")
     logo_url = lead.get("website_logo") or get_official_website_logo(website)
     if logo_url and not "canva-asset" in logo_url:
@@ -322,7 +413,16 @@ async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
                 logo_source = "ORIGINAL_BRAND_LOGO"
                 print(f"✓ [Original Asset Engine] Using AUTHENTIC Brand Logo for [{firm_name}] (1080x1080 Luxury Canvas)")
                 
-    # ------------------ STEP 3: FALLBACK TO CANVA PRO 24K GOLD IF MISSING ------------------
+    # ------------------ STEP 2B (TRICK 1): STOREFRONT SIGNBOARD SMART AVATAR ------------------
+    if not logo_file and verified_storefront_img:
+        print(f"--> [Trick 1 Engine] Generating Authentic Signboard Avatar for [{firm_name}]...")
+        success_avatar = create_smart_storefront_logo(verified_storefront_img, storefront_logo_path)
+        if success_avatar and os.path.exists(storefront_logo_path) and os.path.getsize(storefront_logo_path) > 8000:
+            logo_file = storefront_logo_path
+            logo_source = "ORIGINAL_STOREFRONT_AVATAR"
+            print(f"✓ [Trick 1 Engine] Using AUTHENTIC Storefront Signboard Avatar for [{firm_name}] (1080x1080)")
+
+    # ------------------ STEP 3 (TRICK 4): DYNAMIC MONOGRAM & CATEGORY FALLBACK ------------------
     needs_canva = False
     if not banner_file:
         if not (os.path.exists(canva_banner_path) and os.path.getsize(canva_banner_path) > 10000):
@@ -336,10 +436,10 @@ async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
             needs_canva = True
         else:
             logo_file = canva_logo_path
-            logo_source = "CANVA_BESPOKE"
+            logo_source = "BESPOKE_MONOGRAM"
             
     if needs_canva:
-        print(f"--> [Original Asset Engine] Generating Canva Pro 24K Gold luxury assets as high-end fallback for [{firm_name}]...")
+        print(f"--> [Trick 4 Engine] Generating Bespoke Category Monogram for [{firm_name}]...")
         try:
             b_path, l_path, _, _ = await generate_single_firm_assets(lead)
             if not banner_file and os.path.exists(b_path):
@@ -347,9 +447,9 @@ async def resolve_lead_assets_smart(lead: Dict[str, Any]) -> Dict[str, Any]:
                 banner_source = "CANVA_BESPOKE"
             if not logo_file and os.path.exists(l_path):
                 logo_file = l_path
-                logo_source = "CANVA_BESPOKE"
+                logo_source = "BESPOKE_MONOGRAM"
         except Exception as ge:
-            print(f"⚠️ Canva generation error: {ge}")
+            print(f"⚠️ Canva monogram generation error: {ge}")
             
     return {
         "banner_file": banner_file,
