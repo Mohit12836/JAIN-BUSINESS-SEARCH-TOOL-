@@ -77,8 +77,26 @@ async def update_logos():
     # Step 2: Upload each new logo to its respective edit form on portal
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True, args=CHROMIUM_TURBO_ARGS)
-        context = await browser.new_context(storage_state=session_file, viewport={"width": 1400, "height": 950})
+        storage_kwargs = {"storage_state": session_file} if (session_file and os.path.exists(session_file) and os.path.getsize(session_file) > 50) else {}
+        context = await browser.new_context(**storage_kwargs, viewport={"width": 1400, "height": 950})
         page = await context.new_page()
+
+        # Step 2A: Verify login status, re-login if needed
+        print("--> Verifying portal authentication...")
+        await page.goto("https://jainforjain.com/member/business-listings", wait_until="domcontentloaded", timeout=45000)
+        await page.wait_for_timeout(3000)
+        if "login" in page.url.lower():
+            print("  -> Session not active, logging in with mohit12836+1@gmail.com...")
+            await page.fill('input[type="email"], #email', "mohit12836+1@gmail.com")
+            await page.fill('input[type="password"], #password', "12345678")
+            sign_in_btn = page.locator('button[type="submit"]:has-text("Sign in"), button:has-text("Sign in")').first
+            await sign_in_btn.click()
+            await page.wait_for_timeout(5000)
+            os.makedirs(os.path.dirname(session_file), exist_ok=True)
+            await context.storage_state(path=session_file)
+            print(f"  ✓ Login successful! Saved fresh session state to {session_file}")
+        else:
+            print("  ✓ Already authenticated!")
 
         for idx, item in enumerate(TARGET_LISTINGS, 1):
             lid = item["id"]
@@ -95,6 +113,17 @@ async def update_logos():
             try:
                 await page.goto(edit_url, wait_until="domcontentloaded", timeout=45000)
                 await page.wait_for_timeout(3000)
+
+                # Re-check login just in case
+                if "login" in page.url.lower():
+                    print("  -> Redirected to login! Logging in...")
+                    await page.fill('input[type="email"], #email', "mohit12836+1@gmail.com")
+                    await page.fill('input[type="password"], #password', "12345678")
+                    await page.click('button[type="submit"]:has-text("Sign in"), button:has-text("Sign in")')
+                    await page.wait_for_timeout(5000)
+                    await context.storage_state(path=session_file)
+                    await page.goto(edit_url, wait_until="domcontentloaded", timeout=45000)
+                    await page.wait_for_timeout(3000)
 
                 # Click Images tab
                 images_tab = page.locator('button:has-text("Images")')
