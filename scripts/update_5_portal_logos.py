@@ -140,22 +140,40 @@ async def update_logos():
                         print(f"  FilePond wait notice: {fe}")
                         await page.wait_for_timeout(4000)
 
-                # Step C: Save changes
-                print("  -> Saving changes...")
-                save_btn = page.locator('button:has-text("Save changes")')
-                if await save_btn.count() == 0:
-                    save_btn = page.locator('button[type="submit"]:has-text("Save")')
+                # Step C: Save changes with verification loop
+                print("  -> Waiting 2s for Livewire state synchronization...")
+                await page.wait_for_timeout(2000)
                 
-                await save_btn.first.click()
-                print("  -> Waiting for database update...")
-                await page.wait_for_timeout(6000)
+                print("  -> Saving changes...")
+                saved = False
+                for attempt in range(1, 4):
+                    save_btn = page.locator('button:has-text("Save changes"), button[type="submit"]:has-text("Save")')
+                    if await save_btn.count() > 0:
+                        await save_btn.first.click()
+                        print(f"  -> Clicked Save button (attempt {attempt})...")
+                    
+                    # Wait up to 6 seconds for notification
+                    for _ in range(6):
+                        await page.wait_for_timeout(1000)
+                        notes = await page.evaluate('''() => {
+                            return Array.from(document.querySelectorAll('div.fi-no-notification, div.fi-fo-field-wrp-error-message'))
+                                .map(n => n.innerText.trim()).filter(x => x.length > 0);
+                        }''')
+                        if any("Saved" in n or "success" in n.lower() for n in notes):
+                            print(f"  ✓ Save confirmed on attempt {attempt}: {notes}")
+                            saved = True
+                            break
+                    if saved:
+                        break
+                    print(f"  Notice: Save notification not yet seen on attempt {attempt}, retrying...")
 
-                # Notification check
-                notes = await page.evaluate('''() => {
-                    return Array.from(document.querySelectorAll('div.fi-no-notification, div.fi-fo-field-wrp-error-message'))
-                        .map(n => n.innerText.trim()).filter(x => x.length > 0);
-                }''')
-                print(f"  ✓ Save Status: {notes}")
+                if not saved:
+                    print("  ⚠️ Final attempt: Force submitting form via JS...")
+                    await page.evaluate('''() => {
+                        const form = document.querySelector('form');
+                        if (form) form.requestSubmit();
+                    }''')
+                    await page.wait_for_timeout(4000)
 
                 # Take proof screenshot
                 proof_path = f"data/canva_storefronts/proof_update_{lid}.png"

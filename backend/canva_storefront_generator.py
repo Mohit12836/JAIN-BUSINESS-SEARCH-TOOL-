@@ -657,224 +657,69 @@ def get_luxury_banner_html(firm: dict) -> str:
 </body>
 </html>"""
 
+def get_scalloped_points(num_points=36, outer_r=510, inner_r=470, cx=540, cy=540):
+    import math
+    pts = []
+    angle_step = (2 * math.pi) / (num_points * 2)
+    for i in range(num_points * 2):
+        r = outer_r if i % 2 == 0 else inner_r
+        angle = i * angle_step - math.pi / 2
+        x = cx + r * math.cos(angle)
+        y = cy + r * math.sin(angle)
+        pts.append(f"{x:.1f},{y:.1f}")
+    return " ".join(pts)
+
+SEAL_PALETTES = {
+    "jewellery": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #E11D48 0%, #BE123C 30%, #881337 70%, #4C0519 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#450A0A"
+    },
+    "food": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #F59E0B 0%, #D97706 35%, #B45309 70%, #78350F 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#451A03"
+    },
+    "fashion": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #BE185D 0%, #9D174D 35%, #831843 70%, #500724 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#500724"
+    },
+    "medical": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #059669 0%, #047857 35%, #064E3B 70%, #022C22 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#022C22"
+    },
+    "religious": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #DC2626 0%, #B91C1C 35%, #991B1B 70%, #450A0A 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#450A0A"
+    },
+    "professional": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #2563EB 0%, #1D4ED8 35%, #1E3A8A 70%, #0F172A 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#0F172A"
+    },
+    "industry": {
+        "disk_bg": "radial-gradient(circle at 45% 35%, #1D4ED8 0%, #1E40AF 35%, #1E3A8A 70%, #0A192F 100%)",
+        "ribbon_bg": "linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #B45309 100%)",
+        "ribbon_text": "#0A192F"
+    }
+}
+
 def get_luxury_logo_html(firm: dict) -> str:
     theme = resolve_theme(firm.get("j4j_category", firm.get("category", "")), firm.get("name", ""))
+    theme_id = theme.get("id", "industry")
+    palette = SEAL_PALETTES.get(theme_id, SEAL_PALETTES["industry"])
+    
     raw_name = firm.get("name", "Jain Enterprise")
     name_hi, name_en = clean_display_title(raw_name)
     monogram = extract_firm_monogram(raw_name)
     phone = format_phone(firm.get("phone"))
     city = firm.get("city", "INDORE").upper()
-    state = firm.get("state", "MADHYA PRADESH").upper()
-    badge = firm.get("badge") or theme["badge"]
-    prefix = theme["prefix"]
-    crest_shape = theme.get("crest_shape", "diamond")
-    is_dark = theme.get("is_dark", True)
-    
-    # Shape styling classes & clip-paths
-    shape_css = ""
-    if crest_shape == "diamond":
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 200px;
-            height: 200px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 155px;
-            height: 155px;
-            transform: rotate(45deg);
-            background: linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
-            border: 3.5px solid #D4AF37;
-            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.35);
-            border-radius: 8px;
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 135px;
-            height: 135px;
-            transform: rotate(45deg);
-            background: #FFFFFF;
-            border: 2px dashed #B45309;
-            border-radius: 6px;
-        }
-        """
-    elif crest_shape == "artisan":
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 210px;
-            height: 210px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 190px;
-            height: 190px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-            border: 4px solid #D97706;
-            box-shadow: 0 8px 30px rgba(217, 119, 6, 0.25);
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            background: #FFFFFF;
-            border: 2px dashed #B45309;
-        }
-        """
-    elif crest_shape == "hexagon":
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 210px;
-            height: 210px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
-            box-shadow: 0 8px 30px rgba(190, 24, 93, 0.25);
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 184px;
-            height: 184px;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: #FFFFFF;
-            border: 2.5px solid #BE185D;
-        }
-        """
-    elif crest_shape == "shield":
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 210px;
-            height: 220px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 190px;
-            height: 200px;
-            clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
-            background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
-            box-shadow: 0 8px 30px rgba(5, 150, 105, 0.25);
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 174px;
-            height: 184px;
-            clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
-            background: #FFFFFF;
-            border: 2.5px solid #059669;
-        }
-        """
-    elif crest_shape == "temple":
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 210px;
-            height: 220px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 190px;
-            height: 200px;
-            border-radius: 95px 95px 16px 16px;
-            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-            border: 3.5px solid #B45309;
-            box-shadow: 0 8px 30px rgba(180, 83, 9, 0.25);
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 170px;
-            height: 180px;
-            border-radius: 85px 85px 10px 10px;
-            background: #FFFFFF;
-            border: 2px dashed #B45309;
-        }
-        """
-    elif crest_shape == "pillar":
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 210px;
-            height: 210px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 190px;
-            height: 190px;
-            clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
-            background: linear-gradient(135deg, #BAE6FD 0%, #7DD3FC 100%);
-            border: 3.5px solid #0284C7;
-            box-shadow: 0 8px 30px rgba(2, 132, 199, 0.25);
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 172px;
-            height: 172px;
-            clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
-            background: #FFFFFF;
-            border: 2px solid #0369A1;
-        }
-        """
-    else:  # octagon / default
-        shape_css = """
-        .monogram-badge-wrap {
-            width: 210px;
-            height: 210px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .badge-geom-bg {
-            position: absolute;
-            width: 190px;
-            height: 190px;
-            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            background: linear-gradient(135deg, #BFDBFE 0%, #93C5FD 100%);
-            border: 3.5px solid #1D4ED8;
-            box-shadow: 0 8px 30px rgba(29, 78, 216, 0.25);
-        }
-        .badge-geom-inner {
-            position: absolute;
-            width: 172px;
-            height: 172px;
-            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            background: #FFFFFF;
-            border: 2px dashed #1E40AF;
-        }
-        """
+    prefix = theme.get("prefix", "॥ 卐 श्री नवकाराय नमः 卐 ॥")
+
+    scallop_pts = get_scalloped_points(num_points=36, outer_r=510, inner_r=470, cx=540, cy=540)
 
     return f"""<!DOCTYPE html>
 <html lang="hi">
@@ -882,180 +727,219 @@ def get_luxury_logo_html(firm: dict) -> str:
 <meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Montserrat:wght@500;600;700;800&family=Rozha+One&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Rozha+One&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
     width: 1080px;
     height: 1080px;
-    background: {theme['bg_logo']};
-    color: {theme['text_primary']};
-    font-family: 'Outfit', 'Montserrat', sans-serif;
+    background: transparent;
+    font-family: 'Outfit', sans-serif;
     position: relative;
     overflow: hidden;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px;
   }}
 
-  /* Outer Decorative Frame */
-  .logo-outer-border {{
+  /* Full Vector Medallion Container */
+  .medallion-svg {{
     position: absolute;
-    inset: 24px;
-    border-radius: 40px;
-    border: 3.5px solid {theme['border_color']};
-    box-shadow: inset 0 0 70px {theme['gold_glow']}, 0 12px 35px rgba(0, 0, 0, 0.08);
-    pointer-events: none;
-  }}
-  .logo-inner-border {{
-    position: absolute;
-    inset: 34px;
-    border-radius: 30px;
-    border: 1.5px dashed {theme['border_color']};
-    opacity: 0.4;
-    pointer-events: none;
+    width: 1080px;
+    height: 1080px;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.28));
   }}
 
-  /* Center Content Container */
-  .seal-content {{
-    position: relative;
+  /* Center Disk Layer */
+  .center-disk {{
+    position: absolute;
+    width: 660px;
+    height: 660px;
+    border-radius: 50%;
+    background: {palette['disk_bg']};
+    box-shadow: inset 0 0 65px rgba(0, 0, 0, 0.65), inset 0 2px 10px rgba(255, 255, 255, 0.45);
     z-index: 5;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    max-width: 860px;
+    padding: 30px;
   }}
 
-  .motto-top {{
+  /* Inner Gold Bevel Ring */
+  .inner-gold-ring {{
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    border: 2px dashed rgba(245, 206, 98, 0.55);
+    pointer-events: none;
+  }}
+
+  /* Top Sacred Text */
+  .sacred-top {{
     font-family: 'Rozha One', serif;
-    font-size: 26px;
+    font-size: 20px;
     letter-spacing: 3px;
-    color: {theme['accent']};
-    margin-bottom: 18px;
-    font-weight: 700;
+    color: #F5CE62;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }}
 
-  {shape_css}
-
-  .monogram-text {{
-    position: relative;
-    z-index: 10;
+  /* 3D Monogram Crest */
+  .monogram-badge {{
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FEF08A 0%, #D4AF37 50%, #996515 100%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    border: 2.5px solid #FFF8DC;
+  }}
+  .monogram-badge-inner {{
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: {palette['disk_bg']};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed #F5CE62;
+  }}
+  .monogram-letters {{
     font-family: 'Cinzel', serif;
-    font-size: 96px;
+    font-size: 58px;
     font-weight: 900;
-    letter-spacing: 6px;
-    background: {theme['monogram_grad']};
+    letter-spacing: 3px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FEF08A 50%, #D4AF37 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     line-height: 1;
   }}
 
-  .hallmark-badge {{
-    background: {theme['card_bg']};
-    border: 1.5px solid {theme['accent']};
-    padding: 6px 26px;
-    border-radius: 9999px;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: {theme['text_secondary']};
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  /* 5 Gold Stars */
+  .gold-stars {{
+    color: #F5CE62;
+    font-size: 15px;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
   }}
 
-  /* ① PRIMARY FOCUS: Brand Name (Hindi) */
-  .brand-title-hi {{
+  /* ① PRIMARY FOCUS: Big Bold Hindi Name (3D Gold Chiseled) */
+  .title-hi {{
     font-family: 'Rozha One', serif;
-    font-size: 74px;
-    line-height: 1.14;
-    color: {theme['title_hi_color']};
+    font-size: 56px;
+    line-height: 1.15;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF8DC 40%, #F5CE62 70%, #E5A93C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     letter-spacing: 1px;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(0 0 14px rgba(245, 206, 98, 0.35));
+    font-weight: 700;
   }}
 
-  /* ② SECONDARY FOCUS: Brand Name (English) */
-  .brand-title-en {{
+  /* ② SECONDARY FOCUS: English Name */
+  .title-en {{
     font-family: 'Cinzel', serif;
-    font-size: 42px;
+    font-size: 26px;
     font-weight: 900;
-    letter-spacing: 4px;
-    color: {theme['title_en_color']};
-    margin-bottom: 14px;
+    letter-spacing: 3.5px;
+    color: #FEF08A;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.4);
   }}
 
+  /* Ornate Divider */
   .divider-wrap {{
     display: flex;
     align-items: center;
-    gap: 16px;
-    width: 360px;
-    margin: 4px 0 16px;
+    gap: 10px;
+    width: 220px;
+    margin-bottom: 12px;
   }}
   .div-line {{
     flex: 1;
     height: 1.5px;
-    background: linear-gradient(90deg, transparent, {theme['accent']}, transparent);
+    background: linear-gradient(90deg, transparent, #F5CE62, transparent);
   }}
   .div-star {{
-    color: {theme['accent']};
+    color: #F5CE62;
+    font-size: 13px;
+  }}
+
+  /* Bottom 3D Ribbon Banner */
+  .ribbon-banner {{
+    background: {palette['ribbon_bg']};
+    border: 2px solid #FFF8DC;
+    border-radius: 9999px;
+    padding: 7px 30px;
+    font-family: 'Cinzel', serif;
     font-size: 16px;
-  }}
-
-  .loc-pill {{
-    font-family: 'Cinzel', serif;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: {theme['text_secondary']};
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }}
-
-  .contact-pill-logo {{
-    background: {theme['card_bg']};
-    border: 2px solid {theme['accent']};
-    border-radius: 12px;
-    padding: 8px 34px;
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    font-weight: 800;
+    font-weight: 900;
     letter-spacing: 2px;
-    color: {theme['text_primary']};
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  }}
-
-  .watermark {{
-    position: absolute;
-    bottom: 20px;
-    font-size: 11px;
-    color: rgba(148, 163, 184, 0.8);
-    letter-spacing: 1px;
-    font-weight: 600;
+    color: {palette['ribbon_text']};
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }}
 </style>
 </head>
 <body>
-  <div class="logo-outer-border"></div>
-  <div class="logo-inner-border"></div>
+  <svg class="medallion-svg" viewBox="0 0 1080 1080">
+    <defs>
+      <!-- 24K Polished Metallic Gold Gradient -->
+      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFFDF0" />
+        <stop offset="20%" stop-color="#FDE047" />
+        <stop offset="40%" stop-color="#CA8A04" />
+        <stop offset="60%" stop-color="#FEF08A" />
+        <stop offset="80%" stop-color="#A16207" />
+        <stop offset="100%" stop-color="#713F12" />
+      </linearGradient>
 
-  <div class="seal-content">
-    <div class="motto-top">{prefix}</div>
+      <!-- Outer Bevel Depth Gradient -->
+      <radialGradient id="goldBevel" cx="50%" cy="50%" r="50%">
+        <stop offset="70%" stop-color="#CA8A04" />
+        <stop offset="90%" stop-color="#FEF08A" />
+        <stop offset="100%" stop-color="#713F12" />
+      </radialGradient>
+    </defs>
 
-    <!-- Dynamic Category Monogram Emblem -->
-    <div class="monogram-badge-wrap">
-      <div class="badge-geom-bg"></div>
-      <div class="badge-geom-inner"></div>
-      <div class="monogram-text">{monogram}</div>
+    <!-- 36-Point Scalloped Gold Medallion Outer Rim -->
+    <polygon points="{scallop_pts}" fill="url(#goldGrad)" stroke="#A16207" stroke-width="4" />
+    
+    <!-- Outer 3D Stepped Gold Bezel Rings -->
+    <circle cx="540" cy="540" r="445" fill="none" stroke="url(#goldGrad)" stroke-width="12" />
+    <circle cx="540" cy="540" r="435" fill="none" stroke="#713F12" stroke-width="3" />
+    <circle cx="540" cy="540" r="390" fill="none" stroke="#FFFDF0" stroke-width="2.5" opacity="0.8" />
+    <circle cx="540" cy="540" r="380" fill="url(#goldGrad)" stroke="#713F12" stroke-width="4" />
+  </svg>
+
+  <div class="center-disk">
+    <div class="inner-gold-ring"></div>
+    <div class="sacred-top">{prefix}</div>
+
+    <div class="monogram-badge">
+      <div class="monogram-badge-inner">
+        <div class="monogram-letters">{monogram}</div>
+      </div>
     </div>
 
-    <div class="hallmark-badge">★ {badge} ★</div>
+    <div class="gold-stars">★ ★ ★ ★ ★</div>
 
-    <div class="brand-title-hi">{name_hi}</div>
-    <div class="brand-title-en">{name_en}</div>
+    <div class="title-hi">{name_hi}</div>
+    <div class="title-en">{name_en}</div>
 
     <div class="divider-wrap">
       <div class="div-line"></div>
@@ -1063,12 +947,12 @@ def get_luxury_logo_html(firm: dict) -> str:
       <div class="div-line"></div>
     </div>
 
-    <div class="loc-pill">{city} • {state}</div>
-
-    <div class="contact-pill-logo">📞 {phone}</div>
+    <div class="ribbon-banner">
+      <span>📍 {city}</span>
+      <span>•</span>
+      <span>📞 {phone}</span>
+    </div>
   </div>
-
-  <div class="watermark">Created by Mohit Jain • 6263879076</div>
 </body>
 </html>"""
 
