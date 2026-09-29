@@ -158,31 +158,38 @@ async def update_logos():
                     print(f"  -> Uploading new bespoke logo: {new_logo}")
                     await file_inputs[0].set_input_files(new_logo)
 
-                    print("  -> Waiting for FilePond upload to finish...")
-                    try:
-                        await page.wait_for_selector(
-                            '.filepond--root:first-child .filepond--item[data-filepond-item-state="processing-complete"], .filepond--root:first-child .filepond--image-preview',
-                            timeout=25000
-                        )
-                        print("  ✓ FilePond logo upload complete!")
-                    except Exception as fe:
-                        print(f"  FilePond wait notice: {fe}")
-                        await page.wait_for_timeout(4000)
+                    print("  -> Waiting for FilePond upload to reach 100% complete...")
+                    for sec in range(40):
+                        is_done = await page.evaluate('''() => {
+                            const root = document.querySelector('.filepond--root');
+                            if (!root) return false;
+                            const text = root.innerText || "";
+                            const hasComplete = text.includes("Upload complete") || root.querySelector('.filepond--item[data-filepond-item-state="processing-complete"]') !== null;
+                            const btn = document.querySelector('button[type="submit"], button:has-text("Save")');
+                            const isStillUploading = btn && (btn.innerText.includes("Uploading") || btn.disabled);
+                            return hasComplete && !isStillUploading;
+                        }''')
+                        if is_done:
+                            print(f"  ✓ FilePond logo upload confirmed 100% complete in {sec+1}s!")
+                            break
+                        await page.wait_for_timeout(1000)
+
+                    await page.wait_for_timeout(2000)
 
                 # Step C: Save changes with verification loop
-                print("  -> Waiting 2s for Livewire state synchronization...")
-                await page.wait_for_timeout(2000)
-                
                 print("  -> Saving changes...")
                 saved = False
-                for attempt in range(1, 4):
-                    save_btn = page.locator('button:has-text("Save changes"), button[type="submit"]:has-text("Save")')
-                    if await save_btn.count() > 0:
-                        await save_btn.first.click()
-                        print(f"  -> Clicked Save button (attempt {attempt})...")
+                for attempt in range(1, 5):
+                    save_btn = page.locator('button:has-text("Save changes")').first
+                    if await save_btn.count() == 0:
+                        save_btn = page.locator('button[type="submit"]:has-text("Save")').first
                     
-                    # Wait up to 6 seconds for notification
-                    for _ in range(6):
+                    if await save_btn.count() > 0:
+                        await save_btn.click()
+                        print(f"  -> Clicked Save button (attempt {attempt})...")
+
+                    # Wait up to 8 seconds for notification
+                    for _ in range(8):
                         await page.wait_for_timeout(1000)
                         notes = await page.evaluate('''() => {
                             return Array.from(document.querySelectorAll('div.fi-no-notification, div.fi-fo-field-wrp-error-message'))
@@ -194,7 +201,15 @@ async def update_logos():
                             break
                     if saved:
                         break
-                    print(f"  Notice: Save notification not yet seen on attempt {attempt}, retrying...")
+                    print(f"  Notice: Retrying save (attempt {attempt+1})...")
+
+                if not saved:
+                    print("  ⚠️ Final attempt: Force submitting form via JS...")
+                    await page.evaluate('''() => {
+                        const form = document.querySelector('form');
+                        if (form) form.requestSubmit();
+                    }''')
+                    await page.wait_for_timeout(5000)
 
                 if not saved:
                     print("  ⚠️ Final attempt: Force submitting form via JS...")
