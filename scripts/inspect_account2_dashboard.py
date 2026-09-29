@@ -25,7 +25,8 @@ async def inspect_account2_portal():
         print("Saved screenshot to account2_member_dashboard.png")
 
         # Extract text snippets
-        lines = [line.strip() for line in page.locator("body").inner_text().split("\n") if line.strip()]
+        body_text = await page.locator("body").inner_text()
+        lines = [line.strip() for line in body_text.split("\n") if line.strip()]
         print("Dashboard Text Summary:")
         for l in lines[:30]:
             print("  ", l)
@@ -36,7 +37,8 @@ async def inspect_account2_portal():
         print("URL:", page.url)
         await page.screenshot(path="account2_listings_list.png", full_page=True)
         print("Saved screenshot to account2_listings_list.png")
-        lines_list = [line.strip() for line in page.locator("body").inner_text().split("\n") if line.strip()]
+        body_text_list = await page.locator("body").inner_text()
+        lines_list = [line.strip() for line in body_text_list.split("\n") if line.strip()]
         print("Listings Page Text Summary:")
         for l in lines_list[:30]:
             print("  ", l)
