@@ -165,8 +165,9 @@ async def update_logos():
                             if (!root) return false;
                             const text = root.innerText || "";
                             const hasComplete = text.includes("Upload complete") || root.querySelector('.filepond--item[data-filepond-item-state="processing-complete"]') !== null;
-                            const btn = document.querySelector('button[type="submit"], button:has-text("Save")');
-                            const isStillUploading = btn && (btn.innerText.includes("Uploading") || btn.disabled);
+                            const btns = Array.from(document.querySelectorAll('button'));
+                            const saveBtn = btns.find(b => b.innerText && (b.innerText.includes("Save") || b.type === "submit"));
+                            const isStillUploading = saveBtn && (saveBtn.innerText.includes("Uploading") || saveBtn.disabled);
                             return hasComplete && !isStillUploading;
                         }''')
                         if is_done:
