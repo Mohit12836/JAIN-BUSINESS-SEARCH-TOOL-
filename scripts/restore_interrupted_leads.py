@@ -21,7 +21,8 @@ def restore_leads():
         "page.evaluate",
         "page.wait_for_timeout",
         "execution context",
-        "portal redirected away"
+        "portal redirected away",
+        "already on portal"
     ]
 
     restored_count = 0
@@ -30,9 +31,11 @@ def restore_leads():
     for r in range(2, ws.max_row + 1):
         status_val = str(ws.cell(row=r, column=26).value or "").strip()
         status_lower = status_val.lower()
+        biz_id_val = str(ws.cell(row=r, column=24).value or "").strip()
 
         is_interrupted = any(kw in status_lower for kw in interrupted_keywords)
-        if is_interrupted:
+        # Restore only if it does NOT already have a real live JFJ- ID
+        if is_interrupted and not biz_id_val.startswith("JFJ-"):
             lead_name = str(ws.cell(row=r, column=2).value or "").strip()
             restored_leads.append((r, lead_name, status_val))
             

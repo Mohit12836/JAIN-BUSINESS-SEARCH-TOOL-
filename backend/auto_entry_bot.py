@@ -528,11 +528,25 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     address_val = lead.get("address", f"{lead['city']}, India")
     cat_id = get_category_id(lead.get("category", ""), lead.get("name", ""))
     
-    # Build a guaranteed unique slug: Name + Market/Area + City + Pincode Suffix + Hash
+    # Build a guaranteed unique business name & slug: Name + Market/Area + City + Pincode Suffix + Hash
     import hashlib
+    raw_name = str(lead.get("name", "")).strip()
     area_or_market = (lead.get("market") or lead.get("area") or "").strip()
+    if not area_or_market and lead.get("address"):
+        addr_parts = [p.strip() for p in str(lead.get("address", "")).split(",") if p.strip()]
+        if addr_parts and addr_parts[0].lower() not in raw_name.lower() and len(addr_parts[0]) <= 30:
+            area_or_market = addr_parts[0]
+
+    # Smart localized naming to satisfy portal global unique constraint (Option 1)
+    if area_or_market and area_or_market.lower() not in raw_name.lower():
+        formatted_biz_name = f"{raw_name} ({area_or_market})"
+    elif lead_city and lead_city.lower() not in raw_name.lower():
+        formatted_biz_name = f"{raw_name} ({lead_city})"
+    else:
+        formatted_biz_name = raw_name
+
     clean_area = re.sub(r'[^a-zA-Z0-9]+', '-', area_or_market.lower()).strip('-')[:12] if area_or_market else ""
-    clean_lead_name = re.sub(r'[^a-zA-Z0-9]+', '-', lead['name'].lower()).strip('-')[:28].strip('-')
+    clean_lead_name = re.sub(r'[^a-zA-Z0-9]+', '-', raw_name.lower()).strip('-')[:28].strip('-')
     clean_city_slug = re.sub(r'[^a-zA-Z0-9]+', '-', lead_city.lower()).strip('-')[:10]
     pin_suffix = pin_digits[-4:] if len(pin_digits) >= 4 else "001"
     u_hash = hashlib.md5(f"{lead.get('name')}_{lead.get('phone')}_{lead.get('row_idx', 0)}".encode()).hexdigest()[:3]
@@ -540,7 +554,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
     slug_parts = [clean_lead_name, clean_area, clean_city_slug, pin_suffix, u_hash]
     initial_slug = "-".join([p for p in slug_parts if p])[:55].strip('-')
     
-    print(f"--> [Safe Turbo] Atomically Injecting All Form Fields (Category ID: {cat_id} | Unique Slug: {initial_slug})...")
+    print(f"--> [Safe Turbo] Atomically Injecting All Form Fields: '{formatted_biz_name}' (Category ID: {cat_id} | Unique Slug: {initial_slug})...")
     await page.evaluate('''async (args) => {
         // 1. Livewire $wire direct binding
         const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
@@ -581,7 +595,7 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
         setField('data.latitude', args.lat);
         setField('data.longitude', args.lng);
     }''', {
-        "name": lead["name"],
+        "name": formatted_biz_name,
         "slug": initial_slug,
         "pincode": pin_digits,
         "address": address_val,
@@ -722,8 +736,12 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
             return errs.map(e => e.innerText.trim()).filter(x => x.length > 0);
         }''')
         
-        if errors and any("slug" in e.lower() or "url key" in e.lower() for e in errors):
-            print(f"⚠️ Duplicate slug detected on portal! Resolving collision for [{lead['name']}]...")
+        needs_retry = (
+            (errors and any(any(k in e.lower() for k in ["slug", "url key", "unique", "already", "taken", "duplicate"]) for e in errors))
+            or (server_500_detected and "/create" in current_url)
+        )
+        if needs_retry:
+            print(f"⚠️ Duplicate/collision detected on portal! Resolving with unique suffix for [{formatted_biz_name}]...")
             
             # Switch to Tab 1 if needed
             try:
@@ -736,10 +754,10 @@ async def fill_listing_form(page: Page, lead: Dict[str, Any], dry_run: bool = Tr
 
             # Retry 1: Append random unique code
             import random, string
-            rand_code_1 = ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-            retry_slug_1 = f"{initial_slug[:48]}-{rand_code_1}"
-            retry_name_1 = f"{lead['name']} ({rand_code_1.upper()})"
-            print(f"--> Auto-retrying submission with Unique Slug: '{retry_slug_1}'...")
+            rand_code_1 = ''.join(random.choices(string.ascii_uppercase + string.digits, k=3))
+            retry_slug_1 = f"{initial_slug[:48]}-{rand_code_1.lower()}"
+            retry_name_1 = f"{formatted_biz_name} ({rand_code_1})"
+            print(f"--> Auto-retrying submission with unique name: '{retry_name_1}' & slug: '{retry_slug_1}'...")
             
             await page.evaluate('''async (args) => {
                 const wire = window.Livewire?.all()?.find(c => c.$wire && typeof c.$wire.set === 'function')?.$wire 
