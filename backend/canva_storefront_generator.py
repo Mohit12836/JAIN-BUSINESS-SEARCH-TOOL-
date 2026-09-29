@@ -56,18 +56,18 @@ HINDI_NAME_MAP = {
 THEMES = {
     "jewellery": {
         "id": "jewellery",
-        "is_dark": True,
-        "bg_banner": "radial-gradient(circle at 50% 15%, #0B132B 0%, #070D1E 45%, #020612 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #0F172A 0%, #0A1128 50%, #030712 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(15,23,42,0.85) 100%)",
-        "gold_glow": "rgba(212, 175, 55, 0.28)",
-        "accent": "#D4AF37",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFDF8 0%, #FFF9EB 45%, #FDF2D5 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FFFDF5 45%, #FDF2D5 100%)",
+        "card_bg": "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+        "gold_glow": "rgba(212, 175, 55, 0.25)",
+        "accent": "#B45309",
         "border_color": "#D4AF37",
-        "text_primary": "#FFFFFF",
-        "text_secondary": "#FEF3C7",
-        "title_hi_color": "#FDE68A",
-        "title_en_color": "#FFFFFF",
-        "monogram_grad": "linear-gradient(180deg, #FFF9D2 0%, #F5CE62 45%, #D4AF37 75%, #9A7B1C 100%)",
+        "text_primary": "#0F172A",
+        "text_secondary": "#78350F",
+        "title_hi_color": "#7F1D1D",
+        "title_en_color": "#0F172A",
+        "monogram_grad": "linear-gradient(180deg, #D4AF37 0%, #B45309 50%, #78350F 100%)",
         "crest_shape": "diamond",
         "prefix": "॥ 卐 श्री नवकाराय नमः 卐 ॥",
         "badge": "100% PURE JAIN 24K HALLMARKED JEWELLERY",
@@ -83,13 +83,13 @@ THEMES = {
         "id": "food",
         "is_dark": False,
         "bg_banner": "radial-gradient(circle at 50% 15%, #FFFDF5 0%, #FFFBEB 45%, #FEF3C7 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(217,119,6,0.12) 0%, rgba(255,255,255,0.9) 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FFFBEB 45%, #FEF08A 100%)",
+        "card_bg": "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
         "gold_glow": "rgba(217, 119, 6, 0.22)",
-        "accent": "#B45309",
+        "accent": "#D97706",
         "border_color": "#D97706",
-        "text_primary": "#78350F",
-        "text_secondary": "#92400E",
+        "text_primary": "#451A03",
+        "text_secondary": "#78350F",
         "title_hi_color": "#78350F",
         "title_en_color": "#92400E",
         "monogram_grad": "linear-gradient(180deg, #D97706 0%, #B45309 50%, #78350F 100%)",
@@ -106,18 +106,18 @@ THEMES = {
     },
     "fashion": {
         "id": "fashion",
-        "is_dark": True,
-        "bg_banner": "radial-gradient(circle at 50% 15%, #25103E 0%, #1A0B2C 45%, #0E0517 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #2E1065 0%, #1E1035 50%, #0F051D 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(244,114,182,0.15) 0%, rgba(30,16,53,0.85) 100%)",
-        "gold_glow": "rgba(244, 114, 182, 0.25)",
-        "accent": "#F472B6",
-        "border_color": "#E0A96D",
-        "text_primary": "#FFFFFF",
-        "text_secondary": "#FCE7F3",
-        "title_hi_color": "#FBCFE8",
-        "title_en_color": "#FFFFFF",
-        "monogram_grad": "linear-gradient(180deg, #FFF1F2 0%, #F472B6 45%, #E0A96D 80%, #9D174D 100%)",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #FFF5F7 0%, #FFE4E8 45%, #FED1DA 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FFF1F2 45%, #FCE7F3 100%)",
+        "card_bg": "linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%)",
+        "gold_glow": "rgba(219, 39, 119, 0.20)",
+        "accent": "#DB2777",
+        "border_color": "#BE185D",
+        "text_primary": "#4C0519",
+        "text_secondary": "#831843",
+        "title_hi_color": "#831843",
+        "title_en_color": "#4C0519",
+        "monogram_grad": "linear-gradient(180deg, #DB2777 0%, #BE185D 50%, #701A75 100%)",
         "crest_shape": "hexagon",
         "prefix": "॥ 卐 रॉयल हेरिटेज स्टाइल 卐 ॥",
         "badge": "HAUTE COUTURE LUXURY COLLECTION",
@@ -133,15 +133,15 @@ THEMES = {
         "id": "medical",
         "is_dark": False,
         "bg_banner": "radial-gradient(circle at 50% 15%, #F0FDF4 0%, #DCFCE7 45%, #BBF7D0 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #F0FDF4 0%, #DCFCE7 50%, #A7F3D0 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(255,255,255,0.9) 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #F0FDF4 45%, #DCFCE7 100%)",
+        "card_bg": "linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%)",
         "gold_glow": "rgba(5, 150, 105, 0.20)",
         "accent": "#059669",
         "border_color": "#047857",
         "text_primary": "#064E3B",
         "text_secondary": "#065F46",
         "title_hi_color": "#064E3B",
-        "title_en_color": "#065F46",
+        "title_en_color": "#047857",
         "monogram_grad": "linear-gradient(180deg, #10B981 0%, #059669 50%, #064E3B 100%)",
         "crest_shape": "shield",
         "prefix": "॥ 卐 सर्वे सन्तु निरामयाः 卐 ॥",
@@ -156,18 +156,18 @@ THEMES = {
     },
     "religious": {
         "id": "religious",
-        "is_dark": True,
-        "bg_banner": "radial-gradient(circle at 50% 15%, #4C0505 0%, #300202 45%, #180000 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #7F1D1D 0%, #450A0A 50%, #1C0303 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(69,10,10,0.85) 100%)",
-        "gold_glow": "rgba(245, 158, 11, 0.35)",
-        "accent": "#F59E0B",
-        "border_color": "#F59E0B",
-        "text_primary": "#FFFFFF",
-        "text_secondary": "#FEF3C7",
-        "title_hi_color": "#FDE68A",
-        "title_en_color": "#FFFFFF",
-        "monogram_grad": "linear-gradient(180deg, #FEF08A 0%, #F59E0B 45%, #D97706 75%, #78350F 100%)",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #FFFDF8 0%, #FFF8E7 45%, #FEF0C7 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #FFFBF0 45%, #FEF3C7 100%)",
+        "card_bg": "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)",
+        "gold_glow": "rgba(180, 83, 9, 0.22)",
+        "accent": "#991B1B",
+        "border_color": "#B45309",
+        "text_primary": "#450A0A",
+        "text_secondary": "#7F1D1D",
+        "title_hi_color": "#7F1D1D",
+        "title_en_color": "#991B1B",
+        "monogram_grad": "linear-gradient(180deg, #B91C1C 0%, #991B1B 50%, #7F1D1D 100%)",
         "crest_shape": "temple",
         "prefix": "॥ 卐 अहिंसा परमो धर्मः 卐 ॥",
         "badge": "SACRED DIGAMBER JAIN TIRTH & TRUST",
@@ -181,18 +181,18 @@ THEMES = {
     },
     "professional": {
         "id": "professional",
-        "is_dark": True,
-        "bg_banner": "radial-gradient(circle at 50% 15%, #0B1329 0%, #060A17 45%, #010308 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #0F172A 0%, #020617 55%, #000000 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(56,189,248,0.15) 0%, rgba(15,23,42,0.85) 100%)",
-        "gold_glow": "rgba(56, 189, 248, 0.25)",
-        "accent": "#38BDF8",
-        "border_color": "#38BDF8",
-        "text_primary": "#FFFFFF",
-        "text_secondary": "#E0F2FE",
-        "title_hi_color": "#BAE6FD",
-        "title_en_color": "#FFFFFF",
-        "monogram_grad": "linear-gradient(180deg, #FFFFFF 0%, #38BDF8 45%, #0284C7 80%, #0369A1 100%)",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #F0F9FF 0%, #E0F2FE 45%, #BAE6FD 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #F0F9FF 45%, #E0F2FE 100%)",
+        "card_bg": "linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)",
+        "gold_glow": "rgba(2, 132, 199, 0.20)",
+        "accent": "#0284C7",
+        "border_color": "#0369A1",
+        "text_primary": "#082F49",
+        "text_secondary": "#075985",
+        "title_hi_color": "#0C4A6E",
+        "title_en_color": "#082F49",
+        "monogram_grad": "linear-gradient(180deg, #0284C7 0%, #0369A1 50%, #0C4A6E 100%)",
         "crest_shape": "pillar",
         "prefix": "॥ 卐 सत्यं वद धर्मं चर 卐 ॥",
         "badge": "PREMIER PROFESSIONAL ADVISORY & CONSULTING",
@@ -206,18 +206,18 @@ THEMES = {
     },
     "industry": {
         "id": "industry",
-        "is_dark": True,
-        "bg_banner": "radial-gradient(circle at 50% 15%, #172554 0%, #0F172A 45%, #050814 100%)",
-        "bg_logo": "radial-gradient(circle at 50% 35%, #1E3A8A 0%, #172554 55%, #0F172A 100%)",
-        "card_bg": "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(23,37,84,0.85) 100%)",
-        "gold_glow": "rgba(245, 158, 11, 0.22)",
-        "accent": "#F59E0B",
-        "border_color": "#F59E0B",
-        "text_primary": "#FFFFFF",
-        "text_secondary": "#FEF3C7",
-        "title_hi_color": "#FDE68A",
-        "title_en_color": "#FFFFFF",
-        "monogram_grad": "linear-gradient(180deg, #FDE68A 0%, #F59E0B 45%, #D97706 75%, #92400E 100%)",
+        "is_dark": False,
+        "bg_banner": "radial-gradient(circle at 50% 15%, #F8FAFC 0%, #F1F5F9 45%, #E2E8F0 100%)",
+        "bg_logo": "radial-gradient(circle at 50% 30%, #FFFFFF 0%, #F8FAFC 45%, #E2E8F0 100%)",
+        "card_bg": "linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)",
+        "gold_glow": "rgba(29, 78, 216, 0.20)",
+        "accent": "#1D4ED8",
+        "border_color": "#1E40AF",
+        "text_primary": "#0F172A",
+        "text_secondary": "#1E3A8A",
+        "title_hi_color": "#1E3A8A",
+        "title_en_color": "#0F172A",
+        "monogram_grad": "linear-gradient(180deg, #2563EB 0%, #1D4ED8 50%, #1E3A8A 100%)",
         "crest_shape": "octagon",
         "prefix": "॥ 卐 ॐ अर्हं नमः 卐 ॥",
         "badge": "VERIFIED 100% JAIN INDUSTRIAL ENTERPRISE",
@@ -688,9 +688,9 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 155px;
             height: 155px;
             transform: rotate(45deg);
-            background: rgba(255, 255, 255, 0.05);
-            border: 3px solid #D4AF37;
-            box-shadow: 0 0 35px rgba(212, 175, 55, 0.35), inset 0 0 20px rgba(212, 175, 55, 0.2);
+            background: linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%);
+            border: 3.5px solid #D4AF37;
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.35);
             border-radius: 8px;
         }
         .badge-geom-inner {
@@ -698,8 +698,9 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 135px;
             height: 135px;
             transform: rotate(45deg);
-            border: 1.5px dashed #F5CE62;
-            border-radius: 4px;
+            background: #FFFFFF;
+            border: 2px dashed #B45309;
+            border-radius: 6px;
         }
         """
     elif crest_shape == "artisan":
@@ -727,6 +728,7 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 170px;
             height: 170px;
             border-radius: 50%;
+            background: #FFFFFF;
             border: 2px dashed #B45309;
         }
         """
@@ -746,16 +748,16 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 200px;
             height: 200px;
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: linear-gradient(135deg, rgba(244, 114, 182, 0.2) 0%, rgba(224, 169, 109, 0.3) 100%);
-            box-shadow: 0 0 35px rgba(244, 114, 182, 0.35);
+            background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+            box-shadow: 0 8px 30px rgba(190, 24, 93, 0.25);
         }
         .badge-geom-inner {
             position: absolute;
             width: 184px;
             height: 184px;
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: rgba(30, 16, 53, 0.85);
-            border: 2px solid #E0A96D;
+            background: #FFFFFF;
+            border: 2.5px solid #BE185D;
         }
         """
     elif crest_shape == "shield":
@@ -783,7 +785,7 @@ def get_luxury_logo_html(firm: dict) -> str:
             height: 184px;
             clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
             background: #FFFFFF;
-            border: 2px solid #059669;
+            border: 2.5px solid #059669;
         }
         """
     elif crest_shape == "temple":
@@ -802,16 +804,17 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 190px;
             height: 200px;
             border-radius: 95px 95px 16px 16px;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(127, 29, 29, 0.8) 100%);
-            border: 3.5px solid #F59E0B;
-            box-shadow: 0 0 40px rgba(245, 158, 11, 0.35);
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 3.5px solid #B45309;
+            box-shadow: 0 8px 30px rgba(180, 83, 9, 0.25);
         }
         .badge-geom-inner {
             position: absolute;
             width: 170px;
             height: 180px;
             border-radius: 85px 85px 10px 10px;
-            border: 1.5px dashed #FEF08A;
+            background: #FFFFFF;
+            border: 2px dashed #B45309;
         }
         """
     elif crest_shape == "pillar":
@@ -830,16 +833,17 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 190px;
             height: 190px;
             clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%);
-            border: 3px solid #38BDF8;
-            box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+            background: linear-gradient(135deg, #BAE6FD 0%, #7DD3FC 100%);
+            border: 3.5px solid #0284C7;
+            box-shadow: 0 8px 30px rgba(2, 132, 199, 0.25);
         }
         .badge-geom-inner {
             position: absolute;
             width: 172px;
             height: 172px;
             clip-path: polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%);
-            border: 1.5px solid #E2E8F0;
+            background: #FFFFFF;
+            border: 2px solid #0369A1;
         }
         """
     else:  # octagon / default
@@ -858,16 +862,17 @@ def get_luxury_logo_html(firm: dict) -> str:
             width: 190px;
             height: 190px;
             clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(23, 37, 84, 0.9) 100%);
-            border: 3px solid #F59E0B;
-            box-shadow: 0 0 35px rgba(245, 158, 11, 0.3);
+            background: linear-gradient(135deg, #BFDBFE 0%, #93C5FD 100%);
+            border: 3.5px solid #1D4ED8;
+            box-shadow: 0 8px 30px rgba(29, 78, 216, 0.25);
         }
         .badge-geom-inner {
             position: absolute;
             width: 172px;
             height: 172px;
             clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            border: 1.5px dashed #FDE68A;
+            background: #FFFFFF;
+            border: 2px dashed #1E40AF;
         }
         """
 
@@ -900,15 +905,16 @@ def get_luxury_logo_html(firm: dict) -> str:
     position: absolute;
     inset: 24px;
     border-radius: 40px;
-    border: 3px solid {theme['border_color']};
-    box-shadow: inset 0 0 70px {theme['gold_glow']}, 0 12px 40px rgba(0, 0, 0, 0.25);
+    border: 3.5px solid {theme['border_color']};
+    box-shadow: inset 0 0 70px {theme['gold_glow']}, 0 12px 35px rgba(0, 0, 0, 0.08);
     pointer-events: none;
   }}
   .logo-inner-border {{
     position: absolute;
     inset: 34px;
     border-radius: 30px;
-    border: 1.5px dashed rgba(255, 255, 255, 0.25);
+    border: 1.5px dashed {theme['border_color']};
+    opacity: 0.4;
     pointer-events: none;
   }}
 
@@ -938,13 +944,13 @@ def get_luxury_logo_html(firm: dict) -> str:
     position: relative;
     z-index: 10;
     font-family: 'Cinzel', serif;
-    font-size: 88px;
+    font-size: 96px;
     font-weight: 900;
     letter-spacing: 6px;
     background: {theme['monogram_grad']};
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
     line-height: 1;
   }}
 
@@ -959,7 +965,7 @@ def get_luxury_logo_html(firm: dict) -> str:
     color: {theme['text_secondary']};
     text-transform: uppercase;
     margin-bottom: 20px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   }}
 
   /* ① PRIMARY FOCUS: Brand Name (Hindi) */
@@ -970,7 +976,6 @@ def get_luxury_logo_html(firm: dict) -> str:
     color: {theme['title_hi_color']};
     letter-spacing: 1px;
     margin-bottom: 6px;
-    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
   }}
 
   /* ② SECONDARY FOCUS: Brand Name (English) */
@@ -981,7 +986,6 @@ def get_luxury_logo_html(firm: dict) -> str:
     letter-spacing: 4px;
     color: {theme['title_en_color']};
     margin-bottom: 14px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }}
 
   .divider-wrap {{
