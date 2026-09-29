@@ -43,14 +43,15 @@ async def inspect_account2_portal():
         for l in lines_list[:30]:
             print("  ", l)
 
-        # 3. Check for any packages/plans links
-        links = await page.evaluate('''() => {
-            return Array.from(document.querySelectorAll('a')).map(a => ({ text: a.innerText.trim(), href: a.href })).filter(x => x.text.length > 0);
-        }''')
-        print("\nNavigation Links:")
-        for l in links:
-            if any(k in l['href'].lower() or k in l['text'].lower() for k in ['package', 'plan', 'subscript', 'limit', 'pricing', 'order']):
-                print(f"  * {l['text']} -> {l['href']}")
+        # 3. Inspect /member/manage-subscription
+        print("\n=== 3. Inspecting /member/manage-subscription ===")
+        await page.goto("https://jainforjain.com/member/manage-subscription", wait_until="domcontentloaded")
+        print("URL:", page.url)
+        await page.screenshot(path="account2_subscription.png", full_page=True)
+        print("Saved screenshot to account2_subscription.png")
+        sub_text = await page.locator("body").inner_text()
+        for l in [x.strip() for x in sub_text.split("\n") if x.strip()][:30]:
+            print("  ", l)
 
         await browser.close()
 
